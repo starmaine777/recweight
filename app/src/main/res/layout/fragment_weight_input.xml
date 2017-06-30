@@ -4,13 +4,188 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="81dp">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textTime"
+        style="@style/TitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="16dp"/>
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="27dp"
+        android:text="@string/weight_input_time_title"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintTop_creator="1"/>
+
+    <TextView
+        android:id="@+id/textFatUnit"
+        style="@style/TitleUnitText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="53dp"
+        android:layout_marginStart="53dp"
+        android:layout_marginTop="22dp"
+        android:text="@string/weight_input_fat_unit"
+        app:layout_constraintLeft_toRightOf="@+id/editFat"
+        app:layout_constraintTop_toBottomOf="@+id/textWeightUnit"
+        tools:layout_constraintTop_creator="1"/>
+
+    <TextView
+        android:id="@+id/textFat"
+        style="@style/TitleText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/weight_input_fat_title"
+        app:layout_constraintBottom_toBottomOf="@+id/editFat"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/editFat"/>
+
+    <TextView
+        android:id="@+id/textWeightUnit"
+        style="@style/TitleUnitText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:text="@string/weight_input_weight_unit"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editWeight"
+        app:layout_constraintLeft_toRightOf="@+id/editWeight"
+        tools:layout_constraintBaseline_creator="1"
+        tools:layout_constraintLeft_creator="1"/>
+
+    <TextView
+        android:id="@+id/textView4"
+        style="@style/TitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/weight_input_weight_title"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editWeight"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_constraintBaseline_creator="1"
+        tools:layout_constraintLeft_creator="1"/>
+
+    <ToggleButton
+        android:id="@+id/toggleDumbbell"
+        android:layout_width="@dimen/stamp_input_side"
+        android:layout_height="@dimen/stamp_input_side"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="37dp"
+        android:background="@drawable/stamp_dumbbell"
+        android:padding="@dimen/stamp_input_padding"
+        android:text="@null"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textFat"/>
+
+    <ToggleButton
+        android:id="@+id/toggleLiquar"
+        android:layout_width="@dimen/stamp_input_side"
+        android:layout_height="@dimen/stamp_input_side"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/stamp_liquor"
+        android:padding="@dimen/stamp_input_padding"
+        android:text="@null"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintLeft_toRightOf="@+id/toggleDumbbell"
+        app:layout_constraintTop_toTopOf="@+id/toggleDumbbell"
+        />
+
+    <ToggleButton
+        android:id="@+id/toggleToilet"
+        android:layout_width="@dimen/stamp_input_side"
+        android:layout_height="@dimen/stamp_input_side"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/stamp_toilet"
+        android:padding="@dimen/stamp_input_padding"
+        android:text="@null"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintLeft_toRightOf="@+id/toggleLiquar"
+        app:layout_constraintTop_toTopOf="@+id/toggleDumbbell"
+        />
+
+    <ToggleButton
+        android:id="@+id/toggleStar"
+        android:layout_width="@dimen/stamp_input_side"
+        android:layout_height="@dimen/stamp_input_side"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/stamp_star"
+        android:padding="@dimen/stamp_input_padding"
+        android:text="@null"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintLeft_toRightOf="@+id/toggleMoon"
+        app:layout_constraintTop_toTopOf="@+id/toggleDumbbell"/>
+
+    <EditText
+        android:id="@+id/editFat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@+id/textFatUnit"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editWeight"
+        app:layout_constraintVertical_bias="0.066"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"/>
+
+    <EditText
+        android:id="@+id/editWeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        app:layout_constraintLeft_toLeftOf="@+id/editTime"
+        app:layout_constraintRight_toRightOf="@+id/editTime"
+        app:layout_constraintTop_toBottomOf="@+id/editTime"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"/>
+
+    <EditText
+        android:id="@+id/editTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="time"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1"/>
+
+    <ToggleButton
+        android:id="@+id/toggleMoon"
+        android:layout_width="@dimen/stamp_input_side"
+        android:layout_height="@dimen/stamp_input_side"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/stamp_moon"
+        android:padding="@dimen/stamp_input_padding"
+        android:text="@null"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintLeft_toRightOf="@+id/toggleToilet"
+        app:layout_constraintTop_toTopOf="@+id/toggleDumbbell"/>
+
 </android.support.constraint.ConstraintLayout>

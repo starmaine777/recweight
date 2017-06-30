@@ -3,4 +3,12 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="stamp_not_select">#ffd3d3d3</color>
+    <color name="stamp_liquor_selected">#ffb22222</color>
+    <color name="stamp_dumbbell_selected">#ff1e90ff</color>
+    <color name="stamp_toilet_selected">#ffafeeee</color>
+    <color name="stamp_moon_selected">#fffa8072</color>
+    <color name="stamp_star_selected">#ffffd700</color>
+
 </resources>

@@ -1,3 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="stamp_input_side">36dp</dimen>
+    <dimen name="stamp_input_padding">12dp</dimen>
 </resources>

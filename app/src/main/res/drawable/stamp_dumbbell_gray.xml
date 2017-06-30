@@ -1,0 +1,8 @@
+<vector android:height="24dp" android:viewportHeight="512.0"
+    android:viewportWidth="512.0" android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="@color/stamp_not_select" android:pathData="M141.7,141.5H79.1c-8.5,0 -15.4,6.9 -15.4,15.4v198.2c0,8.5 6.9,15.4 15.4,15.4h62.6c8.5,0 15.4,-6.9 15.4,-15.4V156.9C157.1,148.4 150.2,141.5 141.7,141.5z"/>
+    <path android:fillColor="@color/stamp_not_select" android:pathData="M32.4,189.7H12.8C5.7,189.7 0,195.5 0,202.5v106.9c0,7.1 5.7,12.8 12.8,12.8h19.6c7.1,0 12.8,-5.7 12.8,-12.8V202.5C45.2,195.5 39.4,189.7 32.4,189.7z"/>
+    <path android:fillColor="@color/stamp_not_select" android:pathData="M177.7,228.9h156.6v54.2h-156.6z"/>
+    <path android:fillColor="@color/stamp_not_select" android:pathData="M432.9,141.5h-62.6c-8.5,0 -15.4,6.9 -15.4,15.4v198.2c0,8.5 6.9,15.4 15.4,15.4h62.6c8.5,0 15.4,-6.9 15.4,-15.4V156.9C448.3,148.4 441.4,141.5 432.9,141.5z"/>
+    <path android:fillColor="@color/stamp_not_select" android:pathData="M499.2,189.7h-19.6c-7.1,0 -12.8,5.7 -12.8,12.8v106.9c0,7.1 5.7,12.8 12.8,12.8h19.6c7.1,0 12.8,-5.7 12.8,-12.8V202.5C512,195.5 506.3,189.7 499.2,189.7z"/>
+</vector>
