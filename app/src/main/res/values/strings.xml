@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">RecWeight</string>
     <string name="action_settings">Settings</string>
+    <string name="action_done">done</string>
     <string name="weight_input_time_title">時刻</string>
     <string name="weight_input_weight_title">体重</string>
     <string name="weight_input_weight_unit">kg</string>
