@@ -21,7 +21,6 @@ class WeightInputActivity : AppCompatActivity() {
         supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.fragment, inputFragment, WeightInputFragment.TAG)
-                .addToBackStack(WeightInputFragment.TAG)
                 .commit()
     }
 }

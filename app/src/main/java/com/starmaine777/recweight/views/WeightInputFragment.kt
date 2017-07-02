@@ -1,12 +1,14 @@
 package com.starmaine777.recweight.views
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.text.format.DateFormat
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.entity.WeightItemEntity
 import com.starmaine777.recweight.utils.Consts
@@ -66,6 +68,22 @@ class WeightInputFragment : Fragment() {
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (editWeight.requestFocus()) {
+            val imm: InputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(editWeight, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val imm = context.getSystemService(
+                Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
+        activity.currentFocus.clearFocus()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
