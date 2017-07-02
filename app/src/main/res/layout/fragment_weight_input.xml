@@ -7,7 +7,7 @@
 
         <variable
             name="weightData"
-            type="com.starmaine777.recweight.entity.WeightItemEntity"/>
+            type="com.starmaine777.recweight.data.WeightItemEntity"/>
     </data>
 
     <android.support.constraint.ConstraintLayout
