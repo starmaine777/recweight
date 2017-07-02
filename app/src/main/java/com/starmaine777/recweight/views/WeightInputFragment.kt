@@ -1,5 +1,6 @@
 package com.starmaine777.recweight.views
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -30,6 +31,8 @@ class WeightInputFragment : Fragment() {
 
         val ARGS_MODE = "mode"
 
+        val TAG_DIALOGS = "dialogs"
+
         fun newInstance(weightInputMode: WEIGHT_INPUT_MODE): WeightInputFragment {
             val fragment = WeightInputFragment()
             val bundle = Bundle()
@@ -49,12 +52,20 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        setRecordTime(entity.date)
-        editTime.setOnClickListener { _ ->
-            dialog = DateTimePickerDialog.newInstance(entity.date, DateTimePickerDialog.DATE_TIME_INPUT_MODE.DATE_TIME)
-            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUEST_INPUT_DATE_TIME)
-            dialog?.show(fragmentManager, DateTimePickerDialog.TAG)
+        setRecordDate(entity.date.get(Calendar.YEAR), entity.date.get(Calendar.MONTH), entity.date.get(Calendar.DAY_OF_MONTH))
+        editDate.setOnClickListener { _ ->
+            dialog = DatePickerDialogFragment.newInstance(entity.date.get(Calendar.YEAR), entity.date.get(Calendar.MONTH), entity.date.get(Calendar.DAY_OF_MONTH))
+            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUEST_INPUT_DATE)
+            dialog?.show(fragmentManager, TAG_DIALOGS)
         }
+
+        setRecordTime(entity.date.get(Calendar.HOUR_OF_DAY), entity.date.get(Calendar.MINUTE))
+        editTime.setOnClickListener { _ ->
+            dialog = TimePickerDialogFragment.newInstance(entity.date.get(Calendar.HOUR_OF_DAY), entity.date.get(Calendar.MINUTE))
+            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUEST_INPUT_TIME)
+            dialog?.show(fragmentManager, TAG_DIALOGS)
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -72,29 +83,54 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Consts.REQUEST_INPUT_DATE_TIME) {
-            val newCalendar = Calendar.getInstance()
-            val year = data?.getIntExtra(DateTimePickerDialog.RESULT_YEAR, -1) ?: -1
-            val month = data?.getIntExtra(DateTimePickerDialog.RESULT_MONTH, -1) ?: -1
-            val day = data?.getIntExtra(DateTimePickerDialog.RESULT_DAY, -1) ?: -1
-            val hour = data?.getIntExtra(DateTimePickerDialog.RESULT_HOUR, -1) ?: -1
-            val minute = data?.getIntExtra(DateTimePickerDialog.RESULT_MINUTE, -1) ?: -1
 
-            if (year >= 0 && month >= 0 && day >= 0 && hour >= 0 && minute >= 0) {
-                newCalendar.set(year, month, day, hour, minute)
-                setRecordTime(newCalendar)
+        when (requestCode) {
+
+            Consts.REQUEST_INPUT_DATE -> {
+                if (resultCode != Activity.RESULT_OK) return
+                val year = data?.getIntExtra(DatePickerDialogFragment.RESULT_YEAR, -1) ?: -1
+                val month = data?.getIntExtra(DatePickerDialogFragment.RESULT_MONTH, -1) ?: -1
+                val day = data?.getIntExtra(DatePickerDialogFragment.RESULT_DAY, -1) ?: -1
+
+                if (year >= 0 && month >= 0 && day >= 0) {
+                    setRecordDate(year, month, day)
+                }
             }
 
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
+            Consts.REQUEST_INPUT_TIME -> {
+                if (resultCode != Activity.RESULT_OK) return
+                val hour = data?.getIntExtra(TimePickerDialogFragment.RESULT_HOUR, -1) ?: -1
+                val minute = data?.getIntExtra(TimePickerDialogFragment.RESULT_MINUTE, -1) ?: -1
+
+                if (hour >= 0 && minute >= 0) {
+                    setRecordTime(hour, minute)
+                }
+            }
+
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    fun setRecordTime(newCalendar: Calendar) {
-        if (entity.date != newCalendar) {
+    fun setRecordDate(year: Int, month: Int, day: Int) {
+        if (entity.date.get(Calendar.YEAR) != year
+                || entity.date.get(Calendar.MONTH) != month
+                || entity.date.get(Calendar.DAY_OF_MONTH) != day) {
+            val newCalendar: Calendar = entity.date.clone() as Calendar
+            newCalendar.set(year, month, day)
             entity = entity.copy(date = newCalendar)
         }
-        val dateText = "${DateFormat.getDateFormat(activity.applicationContext).format(entity.date.time)} ${DateFormat.getTimeFormat(activity.applicationContext).format(entity.date.time)}"
-        editTime.setText(dateText)
+        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(entity.date.time))
     }
+
+    fun setRecordTime(hour: Int, minute: Int) {
+        if (entity.date.get(Calendar.HOUR_OF_DAY) != hour
+                || entity.date.get(Calendar.MINUTE) != minute) {
+            val newCalendar: Calendar = entity.date.clone() as Calendar
+            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
+            newCalendar.set(Calendar.MINUTE, minute)
+            entity = entity.copy(date = newCalendar)
+        }
+        editTime.setText(DateFormat.getTimeFormat(activity.applicationContext).format(entity.date.time))
+    }
+
 }
