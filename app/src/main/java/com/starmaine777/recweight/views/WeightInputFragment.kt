@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
+import android.text.Editable
+import android.text.TextUtils
+import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
@@ -17,6 +20,7 @@ import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import kotlinx.android.synthetic.main.fragment_weight_input.*
+import java.text.Format
 import java.util.*
 
 /**
@@ -71,6 +75,49 @@ class WeightInputFragment : Fragment() {
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
+//        editWeight.addTextChangedListener(object : TextWatcher {
+//            override fun afterTextChanged(s: Editable?) {
+//                editWeight.setText(formatInputNumber(s.toString()))
+//            }
+//
+//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//            }
+//
+//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//            }
+//        })
+//
+//        editFat.addTextChangedListener(object : TextWatcher {
+//            override fun afterTextChanged(s: Editable?) {
+//                editFat.setText(formatInputNumber(s.toString()))
+//            }
+//
+//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//            }
+//
+//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//            }
+//        })
+//
+//
+    }
+
+    fun formatInputNumber(numStr: String): String {
+        if (TextUtils.isEmpty(numStr)) return getString(R.string.weight_input_weight_default)
+
+        val numStrSplit = numStr.split(".")
+        when (numStrSplit.size) {
+            0 -> return getString(R.string.weight_input_weight_default)
+            1 -> return "$numStr.0"
+            2 -> {
+                when (numStrSplit[1].length) {
+                    1 -> return numStr
+                    2 -> return numStr
+                    else -> return String.format(".%2", numStr)
+                }
+            }
+            else -> return getString(R.string.weight_input_weight_default)
+        }
     }
 
     override fun onResume() {
@@ -114,7 +161,7 @@ class WeightInputFragment : Fragment() {
                 memo = editMemo.toString()
         )
 
-        Handler().post{
+        Handler().post {
             run {
                 val weightInfoVm = WeightItemsViewModel(activity.application)
                 weightInfoVm.insertWeightItem(entity)
