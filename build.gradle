@@ -22,10 +22,11 @@ allprojects {
 }
 
 ext {
-    buildToolsVersion = '25.0.2'
+    buildToolsVersion = '26.0.0'
     supportLibVersion = '25.3.1'
     espressoVersion = '2.2.2'
-    archRoomVersion = '1.0.0-alpha1'
+    archLifecycleVersion = '1.0.0-alpha3'
+    archRoomVersion = '1.0.0-alpha3'
 }
 
 task clean(type: Delete) {

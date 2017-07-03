@@ -4,8 +4,10 @@
     <string name="action_done">done</string>
     <string name="weight_input_time_title">時刻</string>
     <string name="weight_input_weight_title">体重</string>
+    <string name="weight_input_weight_default">0.0</string>
     <string name="weight_input_weight_unit">kg</string>
     <string name="weight_input_fat_title">体脂肪</string>
+    <string name="weight_input_fat_default">0.0</string>
     <string name="weight_input_fat_unit">%</string>
     <string name="weight_input_memo_title">メモ</string>
 </resources>

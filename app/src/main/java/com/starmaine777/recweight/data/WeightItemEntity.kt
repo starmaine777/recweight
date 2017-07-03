@@ -12,17 +12,15 @@ import java.util.*
 
 @Entity(tableName = WeightItemEntity.Companion.TABLE_WEIGHT_ITEM)
 data class WeightItemEntity(
-        @PrimaryKey(autoGenerate = true)
-        @ColumnInfo(name = COL_ID)val id: Int = 0,
-        @ColumnInfo(name = COL_REC_TIME)val recTime: Calendar,
-        @ColumnInfo(name = COL_WEIGHT)val weight: Double,
-        @ColumnInfo(name = COL_FAT)val fat: Double,
-        @ColumnInfo(name = COL_SHOW_DUMBBELL)val showDumbbell: Boolean,
-        @ColumnInfo(name = COL_SHOW_LIQUOR)val showLiquor: Boolean,
-        @ColumnInfo(name = COL_SHOW_TOILET)val showToilet: Boolean,
-        @ColumnInfo(name = COL_SHOW_MOON)val showMoon: Boolean,
-        @ColumnInfo(name = COL_SHOW_STAR)val showStar: Boolean,
-        @ColumnInfo(name = COL_MEMO)val memo: String) {
+        @ColumnInfo(name = COL_REC_TIME)var recTime: Calendar = Calendar.getInstance(),
+        @ColumnInfo(name = COL_WEIGHT)var weight: Double = 0.0,
+        @ColumnInfo(name = COL_FAT)var fat: Double = 0.0,
+        @ColumnInfo(name = COL_SHOW_DUMBBELL)var showDumbbell: Boolean = false,
+        @ColumnInfo(name = COL_SHOW_LIQUOR)var showLiquor: Boolean = false,
+        @ColumnInfo(name = COL_SHOW_TOILET)var showToilet: Boolean = false,
+        @ColumnInfo(name = COL_SHOW_MOON)var showMoon: Boolean = false,
+        @ColumnInfo(name = COL_SHOW_STAR)var showStar: Boolean = false,
+        @ColumnInfo(name = COL_MEMO)var memo: String = "") {
 
     companion object {
         const val TABLE_WEIGHT_ITEM = "weightItem"
@@ -39,4 +37,7 @@ data class WeightItemEntity(
         const val COL_MEMO = "memo"
 
     }
+    @ColumnInfo(name = COL_ID)
+    @PrimaryKey(autoGenerate = true)
+    var id: Long = 0
 }

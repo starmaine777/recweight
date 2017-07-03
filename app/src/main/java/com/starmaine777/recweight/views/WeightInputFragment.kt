@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.text.format.DateFormat
@@ -26,7 +27,7 @@ class WeightInputFragment : Fragment() {
 
 
     val weightInputMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
-    var entity: WeightItemEntity = WeightItemEntity(0, Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
+    var entity: WeightItemEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
     var dialog: DialogFragment? = null
 
     companion object {
@@ -113,11 +114,16 @@ class WeightInputFragment : Fragment() {
                 memo = editMemo.toString()
         )
 
-        val weightInfoVm = WeightItemsViewModel(activity.application)
-        weightInfoVm.insertWeightItem(entity)
+        Handler().post{
+            run {
+                val weightInfoVm = WeightItemsViewModel(activity.application)
+                weightInfoVm.insertWeightItem(entity)
 
-        val weightInputList = weightInfoVm.getWeightItemList()
-        Log.d("test", "weightInfoList == ${weightInputList}, count=${weightInputList.size}")
+                val weightInputList = weightInfoVm.getWeightItemList()
+                Log.d("test", "weightInfoList == ${weightInputList}, count=${weightInputList.size}")
+            }
+
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

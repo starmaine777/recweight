@@ -15,9 +15,6 @@ interface WeightItemDao {
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY recTime DESC")
     fun getAllListDateSorted(): List<WeightItemEntity>
 
-    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ${WeightItemEntity.COL_ID} = :id")
-    fun getListById(id: Int): List<WeightItemEntity>
-
     @Insert
     fun insert(weightItemEntity: WeightItemEntity)
 
