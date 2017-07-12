@@ -102,24 +102,6 @@ class WeightInputFragment : Fragment() {
 //
     }
 
-    fun formatInputNumber(numStr: String): String {
-        if (TextUtils.isEmpty(numStr)) return getString(R.string.weight_input_weight_default)
-
-        val numStrSplit = numStr.split(".")
-        when (numStrSplit.size) {
-            0 -> return getString(R.string.weight_input_weight_default)
-            1 -> return "$numStr.0"
-            2 -> {
-                when (numStrSplit[1].length) {
-                    1 -> return numStr
-                    2 -> return numStr
-                    else -> return String.format(".%2", numStr)
-                }
-            }
-            else -> return getString(R.string.weight_input_weight_default)
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         if (editWeight.requestFocus()) {
