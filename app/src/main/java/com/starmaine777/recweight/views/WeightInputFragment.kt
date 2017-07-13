@@ -7,9 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
-import android.text.Editable
-import android.text.TextUtils
-import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
@@ -19,8 +16,8 @@ import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
+import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_weight_input.*
-import java.text.Format
 import java.util.*
 
 /**
@@ -75,31 +72,8 @@ class WeightInputFragment : Fragment() {
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
-//        editWeight.addTextChangedListener(object : TextWatcher {
-//            override fun afterTextChanged(s: Editable?) {
-//                editWeight.setText(formatInputNumber(s.toString()))
-//            }
-//
-//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//            }
-//
-//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//            }
-//        })
-//
-//        editFat.addTextChangedListener(object : TextWatcher {
-//            override fun afterTextChanged(s: Editable?) {
-//                editFat.setText(formatInputNumber(s.toString()))
-//            }
-//
-//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//            }
-//
-//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//            }
-//        })
-//
-//
+        editWeight.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+        editFat.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
     }
 
     override fun onResume() {

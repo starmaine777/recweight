@@ -48,7 +48,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/editDate"
         app:layout_constraintLeft_toRightOf="@+id/editDate"
         app:layout_constraintTop_toTopOf="@+id/editDate"
-        app:layout_constraintVertical_bias="0.6"/>
+        app:layout_constraintVertical_bias="0.6"
+        tools:ignore="AndroidLintLabelFor"/>
 
     <TextView
         android:id="@+id/textWeight"
@@ -69,10 +70,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:ems="10"
+        android:hint="@string/weight_input_weight_default"
         android:imeOptions="actionNext"
         android:inputType="numberDecimal"
-        android:text="@string/weight_input_weight_default"
         android:maxLength="6"
+        android:text="@null"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/editFat"
         app:layout_constraintTop_toBottomOf="@+id/editDate"
@@ -108,10 +110,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:ems="10"
+        android:hint="@string/weight_input_fat_default"
         android:imeOptions="actionDone"
         android:inputType="numberDecimal"
-        android:text="@string/weight_input_fat_default"
         android:maxLength="6"
+        android:text="@null"
         app:layout_constraintBottom_toBottomOf="@+id/textFatUnit"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintLeft_toLeftOf="parent"
