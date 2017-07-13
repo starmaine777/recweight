@@ -4,6 +4,7 @@ import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.Query
 import android.arch.persistence.room.Update
+import io.reactivex.Flowable
 
 /**
  * Created by ai on 2017/07/02.
@@ -13,7 +14,7 @@ import android.arch.persistence.room.Update
 interface WeightItemDao {
 
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY recTime DESC")
-    fun getAllListDateSorted(): List<WeightItemEntity>
+    fun getAllListDateSorted(): Flowable<WeightItemEntity>
 
     @Insert
     fun insert(weightItemEntity: WeightItemEntity)

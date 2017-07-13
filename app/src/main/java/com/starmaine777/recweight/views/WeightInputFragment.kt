@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.text.format.DateFormat
@@ -17,6 +16,9 @@ import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import java.util.*
 
@@ -30,6 +32,8 @@ class WeightInputFragment : Fragment() {
     val weightInputMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var entity: WeightItemEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
     var dialog: DialogFragment? = null
+    val disposable = CompositeDisposable()
+    val weightInfoVm:WeightItemsViewModel by lazy {WeightItemsViewModel(activity.application)}
 
     companion object {
 
@@ -49,6 +53,9 @@ class WeightInputFragment : Fragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.fragment_weight_input, container, false)
@@ -117,16 +124,13 @@ class WeightInputFragment : Fragment() {
                 memo = editMemo.toString()
         )
 
-        Handler().post {
-            run {
-                val weightInfoVm = WeightItemsViewModel(activity.application)
-                weightInfoVm.insertWeightItem(entity)
-
-                val weightInputList = weightInfoVm.getWeightItemList()
-                Log.d("test", "weightInfoList == ${weightInputList}, count=${weightInputList.size}")
-            }
-
-        }
+        disposable.add(weightInfoVm.insertWeightItem(entity)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    Log.d(TAG, "complete insertWeightItem::weight = ${entity.weight}, fat = ${entity.fat}")
+                    activity.finish()
+                })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
