@@ -93,10 +93,12 @@ class WeightInputFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        val imm = context.getSystemService(
-                Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
-        activity.currentFocus.clearFocus()
+        if (activity.currentFocus != null) {
+            val imm = context.getSystemService(
+                    Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
+            activity.currentFocus.clearFocus()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -114,7 +116,7 @@ class WeightInputFragment : Fragment() {
     }
 
     fun saveWeightData(insert: Boolean) {
-        entity.copy(weight = editWeight.text.toString().toDouble(),
+        entity = entity.copy(weight = editWeight.text.toString().toDouble(),
                 fat = editFat.text.toString().toDouble(),
                 showDumbbell = toggleDumbbell.isChecked,
                 showLiquor = toggleLiquar.isChecked,
