@@ -7,7 +7,6 @@ import io.reactivex.Flowable
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * Created by ai on 2017/07/02.
@@ -21,13 +20,12 @@ class WeightItemsViewModel(application: Application) : AndroidViewModel(applicat
         return Room.databaseBuilder(getApplication(), AppDatabase::class.java, AppDatabase.DB_NAME).build()
     }
 
-
-    fun getWeightItemList(): Flowable<WeightItemEntity> {
+    fun getWeightItemList(): Flowable<List<WeightItemEntity>> {
         return getDatabase().weightItemDao().getAllListDateSorted()
     }
 
-    fun insertWeightItem(weightItemEntity: WeightItemEntity):CompletableFromAction {
-        return CompletableFromAction(Action{
+    fun insertWeightItem(weightItemEntity: WeightItemEntity): CompletableFromAction {
+        return CompletableFromAction(Action {
             getDatabase().weightItemDao().insert(weightItemEntity)
         })
     }

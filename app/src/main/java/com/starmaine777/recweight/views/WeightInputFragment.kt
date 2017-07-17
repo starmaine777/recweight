@@ -28,11 +28,10 @@ import java.util.*
  */
 class WeightInputFragment : Fragment() {
 
-
     val weightInputMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
     val disposable = CompositeDisposable()
-    val weightInfoVm:WeightItemsViewModel by lazy {WeightItemsViewModel(activity.application)}
+    val weightInfoVm: WeightItemsViewModel by lazy { WeightItemsViewModel(activity.application) }
 
     companion object {
 
@@ -57,7 +56,7 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater!!.inflate(R.layout.fragment_weight_input, container, false)
+        val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
         if (weightInputMode == WEIGHT_INPUT_MODE.CREATE) {
             weightInfoVm.inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
         }

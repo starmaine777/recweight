@@ -14,7 +14,7 @@ import io.reactivex.Flowable
 interface WeightItemDao {
 
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY recTime DESC")
-    fun getAllListDateSorted(): Flowable<WeightItemEntity>
+    fun getAllListDateSorted(): Flowable<List<WeightItemEntity>>
 
     @Insert
     fun insert(weightItemEntity: WeightItemEntity)
