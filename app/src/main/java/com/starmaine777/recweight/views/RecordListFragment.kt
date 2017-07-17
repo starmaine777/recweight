@@ -49,7 +49,7 @@ class RecordListFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     t1: List<WeightItemEntity>? ->
-                    val adapter = RecordListAdapter(t1)
+                    val adapter = RecordListAdapter(t1, context)
                     recyclerRecords.adapter = adapter
                 }
                 ))

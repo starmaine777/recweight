@@ -11,7 +11,7 @@
     <string name="weight_input_fat_unit">%</string>
     <string name="weight_input_memo_title">メモ</string>
     <string name="list_weight_default">0.0kg</string>
-    <string name="list_weight_pattern">%dkg</string>
+    <string name="list_weight_pattern">%skg</string>
     <string name="list_fat_default">0.0%</string>
-    <string name="list_fat_pattern">%d\\%</string>
+    <string name="list_fat_pattern">%s%%</string>
 </resources>

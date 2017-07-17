@@ -123,7 +123,7 @@ class WeightInputFragment : Fragment() {
                 showToilet = toggleToilet.isChecked,
                 showMoon = toggleMoon.isChecked,
                 showStar = toggleStar.isChecked,
-                memo = editMemo.toString()
+                memo = editMemo.text.toString()
         )
 
         disposable.add(weightInfoVm.insertWeightItem(weightInfoVm.inputEntity)
