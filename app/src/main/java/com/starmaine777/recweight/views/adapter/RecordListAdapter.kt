@@ -3,6 +3,7 @@ package com.starmaine777.recweight.views.adapter
 import android.app.Activity
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.text.TextUtils
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +15,7 @@ import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.item_weight.view.*
 
 /**
+ * 体重リストのAdapter
  * Created by ai on 2017/07/15.
  */
 
@@ -44,10 +46,16 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
                     DateUtils.FORMAT_SHOW_YEAR
                             .and(DateUtils.FORMAT_SHOW_DATE)
                             .and(DateUtils.FORMAT_NUMERIC_DATE)
-                            .and(DateUtils.FORMAT_SHOW_TIME))
+                            .and(DateUtils.FORMAT_SHOW_TIME).and(DateUtils.FORMAT_ABBREV_ALL))
 //                    DateUtils.FORMAT_NUMERIC_DATE.and(DateUtils.FORMAT_SHOW_TIME))
-            itemView.textWeight.text = context.getString(R.string.list_weight_pattern, formatInputNumber(item?.weight.toString(), "0.0"))
-            itemView.textFat.text = context.getString(R.string.list_fat_pattern, formatInputNumber(item?.fat.toString(), "0.0"))
+            itemView.textWeight.text = context.getString(R.string.list_weight_pattern, formatInputNumber(item?.weight.toString(), context.getString(R.string.weight_input_fat_default)))
+            if (item.fat == 0.0) {
+                itemView.textFat.visibility = View.INVISIBLE
+            } else {
+                itemView.textFat.text = context.getString(R.string.list_fat_pattern, formatInputNumber(item?.fat.toString(), context.getString(R.string.weight_input_fat_default)))
+                itemView.textFat.visibility = View.VISIBLE
+            }
+
             itemView.toggleDumbbell.isChecked = item?.showDumbbell
             itemView.toggleLiquor.isChecked = item?.showLiquor
             itemView.toggleToilet.isChecked = item?.showToilet

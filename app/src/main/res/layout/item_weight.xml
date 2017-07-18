@@ -8,9 +8,12 @@
     android:layout_height="@dimen/list_weight_item_height"
     android:layout_marginBottom="4dp"
     android:layout_marginEnd="8dp"
-
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:layout_marginStart="8dp"
     android:layout_marginTop="4dp"
-    app:cardBackgroundColor="@color/cardview_light_background">
+    app:cardBackgroundColor="@color/cardview_light_background"
+    app:cardElevation="4dp">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
