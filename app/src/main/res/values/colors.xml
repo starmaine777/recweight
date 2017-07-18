@@ -3,6 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="list_back">#ddd</color>
 
     <color name="stamp_not_select">#ffd3d3d3</color>
     <color name="stamp_liquor_selected">#ffb22222</color>
