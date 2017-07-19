@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
+import android.text.TextUtils
 import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
@@ -109,15 +111,24 @@ class WeightInputFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val itemId = item?.itemId
         if (itemId == R.id.action_done) {
-            saveWeightData(true)
+            saveWeightData()
         }
 
         return super.onOptionsItemSelected(item)
     }
 
-    fun saveWeightData(insert: Boolean) {
+    fun saveWeightData() {
+        if (TextUtils.isEmpty(editWeight.text)) {
+            AlertDialog.Builder(context)
+                    .setTitle(R.string.err_title_input)
+                    .setMessage(R.string.err_weight_empty)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            return
+        }
+
         weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(weight = editWeight.text.toString().toDouble(),
-                fat = editFat.text.toString().toDouble(),
+                fat = if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
                 showDumbbell = toggleDumbbell.isChecked,
                 showLiquor = toggleLiquar.isChecked,
                 showToilet = toggleToilet.isChecked,

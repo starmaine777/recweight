@@ -14,4 +14,9 @@
     <string name="list_weight_pattern">%skg</string>
     <string name="list_fat_default">0.0%</string>
     <string name="list_fat_pattern">%s%%</string>
+
+
+    <string name="err_title_input">入力値エラー</string>
+    <string name="err_weight_empty">体重を入力して下さい。</string>
+
 </resources>
