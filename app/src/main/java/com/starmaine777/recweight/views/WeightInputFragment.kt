@@ -57,8 +57,13 @@ class WeightInputFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+    }
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
+        activity.title = getString(R.string.toolbar_title_weight_input)
         if (weightInputMode == WEIGHT_INPUT_MODE.CREATE) {
             weightInfoVm.inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
         }
@@ -142,7 +147,7 @@ class WeightInputFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     Log.d(TAG, "complete insertWeightItem::weight = ${weightInfoVm.inputEntity.weight}, fat = ${weightInfoVm.inputEntity.fat}")
-                    activity.finish()
+                    fragmentManager.popBackStack()
                 })
     }
 
