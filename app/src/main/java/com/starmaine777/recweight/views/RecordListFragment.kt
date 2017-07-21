@@ -1,5 +1,6 @@
 package com.starmaine777.recweight.views
 
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -27,7 +28,7 @@ class RecordListFragment : Fragment() {
         val TAG = "RecordListFragment"
     }
 
-    val weightVm: WeightItemsViewModel by lazy { WeightItemsViewModel(activity.application) }
+    val weightItemVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
     val disposable = CompositeDisposable()
 
 
@@ -44,7 +45,7 @@ class RecordListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        disposable.add(weightVm.getWeightItemList()
+        disposable.add(weightItemVm.getWeightItemList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({

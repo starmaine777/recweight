@@ -1,11 +1,14 @@
 package com.starmaine777.recweight.views
 
+import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.utils.Consts
 import kotlinx.android.synthetic.main.fragment_show_records.*
 
@@ -13,11 +16,13 @@ import kotlinx.android.synthetic.main.fragment_show_records.*
  * Created by 0025331458 on 2017/07/21.
  */
 
-class ShowRecordsFragment:Fragment() {
+class ShowRecordsFragment : Fragment() {
 
     companion object {
         val TAG = "ShowRecordsFragment"
     }
+
+    val weightItemVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         activity.title = getString(R.string.app_name)
@@ -30,6 +35,8 @@ class ShowRecordsFragment:Fragment() {
 
 
         fab.setOnClickListener { _ ->
+            weightItemVm.createInputEntity()
+
             val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.CREATE)
             fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
         }

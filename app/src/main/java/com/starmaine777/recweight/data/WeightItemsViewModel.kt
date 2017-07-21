@@ -29,4 +29,8 @@ class WeightItemsViewModel(application: Application) : AndroidViewModel(applicat
             getDatabase().weightItemDao().insert(weightItemEntity)
         })
     }
+
+    fun createInputEntity() {
+        inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
+    }
 }

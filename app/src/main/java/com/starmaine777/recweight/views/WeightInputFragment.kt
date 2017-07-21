@@ -1,6 +1,7 @@
 package com.starmaine777.recweight.views
 
 import android.app.Activity
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -33,7 +34,7 @@ class WeightInputFragment : Fragment() {
     val weightInputMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
     val disposable = CompositeDisposable()
-    val weightInfoVm: WeightItemsViewModel by lazy { WeightItemsViewModel(activity.application) }
+    val weightInfoVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
 
     companion object {
 
