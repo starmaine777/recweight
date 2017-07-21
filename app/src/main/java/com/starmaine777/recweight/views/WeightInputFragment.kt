@@ -65,9 +65,6 @@ class WeightInputFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
         activity.title = getString(R.string.toolbar_title_weight_input)
-        if (weightInputMode == WEIGHT_INPUT_MODE.CREATE) {
-            weightInfoVm.inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
-        }
         setHasOptionsMenu(true)
         return view
     }
@@ -76,20 +73,30 @@ class WeightInputFragment : Fragment() {
         setRecordDate(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
         editDate.setOnClickListener { _ ->
             dialog = DatePickerDialogFragment.newInstance(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
-            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUEST_INPUT_DATE)
+            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
         setRecordTime(weightInfoVm.inputEntity.recTime.get(Calendar.HOUR_OF_DAY), weightInfoVm.inputEntity.recTime.get(Calendar.MINUTE))
         editTime.setOnClickListener { _ ->
             dialog = TimePickerDialogFragment.newInstance(weightInfoVm.inputEntity.recTime.get(Calendar.HOUR_OF_DAY), weightInfoVm.inputEntity.recTime.get(Calendar.MINUTE))
-            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUEST_INPUT_TIME)
+            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
         editWeight.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
         editFat.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+        if (weightInputMode == WEIGHT_INPUT_MODE.EDIT) {
+            showEditMode()
+        }
     }
+
+    fun showEditMode() {
+        editDate.isEnabled = false
+        editTime.isEnabled = false
+        editWeight.isEnabled = false;
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -156,7 +163,7 @@ class WeightInputFragment : Fragment() {
 
         when (requestCode) {
 
-            Consts.REQUEST_INPUT_DATE -> {
+            Consts.REQUESTS.INPUT_DATE.ordinal -> {
                 if (resultCode != Activity.RESULT_OK) return
                 val year = data?.getIntExtra(DatePickerDialogFragment.RESULT_YEAR, -1) ?: -1
                 val month = data?.getIntExtra(DatePickerDialogFragment.RESULT_MONTH, -1) ?: -1
@@ -167,7 +174,7 @@ class WeightInputFragment : Fragment() {
                 }
             }
 
-            Consts.REQUEST_INPUT_TIME -> {
+            Consts.REQUESTS.INPUT_TIME.ordinal -> {
                 if (resultCode != Activity.RESULT_OK) return
                 val hour = data?.getIntExtra(TimePickerDialogFragment.RESULT_HOUR, -1) ?: -1
                 val minute = data?.getIntExtra(TimePickerDialogFragment.RESULT_MINUTE, -1) ?: -1

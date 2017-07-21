@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemEntity
+import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.WeightItemClickEvent
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.item_weight.view.*
 
@@ -56,12 +58,16 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
                 itemView.textFat.visibility = View.VISIBLE
             }
 
-            itemView.toggleDumbbell.isChecked = item?.showDumbbell
-            itemView.toggleLiquor.isChecked = item?.showLiquor
-            itemView.toggleToilet.isChecked = item?.showToilet
-            itemView.toggleMoon.isChecked = item?.showMoon
-            itemView.toggleStar.isChecked = item?.showStar
-            itemView.textMemo.text = item?.memo
+            itemView.toggleDumbbell.isChecked = item.showDumbbell
+            itemView.toggleLiquor.isChecked = item.showLiquor
+            itemView.toggleToilet.isChecked = item.showToilet
+            itemView.toggleMoon.isChecked = item.showMoon
+            itemView.toggleStar.isChecked = item.showStar
+            itemView.textMemo.text = item.memo
+
+            itemView.setOnClickListener {
+                _ -> RxBus.publish(WeightItemClickEvent(item))
+            }
         }
     }
 }

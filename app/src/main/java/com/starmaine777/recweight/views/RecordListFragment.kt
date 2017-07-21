@@ -11,6 +11,9 @@ import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.WeightItemClickEvent
+import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.views.adapter.RecordListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -34,7 +37,6 @@ class RecordListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_record_list, container, false)
-        Log.d(TAG, "onCreatedView")
         return view
     }
 
@@ -54,6 +56,13 @@ class RecordListFragment : Fragment() {
                     recyclerRecords.adapter = adapter
                 }
                 ))
+
+        RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
+            t: WeightItemClickEvent ->
+            weightItemVm.inputEntity = t.weightItemEntity as WeightItemEntity
+            val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.EDIT)
+            fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
+        })
     }
 }
 
