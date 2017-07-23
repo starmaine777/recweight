@@ -7,6 +7,7 @@ import android.arch.persistence.room.Update
 import io.reactivex.Flowable
 
 /**
+ * WeightItem操作Dao
  * Created by ai on 2017/07/02.
  */
 

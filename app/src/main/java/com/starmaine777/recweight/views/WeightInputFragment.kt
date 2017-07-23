@@ -4,6 +4,7 @@ import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
@@ -15,6 +16,7 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
@@ -62,13 +64,17 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
+        val dataBinding = DataBindingUtil.inflate<FragmentWeightInputBinding>(inflater, R.layout.fragment_weight_input, container, false)
+
+//        val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
         activity.title = getString(R.string.toolbar_title_weight_input)
         setHasOptionsMenu(true)
-        return view
+        dataBinding.weightItem = weightInfoVm.inputEntity
+        return dataBinding.root
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+
         setRecordDate(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
         editDate.setOnClickListener { _ ->
             dialog = DatePickerDialogFragment.newInstance(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
@@ -83,8 +89,8 @@ class WeightInputFragment : Fragment() {
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
-        editWeight.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
-        editFat.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+        editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+        editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
         if (weightInputMode == WEIGHT_INPUT_MODE.VIEW) {
             showViewMode()
         }
@@ -97,7 +103,7 @@ class WeightInputFragment : Fragment() {
         editWeight.isEnabled = false
         editFat.isEnabled = false
         toggleDumbbell.isEnabled = false
-        toggleLiquar.isEnabled = false
+        toggleLiquor.isEnabled = false
         toggleToilet.isEnabled = false
         toggleMoon.isEnabled = false
         toggleStar.isEnabled = false
@@ -150,7 +156,7 @@ class WeightInputFragment : Fragment() {
         weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(weight = editWeight.text.toString().toDouble(),
                 fat = if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
                 showDumbbell = toggleDumbbell.isChecked,
-                showLiquor = toggleLiquar.isChecked,
+                showLiquor = toggleLiquor.isChecked,
                 showToilet = toggleToilet.isChecked,
                 showMoon = toggleMoon.isChecked,
                 showStar = toggleStar.isChecked,
