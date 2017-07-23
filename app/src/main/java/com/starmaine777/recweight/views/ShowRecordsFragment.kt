@@ -1,8 +1,6 @@
 package com.starmaine777.recweight.views
 
-import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,6 +11,7 @@ import com.starmaine777.recweight.utils.Consts
 import kotlinx.android.synthetic.main.fragment_show_records.*
 
 /**
+ * 記録表示用親Fragment
  * Created by 0025331458 on 2017/07/21.
  */
 
@@ -39,6 +38,15 @@ class ShowRecordsFragment : Fragment() {
 
             val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.CREATE)
             fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == Consts.REQUESTS.VIEW_WEIGHT_ITEM.ordinal) {
+            val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.VIEW)
+            fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 

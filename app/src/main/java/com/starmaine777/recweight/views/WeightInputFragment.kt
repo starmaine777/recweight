@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
@@ -86,15 +85,23 @@ class WeightInputFragment : Fragment() {
 
         editWeight.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
         editFat.setOnFocusChangeListener { v, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
-        if (weightInputMode == WEIGHT_INPUT_MODE.EDIT) {
-            showEditMode()
+        if (weightInputMode == WEIGHT_INPUT_MODE.VIEW) {
+            showViewMode()
         }
+
     }
 
-    fun showEditMode() {
+    fun showViewMode() {
         editDate.isEnabled = false
         editTime.isEnabled = false
-        editWeight.isEnabled = false;
+        editWeight.isEnabled = false
+        editFat.isEnabled = false
+        toggleDumbbell.isEnabled = false
+        toggleLiquar.isEnabled = false
+        toggleToilet.isEnabled = false
+        toggleMoon.isEnabled = false
+        toggleStar.isEnabled = false
+        editMemo.isEnabled = false
     }
 
 

@@ -1,10 +1,10 @@
 package com.starmaine777.recweight.views
 
+import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -60,8 +60,7 @@ class RecordListFragment : Fragment() {
         RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
             t: WeightItemClickEvent ->
             weightItemVm.inputEntity = t.weightItemEntity as WeightItemEntity
-            val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.EDIT)
-            fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
+            parentFragment.onActivityResult(Consts.REQUESTS.VIEW_WEIGHT_ITEM.ordinal, Activity.RESULT_OK, null)
         })
     }
 }
