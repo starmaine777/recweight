@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_show_records"
     tools:context="com.starmaine777.recweight.views.ShowRecordsActivity">
 
@@ -20,7 +21,9 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/icon_pen"
+        app:layout_anchor="@id/list_fragment"
+        app:layout_anchorGravity="bottom|end"
+        app:layout_behavior="com.starmaine777.recweight.views.ScrollFABBehavior"
         />
 
 </android.support.design.widget.CoordinatorLayout>
-
