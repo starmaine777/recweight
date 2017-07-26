@@ -15,7 +15,7 @@ class Consts {
     }
 
     enum class WEIGHT_INPUT_MODE {
-        CREATE,
+        INPUT,
         VIEW
     }
 

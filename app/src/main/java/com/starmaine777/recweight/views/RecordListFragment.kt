@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
 import com.starmaine777.recweight.utils.Consts
@@ -60,7 +61,7 @@ class RecordListFragment : Fragment() {
         RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
             t: WeightItemClickEvent ->
             weightItemVm.inputEntity = t.weightItemEntity as WeightItemEntity
-            parentFragment.onActivityResult(Consts.REQUESTS.VIEW_WEIGHT_ITEM.ordinal, Activity.RESULT_OK, null)
+            RxBus.publish(InputFragmentStartEvent(viewMode = Consts.WEIGHT_INPUT_MODE.VIEW))
         })
     }
 }

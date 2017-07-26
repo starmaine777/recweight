@@ -1,12 +1,13 @@
 package com.starmaine777.recweight.views
 
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.event.InputFragmentStartEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
 import kotlinx.android.synthetic.main.fragment_show_records.*
 
@@ -30,25 +31,15 @@ class ShowRecordsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        childFragmentManager.beginTransaction().replace(R.id.list_fragment, RecordListFragment(), RecordListFragment.TAG).commit()
+        fragmentManager.beginTransaction().replace(R.id.list_fragment, RecordListFragment(), RecordListFragment.TAG).commit()
 
 
         fab.setOnClickListener { _ ->
             weightItemVm.createInputEntity()
-
-            val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.CREATE)
-            fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
+            RxBus.publish(InputFragmentStartEvent(viewMode = Consts.WEIGHT_INPUT_MODE.INPUT))
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Consts.REQUESTS.VIEW_WEIGHT_ITEM.ordinal) {
-            val inputFragment = WeightInputFragment.newInstance(Consts.WEIGHT_INPUT_MODE.VIEW)
-            fragmentManager.beginTransaction().replace(R.id.fragment, inputFragment, WeightInputFragment.TAG).addToBackStack(WeightInputFragment.TAG).commit()
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)

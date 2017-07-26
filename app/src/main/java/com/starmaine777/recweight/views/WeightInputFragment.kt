@@ -17,6 +17,8 @@ import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemsViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
+import com.starmaine777.recweight.event.InputFragmentStartEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
@@ -32,7 +34,7 @@ import java.util.*
  */
 class WeightInputFragment : Fragment() {
 
-    val weightInputMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
+    val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
     val disposable = CompositeDisposable()
     val weightInfoVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
@@ -66,8 +68,7 @@ class WeightInputFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val dataBinding = DataBindingUtil.inflate<FragmentWeightInputBinding>(inflater, R.layout.fragment_weight_input, container, false)
 
-//        val view = inflater?.inflate(R.layout.fragment_weight_input, container, false)
-        activity.title = getString(R.string.toolbar_title_weight_input)
+        activity.title = getString(if (viewMode == WEIGHT_INPUT_MODE.INPUT) R.string.toolbar_title_weight_input else R.string.toolbar_title_weight_view)
         setHasOptionsMenu(true)
         dataBinding.weightItem = weightInfoVm.inputEntity
         return dataBinding.root
@@ -91,10 +92,16 @@ class WeightInputFragment : Fragment() {
 
         editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
         editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
-        if (weightInputMode == WEIGHT_INPUT_MODE.VIEW) {
-            showViewMode()
-        }
 
+        if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+            showViewMode()
+            fab.setOnClickListener {
+                Log.d(ShowRecordsFragment.TAG, "fab!!!!")
+                RxBus.publish(InputFragmentStartEvent(viewMode = WEIGHT_INPUT_MODE.INPUT))
+            }
+        } else {
+            fab.hide()
+        }
     }
 
     fun showViewMode() {
@@ -113,7 +120,7 @@ class WeightInputFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (editWeight.requestFocus()) {
+        if (viewMode == WEIGHT_INPUT_MODE.INPUT && editWeight.requestFocus()) {
             val imm: InputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(editWeight, InputMethodManager.SHOW_IMPLICIT)
         }
@@ -132,6 +139,21 @@ class WeightInputFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater?.inflate(R.menu.menu_weight_input, menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?) {
+        super.onPrepareOptionsMenu(menu)
+        when (viewMode) {
+            WEIGHT_INPUT_MODE.INPUT -> {
+                menu?.findItem(R.id.action_delete)?.isVisible = false
+                menu?.findItem(R.id.action_done)?.isVisible = true
+            }
+            WEIGHT_INPUT_MODE.VIEW -> {
+                menu?.findItem(R.id.action_delete)?.isVisible = true
+                menu?.findItem(R.id.action_done)?.isVisible = false
+            }
+        }
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
