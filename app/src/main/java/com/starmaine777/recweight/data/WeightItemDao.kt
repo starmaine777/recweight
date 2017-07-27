@@ -17,6 +17,9 @@ interface WeightItemDao {
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY recTime DESC")
     fun getAllListDateSorted(): Flowable<List<WeightItemEntity>>
 
+    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ID = :id")
+    fun getWeightItemById(id:Long): Flowable<List<WeightItemEntity>>
+
     @Insert
     fun insert(weightItemEntity: WeightItemEntity)
 

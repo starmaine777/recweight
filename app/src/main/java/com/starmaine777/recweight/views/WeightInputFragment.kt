@@ -25,6 +25,7 @@ import com.starmaine777.recweight.utils.formatInputNumber
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_show_records.*
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import java.util.*
 
@@ -176,26 +177,30 @@ class WeightInputFragment : Fragment() {
                     .show()
             return
         }
-
-        weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(
-                recTime = calendar,
-                weight = editWeight.text.toString().toDouble(),
-                fat = if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
-                showDumbbell = toggleDumbbell.isChecked,
-                showLiquor = toggleLiquor.isChecked,
-                showToilet = toggleToilet.isChecked,
-                showMoon = toggleMoon.isChecked,
-                showStar = toggleStar.isChecked,
-                memo = editMemo.text.toString()
-        )
-
-        disposable.add(weightInfoVm.insertWeightItem(weightInfoVm.inputEntity)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    Log.d(TAG, "complete insertWeightItem::weight = ${weightInfoVm.inputEntity.weight}, fat = ${weightInfoVm.inputEntity.fat}")
+//
+        weightInfoVm.insertOrUpdateWeightItem(
+                calendar,
+                editWeight.text.toString().toDouble(),
+                if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
+                toggleDumbbell.isChecked,
+                toggleLiquor.isChecked,
+                toggleToilet.isChecked,
+                toggleMoon.isChecked,
+                toggleStar.isChecked,
+                editMemo.text.toString(),
+                {
+                    Log.d(TAG, "insertOrUpdateWeightItem complete")
                     fragmentManager.popBackStack()
-                })
+                }
+        )
+//
+//        disposable.add(weightInfoVm.insertWeightItem(weightInfoVm.inputEntity)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe {
+//                    Log.d(TAG, "complete insertWeightItem::weight = ${weightInfoVm.inputEntity.weight}, fat = ${weightInfoVm.inputEntity.fat}")
+//                    fragmentManager.popBackStack()
+//                })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
