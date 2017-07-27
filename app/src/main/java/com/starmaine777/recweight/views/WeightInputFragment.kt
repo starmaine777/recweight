@@ -38,6 +38,7 @@ class WeightInputFragment : Fragment() {
     var dialog: DialogFragment? = null
     val disposable = CompositeDisposable()
     val weightInfoVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
+    val calendar: Calendar by lazy {weightInfoVm.inputEntity.recTime.clone() as Calendar}
 
     companion object {
 
@@ -76,16 +77,16 @@ class WeightInputFragment : Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
 
-        setRecordDate(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
+        setRecordDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
         editDate.setOnClickListener { _ ->
-            dialog = DatePickerDialogFragment.newInstance(weightInfoVm.inputEntity.recTime.get(Calendar.YEAR), weightInfoVm.inputEntity.recTime.get(Calendar.MONTH), weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH))
+            dialog = DatePickerDialogFragment.newInstance(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
             dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
-        setRecordTime(weightInfoVm.inputEntity.recTime.get(Calendar.HOUR_OF_DAY), weightInfoVm.inputEntity.recTime.get(Calendar.MINUTE))
+        setRecordTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
         editTime.setOnClickListener { _ ->
-            dialog = TimePickerDialogFragment.newInstance(weightInfoVm.inputEntity.recTime.get(Calendar.HOUR_OF_DAY), weightInfoVm.inputEntity.recTime.get(Calendar.MINUTE))
+            dialog = TimePickerDialogFragment.newInstance(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
             dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
@@ -101,6 +102,7 @@ class WeightInputFragment : Fragment() {
             }
         } else {
             fab.hide()
+            editMemo.maxLines = 5
         }
     }
 
@@ -175,7 +177,9 @@ class WeightInputFragment : Fragment() {
             return
         }
 
-        weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(weight = editWeight.text.toString().toDouble(),
+        weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(
+                recTime = calendar,
+                weight = editWeight.text.toString().toDouble(),
                 fat = if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
                 showDumbbell = toggleDumbbell.isChecked,
                 showLiquor = toggleLiquor.isChecked,
@@ -224,25 +228,21 @@ class WeightInputFragment : Fragment() {
     }
 
     fun setRecordDate(year: Int, month: Int, day: Int) {
-        if (weightInfoVm.inputEntity.recTime.get(Calendar.YEAR) != year
-                || weightInfoVm.inputEntity.recTime.get(Calendar.MONTH) != month
-                || weightInfoVm.inputEntity.recTime.get(Calendar.DAY_OF_MONTH) != day) {
-            val newCalendar: Calendar = weightInfoVm.inputEntity.recTime.clone() as Calendar
-            newCalendar.set(year, month, day)
-            weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(recTime = newCalendar)
+        if (calendar.get(Calendar.YEAR) != year
+                || calendar.get(Calendar.MONTH) != month
+                || calendar.get(Calendar.DAY_OF_MONTH) != day) {
+            calendar.set(year, month, day)
         }
-        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(weightInfoVm.inputEntity.recTime.time))
+        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(calendar.time))
     }
 
     fun setRecordTime(hour: Int, minute: Int) {
-        if (weightInfoVm.inputEntity.recTime.get(Calendar.HOUR_OF_DAY) != hour
-                || weightInfoVm.inputEntity.recTime.get(Calendar.MINUTE) != minute) {
-            val newCalendar: Calendar = weightInfoVm.inputEntity.recTime.clone() as Calendar
-            newCalendar.set(Calendar.HOUR_OF_DAY, hour)
-            newCalendar.set(Calendar.MINUTE, minute)
-            weightInfoVm.inputEntity = weightInfoVm.inputEntity.copy(recTime = newCalendar)
+        if (calendar.get(Calendar.HOUR_OF_DAY) != hour
+                || calendar.get(Calendar.MINUTE) != minute) {
+            calendar.set(Calendar.HOUR_OF_DAY, hour)
+            calendar.set(Calendar.MINUTE, minute)
         }
-        editTime.setText(DateFormat.getTimeFormat(activity.applicationContext).format(weightInfoVm.inputEntity.recTime.time))
+        editTime.setText(DateFormat.getTimeFormat(activity.applicationContext).format(calendar.time))
     }
 
 }
