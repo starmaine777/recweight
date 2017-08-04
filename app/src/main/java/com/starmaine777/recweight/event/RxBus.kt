@@ -17,5 +17,9 @@ class RxBus {
         fun publish(message:Any) {
             subject.onNext(message)
         }
+
+        fun unsubscribe() {
+            }
+
     }
 }

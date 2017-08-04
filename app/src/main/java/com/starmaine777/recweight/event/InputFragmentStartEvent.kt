@@ -7,4 +7,4 @@ import com.starmaine777.recweight.utils.Consts
  * Created by ai on 2017/07/26.
  */
 
-class InputFragmentStartEvent(val viewMode: Consts.WEIGHT_INPUT_MODE)
+class InputFragmentStartEvent(val viewMode: Consts.WEIGHT_INPUT_MODE, val id: Long?)

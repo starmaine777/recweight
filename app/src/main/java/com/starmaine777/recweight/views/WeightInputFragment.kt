@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
+import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
@@ -15,17 +16,14 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.data.WeightInputViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_show_records.*
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import java.util.*
 
@@ -38,21 +36,25 @@ class WeightInputFragment : Fragment() {
     val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
     val disposable = CompositeDisposable()
-    val weightInfoVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
-    val calendar: Calendar by lazy {weightInfoVm.inputEntity.recTime.clone() as Calendar}
+    val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(activity).get(WeightInputViewModel::class.java) }
+    var dataBinding: FragmentWeightInputBinding? = null
 
     companion object {
 
         const val TAG = "WeightInputFragment"
 
         val ARGS_MODE = "mode"
+        val ARGS_ID = "id"
 
         val TAG_DIALOGS = "dialogs"
 
-        fun newInstance(weightInputMode: WEIGHT_INPUT_MODE): WeightInputFragment {
+        fun newInstance(weightInputMode: WEIGHT_INPUT_MODE, id: Long?): WeightInputFragment {
             val fragment = WeightInputFragment()
             val bundle = Bundle()
             bundle.putSerializable(ARGS_MODE, weightInputMode)
+            if (id != null) {
+                bundle.putLong(ARGS_ID, id)
+            }
             fragment.arguments = bundle
 
             return fragment
@@ -68,26 +70,29 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val dataBinding = DataBindingUtil.inflate<FragmentWeightInputBinding>(inflater, R.layout.fragment_weight_input, container, false)
+        dataBinding = DataBindingUtil.inflate<FragmentWeightInputBinding>(inflater, R.layout.fragment_weight_input, container, false)
 
         activity.title = getString(if (viewMode == WEIGHT_INPUT_MODE.INPUT) R.string.toolbar_title_weight_input else R.string.toolbar_title_weight_view)
         setHasOptionsMenu(true)
-        dataBinding.weightItem = weightInfoVm.inputEntity
-        return dataBinding.root
+        weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID))
+        return dataBinding!!.root
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated")
 
-        setRecordDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+        dataBinding?.weightItem = weightInputVm.inputEntity
+
+        setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
         editDate.setOnClickListener { _ ->
-            dialog = DatePickerDialogFragment.newInstance(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+            dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
             dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
 
-        setRecordTime(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
+        setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
         editTime.setOnClickListener { _ ->
-            dialog = TimePickerDialogFragment.newInstance(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
+            dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
             dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
             dialog?.show(fragmentManager, TAG_DIALOGS)
         }
@@ -99,7 +104,7 @@ class WeightInputFragment : Fragment() {
             showViewMode()
             fab.setOnClickListener {
                 Log.d(ShowRecordsFragment.TAG, "fab!!!!")
-                RxBus.publish(InputFragmentStartEvent(viewMode = WEIGHT_INPUT_MODE.INPUT))
+                RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
             }
         } else {
             fab.hide()
@@ -178,8 +183,8 @@ class WeightInputFragment : Fragment() {
             return
         }
 //
-        weightInfoVm.insertOrUpdateWeightItem(
-                calendar,
+        weightInputVm.insertOrUpdateWeightItem(
+                context,
                 editWeight.text.toString().toDouble(),
                 if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
                 toggleDumbbell.isChecked,
@@ -194,11 +199,11 @@ class WeightInputFragment : Fragment() {
                 }
         )
 //
-//        disposable.add(weightInfoVm.insertWeightItem(weightInfoVm.inputEntity)
+//        disposable.add(weightInputVm.insertWeightItem(weightInputVm.inputEntity)
 //                .subscribeOn(Schedulers.io())
 //                .observeOn(AndroidSchedulers.mainThread())
 //                .subscribe {
-//                    Log.d(TAG, "complete insertWeightItem::weight = ${weightInfoVm.inputEntity.weight}, fat = ${weightInfoVm.inputEntity.fat}")
+//                    Log.d(TAG, "complete insertWeightItem::weight = ${weightInputVm.inputEntity.weight}, fat = ${weightInputVm.inputEntity.fat}")
 //                    fragmentManager.popBackStack()
 //                })
     }
@@ -233,21 +238,21 @@ class WeightInputFragment : Fragment() {
     }
 
     fun setRecordDate(year: Int, month: Int, day: Int) {
-        if (calendar.get(Calendar.YEAR) != year
-                || calendar.get(Calendar.MONTH) != month
-                || calendar.get(Calendar.DAY_OF_MONTH) != day) {
-            calendar.set(year, month, day)
+        if (weightInputVm.calendar.get(Calendar.YEAR) != year
+                || weightInputVm.calendar.get(Calendar.MONTH) != month
+                || weightInputVm.calendar.get(Calendar.DAY_OF_MONTH) != day) {
+            weightInputVm.calendar.set(year, month, day)
         }
-        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(calendar.time))
+        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(weightInputVm.calendar.time))
     }
 
     fun setRecordTime(hour: Int, minute: Int) {
-        if (calendar.get(Calendar.HOUR_OF_DAY) != hour
-                || calendar.get(Calendar.MINUTE) != minute) {
-            calendar.set(Calendar.HOUR_OF_DAY, hour)
-            calendar.set(Calendar.MINUTE, minute)
+        if (weightInputVm.calendar.get(Calendar.HOUR_OF_DAY) != hour
+                || weightInputVm.calendar.get(Calendar.MINUTE) != minute) {
+            weightInputVm.calendar.set(Calendar.HOUR_OF_DAY, hour)
+            weightInputVm.calendar.set(Calendar.MINUTE, minute)
         }
-        editTime.setText(DateFormat.getTimeFormat(activity.applicationContext).format(calendar.time))
+        editTime.setText(DateFormat.getTimeFormat(activity.applicationContext).format(weightInputVm.calendar.time))
     }
 
 }

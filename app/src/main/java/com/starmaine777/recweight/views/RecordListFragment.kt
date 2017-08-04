@@ -1,6 +1,5 @@
 package com.starmaine777.recweight.views
 
-import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -9,8 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.ShowRecordsViewModel
 import com.starmaine777.recweight.data.WeightItemEntity
-import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.data.WeightInputViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
@@ -32,7 +32,7 @@ class RecordListFragment : Fragment() {
         val TAG = "RecordListFragment"
     }
 
-    val weightItemVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
+    val mWeightItemVm: ShowRecordsViewModel by lazy { ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java) }
     val disposable = CompositeDisposable()
 
 
@@ -48,7 +48,7 @@ class RecordListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        disposable.add(weightItemVm.getWeightItemList()
+        disposable.add(mWeightItemVm.getWeightItemList(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
@@ -60,8 +60,7 @@ class RecordListFragment : Fragment() {
 
         RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
             t: WeightItemClickEvent ->
-            weightItemVm.inputEntity = t.weightItemEntity as WeightItemEntity
-            RxBus.publish(InputFragmentStartEvent(viewMode = Consts.WEIGHT_INPUT_MODE.VIEW))
+            RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
         })
     }
 }

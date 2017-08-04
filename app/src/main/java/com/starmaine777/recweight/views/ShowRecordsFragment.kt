@@ -5,7 +5,8 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.WeightItemsViewModel
+import com.starmaine777.recweight.data.ShowRecordsViewModel
+import com.starmaine777.recweight.data.WeightInputViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
@@ -22,8 +23,6 @@ class ShowRecordsFragment : Fragment() {
         val TAG = "ShowRecordsFragment"
     }
 
-    val weightItemVm: WeightItemsViewModel by lazy { ViewModelProviders.of(activity).get(WeightItemsViewModel::class.java) }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         activity.title = getString(R.string.app_name)
         setHasOptionsMenu(true)
@@ -35,8 +34,7 @@ class ShowRecordsFragment : Fragment() {
 
 
         fab.setOnClickListener { _ ->
-            weightItemVm.createInputEntity()
-            RxBus.publish(InputFragmentStartEvent(viewMode = Consts.WEIGHT_INPUT_MODE.INPUT))
+            RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.INPUT, null))
         }
     }
 
