@@ -5,7 +5,6 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
-import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
@@ -23,7 +22,6 @@ import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
 import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import java.util.*
 
@@ -35,7 +33,6 @@ class WeightInputFragment : Fragment() {
 
     val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
-    val disposable = CompositeDisposable()
     val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(activity).get(WeightInputViewModel::class.java) }
     var dataBinding: FragmentWeightInputBinding? = null
 
@@ -49,6 +46,7 @@ class WeightInputFragment : Fragment() {
         val TAG_DIALOGS = "dialogs"
 
         fun newInstance(weightInputMode: WEIGHT_INPUT_MODE, id: Long?): WeightInputFragment {
+            Log.d("test", "newInstance")
             val fragment = WeightInputFragment()
             val bundle = Bundle()
             bundle.putSerializable(ARGS_MODE, weightInputMode)
@@ -63,6 +61,7 @@ class WeightInputFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("test", "onCreate supportFragmentManager count = ${activity.supportFragmentManager.backStackEntryCount} childFragmentManager backStackEntryCount = ${childFragmentManager.backStackEntryCount}")
     }
 
     override fun onAttach(context: Context?) {
@@ -103,8 +102,7 @@ class WeightInputFragment : Fragment() {
         if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
             showViewMode()
             fab.setOnClickListener {
-                Log.d(ShowRecordsFragment.TAG, "fab!!!!")
-                RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
+                RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments.getLong(ARGS_ID)))
             }
         } else {
             fab.hide()
@@ -182,7 +180,6 @@ class WeightInputFragment : Fragment() {
                     .show()
             return
         }
-//
         weightInputVm.insertOrUpdateWeightItem(
                 context,
                 editWeight.text.toString().toDouble(),
@@ -198,14 +195,6 @@ class WeightInputFragment : Fragment() {
                     fragmentManager.popBackStack()
                 }
         )
-//
-//        disposable.add(weightInputVm.insertWeightItem(weightInputVm.inputEntity)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe {
-//                    Log.d(TAG, "complete insertWeightItem::weight = ${weightInputVm.inputEntity.weight}, fat = ${weightInputVm.inputEntity.fat}")
-//                    fragmentManager.popBackStack()
-//                })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

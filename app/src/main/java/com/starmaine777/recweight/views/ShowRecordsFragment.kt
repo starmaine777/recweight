@@ -3,6 +3,7 @@ package com.starmaine777.recweight.views
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ShowRecordsViewModel
@@ -30,10 +31,11 @@ class ShowRecordsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        fragmentManager.beginTransaction().replace(R.id.list_fragment, RecordListFragment(), RecordListFragment.TAG).commit()
+        childFragmentManager.beginTransaction().replace(R.id.list_fragment, RecordListFragment(), RecordListFragment.TAG).commit()
 
 
         fab.setOnClickListener { _ ->
+            Log.d("test", "fab tapped!!!")
             RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.INPUT, null))
         }
     }
