@@ -1,5 +1,6 @@
 package com.starmaine777.recweight.views
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
@@ -7,6 +8,7 @@ import com.starmaine777.recweight.R
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.Consts
+import com.starmaine777.recweight.views.settings.SettingsActivity
 import kotlinx.android.synthetic.main.fragment_show_records.*
 
 /**
@@ -38,13 +40,15 @@ class ShowRecordsFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
+        inflater?.inflate(R.menu.menu_main, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
 
         if (id == R.id.action_settings) {
-            return true
+            val intent = Intent(activity, SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         return super.onOptionsItemSelected(item)
