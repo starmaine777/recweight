@@ -22,5 +22,7 @@
 
     <string name="err_title_input">入力値エラー</string>
     <string name="err_weight_empty">体重を入力して下さい。</string>
+    <string name="err_title_db">データベースエラー</string>
+    <string name="err_db">データベースから情報が取得できませんでした。\n 再度読み込みなおしてください。</string>
 
 </resources>

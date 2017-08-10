@@ -20,7 +20,7 @@ class WeightInputViewModel : ViewModel() {
     }
 
     var selectedEntityId: Long? = 0L
-    fun selectedEntityId(context: Context, id: Long?, callback: () -> Unit) {
+    fun selectedEntityId(context: Context, id: Long?, successCallback: () -> Unit, errorCallback: () -> Unit) {
         Log.d(TAG, "selectedEntityId id = $id")
         if (id == null) {
             selectedEntityId = null
@@ -30,16 +30,20 @@ class WeightInputViewModel : ViewModel() {
             WeightItemRepository.getWeightItemById(context, selectedEntityId!!)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { t: List<WeightItemEntity> ->
+                    .subscribe({ t: List<WeightItemEntity> ->
                         if (t.isEmpty()) {
                             inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
                         } else {
                             inputEntity = t[0]
                         }
                         calendar = inputEntity.recTime.clone() as Calendar
-                        callback()
+                        successCallback()
                         Log.d(TAG, "selectedEntity getInputEntities $inputEntity")
+                    }, { _ ->
+                        Log.d(TAG, "selectedEntity Error!")
+                        errorCallback()
                     }
+                    )
         }
     }
 

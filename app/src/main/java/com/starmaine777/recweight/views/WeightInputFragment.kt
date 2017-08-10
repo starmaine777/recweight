@@ -3,6 +3,7 @@ package com.starmaine777.recweight.views
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
@@ -33,6 +34,7 @@ class WeightInputFragment : Fragment() {
 
     val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     var dialog: DialogFragment? = null
+    var alertDialog: AlertDialog? = null
     val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(activity).get(WeightInputViewModel::class.java) }
     var dataBinding: FragmentWeightInputBinding? = null
 
@@ -78,6 +80,7 @@ class WeightInputFragment : Fragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         Log.d(TAG, "onViewCreated")
         weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID), {
+            //dataGetSuccess
             dataBinding?.weightItem = weightInputVm.inputEntity
 
             setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
@@ -106,6 +109,16 @@ class WeightInputFragment : Fragment() {
                 fab.hide()
                 editMemo.maxLines = 5
             }
+        }, {
+            //Error
+            alertDialog = AlertDialog.Builder(context)
+                    .setTitle(R.string.err_title_db)
+                    .setMessage(R.string.err_title_db)
+                    .setPositiveButton(android.R.string.ok, { _, _ ->
+                        fragmentManager.popBackStack()
+                    })
+                    .setOnDismissListener { fragmentManager.popBackStack() }
+                    .show()
         })
     }
 
