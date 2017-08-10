@@ -4,6 +4,7 @@ import io.reactivex.subjects.PublishSubject
 import io.reactivex.Observable
 
 /**
+ * Event用Rxクラス
  * Created by 0025331458 on 2017/07/21.
  */
 
@@ -17,9 +18,6 @@ class RxBus {
         fun publish(message:Any) {
             subject.onNext(message)
         }
-
-        fun unsubscribe() {
-            }
 
     }
 }

@@ -27,7 +27,6 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
         if (context == Activity::class) {
             context = (context as Activity).applicationContext
         }
-        Log.d("test", "AdapterCreated")
     }
 
     override fun onBindViewHolder(holder: RecordViewHolder?, position: Int): Unit = holder!!.bind(recordItems?.get(position))
@@ -35,7 +34,6 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
     override fun getItemCount(): Int = recordItems?.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecordViewHolder? {
-        Log.d("test", "onCreatedViewHolder")
         return RecordViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_weight, parent, false))
     }
 
@@ -66,7 +64,7 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
             itemView.textMemo.text = item.memo
 
             itemView.setOnClickListener {
-                _ -> RxBus.publish(WeightItemClickEvent(item))
+                RxBus.publish(WeightItemClickEvent(item))
             }
         }
     }

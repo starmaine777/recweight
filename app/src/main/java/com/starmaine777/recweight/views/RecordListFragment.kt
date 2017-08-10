@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ShowRecordsViewModel
 import com.starmaine777.recweight.data.WeightItemEntity
-import com.starmaine777.recweight.data.WeightInputViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
@@ -58,10 +57,16 @@ class RecordListFragment : Fragment() {
                 }
                 ))
 
-        RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
+        disposable.add(RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
             t: WeightItemClickEvent ->
             RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
-        })
+        }))
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        disposable.dispose()
     }
 }
 
