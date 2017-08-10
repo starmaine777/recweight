@@ -2,13 +2,11 @@ package com.starmaine777.recweight.data
 
 import android.arch.lifecycle.ViewModel
 import android.content.Context
-import android.text.TextUtils
 import android.util.Log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import java.util.*
-import java.util.logging.Logger
 
 /**
  * WeightItemEntity操作ViewModel
@@ -22,7 +20,7 @@ class WeightInputViewModel : ViewModel() {
     }
 
     var selectedEntityId: Long? = 0L
-    fun selectedEntityId(context: Context, id: Long?) {
+    fun selectedEntityId(context: Context, id: Long?, callback: () -> Unit) {
         Log.d(TAG, "selectedEntityId id = $id")
         if (id == null) {
             selectedEntityId = null
@@ -31,6 +29,7 @@ class WeightInputViewModel : ViewModel() {
             selectedEntityId = id
             WeightItemRepository.getWeightItemById(context, selectedEntityId!!)
                     .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { t: List<WeightItemEntity> ->
                         if (t.isEmpty()) {
                             inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
@@ -38,6 +37,7 @@ class WeightInputViewModel : ViewModel() {
                             inputEntity = t[0]
                         }
                         calendar = inputEntity.recTime.clone() as Calendar
+                        callback()
                         Log.d(TAG, "selectedEntity getInputEntities $inputEntity")
                     }
         }

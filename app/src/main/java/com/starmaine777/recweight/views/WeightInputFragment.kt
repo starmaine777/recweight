@@ -61,7 +61,6 @@ class WeightInputFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("test", "onCreate supportFragmentManager count = ${activity.supportFragmentManager.backStackEntryCount} childFragmentManager backStackEntryCount = ${childFragmentManager.backStackEntryCount}")
     }
 
     override fun onAttach(context: Context?) {
@@ -73,41 +72,41 @@ class WeightInputFragment : Fragment() {
 
         activity.title = getString(if (viewMode == WEIGHT_INPUT_MODE.INPUT) R.string.toolbar_title_weight_input else R.string.toolbar_title_weight_view)
         setHasOptionsMenu(true)
-        weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID))
         return dataBinding!!.root
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         Log.d(TAG, "onViewCreated")
+        weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID), {
+            dataBinding?.weightItem = weightInputVm.inputEntity
 
-        dataBinding?.weightItem = weightInputVm.inputEntity
-
-        setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
-        editDate.setOnClickListener { _ ->
-            dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
-            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
-            dialog?.show(fragmentManager, TAG_DIALOGS)
-        }
-
-        setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
-        editTime.setOnClickListener { _ ->
-            dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
-            dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
-            dialog?.show(fragmentManager, TAG_DIALOGS)
-        }
-
-        editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
-        editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
-
-        if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
-            showViewMode()
-            fab.setOnClickListener {
-                RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments.getLong(ARGS_ID)))
+            setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
+            editDate.setOnClickListener { _ ->
+                dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
+                dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
+                dialog?.show(fragmentManager, TAG_DIALOGS)
             }
-        } else {
-            fab.hide()
-            editMemo.maxLines = 5
-        }
+
+            setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
+            editTime.setOnClickListener { _ ->
+                dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
+                dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
+                dialog?.show(fragmentManager, TAG_DIALOGS)
+            }
+
+            editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+            editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+
+            if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+                showViewMode()
+                fab.setOnClickListener {
+                    RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments.getLong(ARGS_ID)))
+                }
+            } else {
+                fab.hide()
+                editMemo.maxLines = 5
+            }
+        })
     }
 
     fun showViewMode() {
