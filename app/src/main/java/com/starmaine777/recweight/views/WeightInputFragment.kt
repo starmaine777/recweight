@@ -1,6 +1,7 @@
 package com.starmaine777.recweight.views
 
 import android.app.Activity
+import android.app.ProgressDialog
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.DialogInterface
@@ -175,11 +176,10 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val itemId = item?.itemId
-        if (itemId == R.id.action_done) {
-            saveWeightData()
+        when (item?.itemId) {
+            R.id.action_done -> saveWeightData()
+            R.id.action_delete -> deleteWeightData()
         }
-
         return super.onOptionsItemSelected(item)
     }
 
@@ -207,6 +207,26 @@ class WeightInputFragment : Fragment() {
                     fragmentManager.popBackStack()
                 }
         )
+    }
+
+    fun deleteWeightData() {
+        if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+
+            val progressDialog = ProgressDialog(context)
+            progressDialog.setCancelable(false)
+            progressDialog.show()
+
+            weightInputVm.deleteWeightItem(context, {
+                progressDialog.dismiss()
+                fragmentManager.popBackStack()
+            }, {
+                AlertDialog.Builder(context)
+                        .setTitle(R.string.err_title_db)
+                        .setMessage(R.string.err_db)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
+            })
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

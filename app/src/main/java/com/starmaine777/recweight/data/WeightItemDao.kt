@@ -1,9 +1,6 @@
 package com.starmaine777.recweight.data
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.Update
+import android.arch.persistence.room.*
 import io.reactivex.Flowable
 
 /**
@@ -26,4 +23,6 @@ interface WeightItemDao {
     @Update
     fun update(weightItemEntity: WeightItemEntity)
 
+    @Delete
+    fun delete(weightItemEntity: WeightItemEntity)
 }

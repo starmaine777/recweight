@@ -108,4 +108,21 @@ class WeightInputViewModel : ViewModel() {
                         }
         )
     }
+
+    fun deleteWeightItem(context: Context, successCallback: () -> Unit, errorCallback: () -> Unit) {
+        val disposable = CompositeDisposable()
+
+        disposable.add(
+                WeightItemRepository.deleteWeightItem(context, inputEntity)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe ({
+                            successCallback()
+                            disposable.dispose()
+                        }, {
+                            errorCallback()
+                        }))
+
+    }
+
 }

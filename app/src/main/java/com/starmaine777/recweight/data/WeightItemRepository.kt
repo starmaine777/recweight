@@ -35,5 +35,9 @@ class WeightItemRepository {
         fun updateWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction {
             return CompletableFromAction(Action { getDatabase(context).weightItemDao().update(weightItemEntity) })
         }
+
+        fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction {
+            return CompletableFromAction(Action { getDatabase(context).weightItemDao().delete(weightItemEntity) })
+        }
     }
 }
