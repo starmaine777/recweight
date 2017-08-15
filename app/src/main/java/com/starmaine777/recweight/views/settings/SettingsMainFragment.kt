@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.views.adapter.SettingItem
 import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
@@ -17,16 +18,15 @@ import kotlinx.android.synthetic.main.fragment_settings_main.*
  * Created by 0025331458 on 2017/08/10.
  */
 
-class SettingsMainFragment:Fragment() {
+class SettingsMainFragment : Fragment() {
 
-    val settingsItems:List<SettingItem> = listOf(
-            SettingItem(R.string.settings_main_import, { Log.d("test", "clickMainImport")}),
-            SettingItem(R.string.settings_main_export, {Log.d("test", "clickMainExport")})
+    val settingsItems: List<SettingItem> = listOf(
     )
 
     companion object {
         val TAG = "SettingsMainFragment"
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
