@@ -1,3 +1,12 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="base_margin">16dp</dimen>
+    <dimen name="stamp_input_side">36dp</dimen>
+    <dimen name="stamp_input_padding">12dp</dimen>
+    <dimen name="stamp_list_side">24dp</dimen>
+
+    <dimen name="list_weight_item_height">100dp</dimen>
+
+    <dimen name="list_weight_item_weight_width">88dp</dimen>
+
 </resources>

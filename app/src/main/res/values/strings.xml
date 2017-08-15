@@ -1,4 +1,31 @@
 <resources>
     <string name="app_name">RecWeight</string>
+    <string name="toolbar_title_weight_input">入力</string>
+    <string name="toolbar_title_weight_view">記録詳細</string>
+    <string name="activity_settings">設定</string>
+
     <string name="action_settings">Settings</string>
+    <string name="action_done">done</string>
+    <string name="action_delete">delete</string>
+    <string name="weight_input_time_title">時刻</string>
+    <string name="weight_input_weight_title">体重</string>
+    <string name="weight_input_weight_default">0.0</string>
+    <string name="weight_input_weight_unit">kg</string>
+    <string name="weight_input_fat_title">体脂肪</string>
+    <string name="weight_input_fat_default">0.0</string>
+    <string name="weight_input_fat_unit">%</string>
+    <string name="weight_input_memo_title">メモ</string>
+    <string name="list_weight_default">0.0kg</string>
+    <string name="list_weight_pattern">%skg</string>
+    <string name="list_fat_default">0.0%</string>
+    <string name="list_fat_pattern">%s%%</string>
+
+    <string name="settings_main_import">データをインポートする</string>
+    <string name="settings_main_export">データをエクスポートする</string>
+
+    <string name="err_title_input">入力値エラー</string>
+    <string name="err_weight_empty">体重を入力して下さい。</string>
+    <string name="err_title_db">データベースエラー</string>
+    <string name="err_db">データベースから情報が取得できませんでした。\n 再度読み込みなおしてください。</string>
+
 </resources>
