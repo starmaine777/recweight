@@ -18,11 +18,14 @@ interface WeightItemDao {
     fun getWeightItemById(id:Long): Flowable<List<WeightItemEntity>>
 
     @Insert
-    fun insert(weightItemEntity: WeightItemEntity)
+    fun insertItem(weightItemEntity: WeightItemEntity)
 
     @Update
-    fun update(weightItemEntity: WeightItemEntity)
+    fun updateItem(weightItemEntity: WeightItemEntity)
 
     @Delete
-    fun delete(weightItemEntity: WeightItemEntity)
+    fun deleteItem(weightItemEntity: WeightItemEntity)
+
+    @Query("DELETE FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM}")
+    fun deleteAllItem()
 }

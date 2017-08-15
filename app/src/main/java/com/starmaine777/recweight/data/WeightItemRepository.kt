@@ -28,16 +28,20 @@ class WeightItemRepository {
 
         fun insertWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction {
             return CompletableFromAction(Action {
-                getDatabase(context).weightItemDao().insert(weightItemEntity)
+                getDatabase(context).weightItemDao().insertItem(weightItemEntity)
             })
         }
 
         fun updateWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction {
-            return CompletableFromAction(Action { getDatabase(context).weightItemDao().update(weightItemEntity) })
+            return CompletableFromAction(Action { getDatabase(context).weightItemDao().updateItem(weightItemEntity) })
         }
 
         fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction {
-            return CompletableFromAction(Action { getDatabase(context).weightItemDao().delete(weightItemEntity) })
+            return CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteItem(weightItemEntity) })
+        }
+
+        fun deleteAllItem(context: Context) :CompletableFromAction {
+            return CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteAllItem()})
         }
     }
 }

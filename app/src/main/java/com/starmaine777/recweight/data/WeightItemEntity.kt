@@ -2,6 +2,7 @@ package com.starmaine777.recweight.data
 
 import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
+import android.arch.persistence.room.Ignore
 import android.arch.persistence.room.PrimaryKey
 import java.util.*
 
@@ -21,6 +22,9 @@ data class WeightItemEntity(
         @ColumnInfo(name = COL_SHOW_MOON) var showMoon: Boolean,
         @ColumnInfo(name = COL_SHOW_STAR) var showStar: Boolean,
         @ColumnInfo(name = COL_MEMO) var memo: String) {
+
+    @Ignore
+    constructor() : this(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
 
     companion object {
         const val TABLE_WEIGHT_ITEM = "weightItem"

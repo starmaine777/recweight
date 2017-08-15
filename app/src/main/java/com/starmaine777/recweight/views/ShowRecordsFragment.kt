@@ -7,7 +7,7 @@ import android.view.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
-import com.starmaine777.recweight.utils.Consts
+import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.views.settings.SettingsActivity
 import kotlinx.android.synthetic.main.fragment_show_records.*
 
@@ -33,7 +33,7 @@ class ShowRecordsFragment : Fragment() {
 
 
         fab.setOnClickListener { _ ->
-            RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.INPUT, null))
+            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
         }
     }
 

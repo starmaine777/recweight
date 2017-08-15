@@ -20,15 +20,17 @@ class SettingsMainAdapter(var itemList: List<SettingItem>?) : RecyclerView.Adapt
         return SettingsMainViewHolder(LayoutInflater.from(parent?.context).inflate(android.R.layout.simple_list_item_1, parent, false))
     }
 
-    override fun getItemCount(): Int = itemList?.size ?:0
+    override fun getItemCount(): Int = itemList?.size ?: 0
 
 
     class SettingsMainViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind (item:SettingItem?) {
-            itemView.setOnClickListener { item?.clickListener }
+        fun bind(item: SettingItem?) {
+            itemView.setOnClickListener {
+                item?.onClick?.invoke()
+            }
             (itemView.findViewById(android.R.id.text1) as TextView).text = itemView.context.getString(item?.titleId!!)
         }
     }
 }
 
-class SettingItem(val titleId: Int, val clickListener:() -> Unit)
+class SettingItem(val titleId: Int, val onClick: () -> Unit)

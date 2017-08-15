@@ -13,7 +13,7 @@ import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
-import com.starmaine777.recweight.utils.Consts
+import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.views.adapter.RecordListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -59,7 +59,7 @@ class RecordListFragment : Fragment() {
 
         disposable.add(RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
             t: WeightItemClickEvent ->
-            RxBus.publish(InputFragmentStartEvent(Consts.WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
+            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
         }))
     }
 
