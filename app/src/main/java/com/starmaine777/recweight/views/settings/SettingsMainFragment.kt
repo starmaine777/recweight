@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.views.adapter.SettingItem
 import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
 import kotlinx.android.synthetic.main.fragment_settings_main.*
@@ -21,6 +22,15 @@ import kotlinx.android.synthetic.main.fragment_settings_main.*
 class SettingsMainFragment : Fragment() {
 
     val settingsItems: List<SettingItem> = listOf(
+            SettingItem(R.string.settings_main_import, {
+                activity.supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment, ImportUrlFragment(), null).addToBackStack(null).commit()
+
+
+            })
+
+
     )
 
     companion object {

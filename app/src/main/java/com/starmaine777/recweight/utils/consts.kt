@@ -12,11 +12,16 @@ class Consts {
         VIEW_WEIGHT_ITEM,
         INPUT_DATE,
         INPUT_TIME,
+        SHOW_ACCOUNT_PICKER
     }
 
     enum class WEIGHT_INPUT_MODE {
         INPUT,
         VIEW
+    }
+
+    enum class PREFERENCE_KEY {
+        ACCOUNT_NAME
     }
 
 }
