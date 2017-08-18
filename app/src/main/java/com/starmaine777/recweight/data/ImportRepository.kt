@@ -1,6 +1,10 @@
 package com.starmaine777.recweight.data
 
+import android.Manifest
+import android.annotation.TargetApi
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import com.google.android.gms.common.ConnectionResult
@@ -21,13 +25,11 @@ import java.io.IOException
  */
 class ImportRepository(val context: Context, val listener: ImportEventListener) {
 
-    enum class ERROR {
-        GPS_AVAILABILITY_ERROR,
-        GPS_AVAILABILITY_FATAL_ERROR,
-
-        DEVICE_OFFLINE
-
-
+    enum class ERROR(var statusCode:Int) {
+        ACCOUNT_PERMISSION_DENIED(0),
+        GPS_AVAILABILITY_ERROR(0),
+        GPS_AVAILABILITY_FATAL_ERROR(0),
+        DEVICE_OFFLINE(0)
     }
 
 
@@ -45,14 +47,26 @@ class ImportRepository(val context: Context, val listener: ImportEventListener) 
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
-    fun getResultFromApi() {
-        if (isGooglePlayServiceAvailable(context)) {
+    fun retryGetResult(accountName:String) {
+        credential.selectedAccountName = accountName
+        getResultFromApi()
+    }
 
+    fun getResultFromApi() {
+        if (!isGooglePlayServiceAvailable(context)) {
+            Log.d("test", "getResultFromApi 1")
+            showGooglePlayServiceError(context)
+        } else if (isAllowedAccountPermission()) {
+            Log.d("test", "getResultFromApi 2")
+            listener.onError(ERROR.ACCOUNT_PERMISSION_DENIED)
         } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
+            Log.d("test", "getResultFromApi 3")
             listener.showAccountChoice(credential)
         } else if (!isDeviceOnline(context)) {
+            Log.d("test", "getResultFromApi 4")
             listener.onError(ERROR.DEVICE_OFFLINE)
         } else {
+            Log.d("test", "getResultFromApi 5")
             val transport = AndroidHttp.newCompatibleTransport()
             val jsonFactory = JacksonFactory.getDefaultInstance()
             val service = Sheets.Builder(transport, jsonFactory, credential).build()
@@ -79,7 +93,20 @@ class ImportRepository(val context: Context, val listener: ImportEventListener) 
 
     fun showGooglePlayServiceError(context: Context) {
         val apiAvailability = GoogleApiAvailability.getInstance()
-        listener.onError(if (apiAvailability.isUserResolvableError(apiAvailability.isGooglePlayServicesAvailable(context))) ERROR.GPS_AVAILABILITY_ERROR else ERROR.GPS_AVAILABILITY_FATAL_ERROR)
+        val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
+        val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR.GPS_AVAILABILITY_ERROR else ERROR.GPS_AVAILABILITY_FATAL_ERROR
+        error.statusCode = statusCode
+        listener.onError(error)
+    }
+
+    fun isAllowedAccountPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            Log.d("test", "isAllowedAccountPermission sdk version")
+            return true
+        } else {
+            Log.d("test", "isAllowedAccountPermission readContactsPermissionCheck ${context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS)}")
+            return context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED
+        }
     }
 
 }

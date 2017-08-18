@@ -12,7 +12,9 @@ class Consts {
         VIEW_WEIGHT_ITEM,
         INPUT_DATE,
         INPUT_TIME,
-        SHOW_ACCOUNT_PICKER
+        SHOW_ACCOUNT_PICKER,
+        SHOW_GOOGLE_PLAY_SERVICE,
+        SHOW_ACCOUNT_PERMISSION,
     }
 
     enum class WEIGHT_INPUT_MODE {
