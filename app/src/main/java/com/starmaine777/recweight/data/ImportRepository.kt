@@ -1,7 +1,6 @@
 package com.starmaine777.recweight.data
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -15,29 +14,17 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
+import com.starmaine777.recweight.error.SpreadSheetsException
+import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.isDeviceOnline
-import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.Observable
 import java.io.IOException
 
 /**
+ * Import用Api取得クラス
  * Created by 0025331458 on 2017/08/16.
  */
-class ImportRepository(val context: Context, val listener: ImportEventListener) {
-
-    enum class ERROR(var statusCode:Int) {
-        ACCOUNT_PERMISSION_DENIED(0),
-        GPS_AVAILABILITY_ERROR(0),
-        GPS_AVAILABILITY_FATAL_ERROR(0),
-        DEVICE_OFFLINE(0)
-    }
-
-
-    interface ImportEventListener {
-        fun onError(errorCode: ERROR)
-        fun showAccountChoice(credential: GoogleAccountCredential)
-    }
-
+class ImportRepository(val context: Context) {
 
     companion object {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
@@ -47,37 +34,43 @@ class ImportRepository(val context: Context, val listener: ImportEventListener) 
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
-    fun retryGetResult(accountName:String) {
+    fun retryGetResult(accountName: String) {
+        Log.d("test", "retryGetResult")
         credential.selectedAccountName = accountName
         getResultFromApi()
     }
 
-    fun getResultFromApi() {
-        if (!isGooglePlayServiceAvailable(context)) {
-            Log.d("test", "getResultFromApi 1")
-            showGooglePlayServiceError(context)
-        } else if (isAllowedAccountPermission()) {
-            Log.d("test", "getResultFromApi 2")
-            listener.onError(ERROR.ACCOUNT_PERMISSION_DENIED)
-        } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
-            Log.d("test", "getResultFromApi 3")
-            listener.showAccountChoice(credential)
-        } else if (!isDeviceOnline(context)) {
-            Log.d("test", "getResultFromApi 4")
-            listener.onError(ERROR.DEVICE_OFFLINE)
-        } else {
-            Log.d("test", "getResultFromApi 5")
-            val transport = AndroidHttp.newCompatibleTransport()
-            val jsonFactory = JacksonFactory.getDefaultInstance()
-            val service = Sheets.Builder(transport, jsonFactory, credential).build()
+    @Throws(SpreadSheetsException::class, IOException::class)
+    fun getResultFromApi(): Observable<Sheets.Spreadsheets.Values.BatchGet> {
+        return Observable.create {
+            if (!isGooglePlayServiceAvailable(context)) {
+                Log.d("test", "getResultFromApi1")
+                val apiAvailability = GoogleApiAvailability.getInstance()
+                val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
+                val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
+                throw SpreadSheetsException(error, statusCode)
+            } else if (isAllowedAccountPermission()) {
+                Log.d("test", "getResultFromApi2")
+                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED, -1)
+            } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
+                Log.d("test", "getResultFromApi3")
+                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED, -1)
+            } else if (!isDeviceOnline(context)) {
+                Log.d("test", "getResultFromApi4")
+                throw SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE, -1)
+            } else {
+                Log.d("test", "getDataApi!!")
+                val transport = AndroidHttp.newCompatibleTransport()
+                val jsonFactory = JacksonFactory.getDefaultInstance()
+                val service = Sheets.Builder(transport, jsonFactory, credential).build()
 
-            Single.create<String> { getDataFromApi(service) }.subscribeOn(Schedulers.io())
+                getDataFromApi(service)
+            }
         }
     }
 
-
     @Throws(IOException::class)
-    fun getDataFromApi(service: Sheets){
+    fun getDataFromApi(service: Sheets) {
         val result = ArrayList<String>()
         val response = service.spreadsheets().values().batchGet(spreadSheetsId)
 
@@ -91,14 +84,6 @@ class ImportRepository(val context: Context, val listener: ImportEventListener) 
         return apiAvailability.isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
     }
 
-    fun showGooglePlayServiceError(context: Context) {
-        val apiAvailability = GoogleApiAvailability.getInstance()
-        val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
-        val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR.GPS_AVAILABILITY_ERROR else ERROR.GPS_AVAILABILITY_FATAL_ERROR
-        error.statusCode = statusCode
-        listener.onError(error)
-    }
-
     fun isAllowedAccountPermission(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Log.d("test", "isAllowedAccountPermission sdk version")
@@ -108,5 +93,4 @@ class ImportRepository(val context: Context, val listener: ImportEventListener) 
             return context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED
         }
     }
-
 }

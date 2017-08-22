@@ -18,49 +18,67 @@ import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.starmaine777.recweight.data.ImportRepository
+import com.starmaine777.recweight.error.SpreadSheetsException
+import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.Consts
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
+import java.io.IOException
 
 /**
  * Created by 0025331458 on 2017/08/16.
  */
-class ImportUrlFragment:Fragment(), ImportRepository.ImportEventListener {
-    val importRepo :ImportRepository by lazy {ImportRepository(context, this)}
+class ImportUrlFragment : Fragment() {
+    val importRepo: ImportRepository by lazy { ImportRepository(context) }
+    val disposable = CompositeDisposable()
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        importRepo.getResultFromApi()
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-
-    override fun onError(errorCode: ImportRepository.ERROR) {
-        Log.d("test", "onError!!!! $errorCode")
-        when (errorCode) {
-            ImportRepository.ERROR.ACCOUNT_PERMISSION_DENIED -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-
-                } else {
-//                    if (activity.shouldShowRequestPermissionRationale(Manifest.permission.GET_ACCOUNTS)) {
-//                        Log.d("test", "shouldShowRequestPermissionRationale true")
-//
-//                    } else {
-                        Log.d("test", "shouldShowRequestPermissionRationale false")
-                        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
-//                    }
-                }
-            }
-            ImportRepository.ERROR.GPS_AVAILABILITY_ERROR -> {
-                val apiAvailability = GoogleApiAvailability.getInstance()
-                apiAvailability.getErrorDialog(activity, errorCode.statusCode, Consts.REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
-            }
-            ImportRepository.ERROR.GPS_AVAILABILITY_FATAL_ERROR -> {
-
-            }
-        }
-
-
+    override fun onStart() {
+        super.onStart()
+        startToGetSpleadSheetsData()
     }
 
-    override fun showAccountChoice(credential: GoogleAccountCredential) {
-        startActivityForResult(credential.newChooseAccountIntent(), Consts.REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
+    private fun startToGetSpleadSheetsData() {
+        disposable.add(importRepo.getResultFromApi()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    Log.d("test", "subscribed!!!")
+                }, {
+                    t: Throwable ->
+                    Log.d("test", "Error happened! $t")
+                    if (t is SpreadSheetsException) {
+                        when (t.type) {
+                            ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
+                                ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
+                            }
+                            ERROR_TYPE.ACCOUNT_NOT_SELECTED -> {
+                                startActivityForResult(importRepo.credential.newChooseAccountIntent(), Consts.REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
+                            }
+                            ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR -> {
+                                val apiAvailability = GoogleApiAvailability.getInstance()
+                                apiAvailability.getErrorDialog(activity, t.errorCode, Consts.REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
+                            }
+                            ERROR_TYPE.DEVICE_OFFLINE -> {
+                            }
+                            ERROR_TYPE.FATAL_ERROR -> {
+                            }
+                        }
+                    } else {
+                        t.printStackTrace()
+                    }
+                    disposable.dispose()
+                }))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        disposable.dispose()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -76,7 +94,8 @@ class ImportUrlFragment:Fragment(), ImportRepository.ImportEventListener {
                         val editor = activity.getPreferences(Context.MODE_PRIVATE).edit()
                         editor.putString(Consts.PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                         editor.apply()
-                        importRepo.retryGetResult(accountName!!)
+                        importRepo.credential.selectedAccountName = accountName!!
+                        startToGetSpleadSheetsData()
                     }
                 }
             }
@@ -104,7 +123,6 @@ class ImportUrlFragment:Fragment(), ImportRepository.ImportEventListener {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
 
 
 }
