@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
@@ -16,23 +15,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.Consts
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.io.IOException
 
 /**
  * Created by 0025331458 on 2017/08/16.
  */
 class ImportUrlFragment : Fragment() {
     val importRepo: ImportRepository by lazy { ImportRepository(context) }
-    val disposable = CompositeDisposable()
+    var disposable = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -41,16 +37,16 @@ class ImportUrlFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         startToGetSpleadSheetsData()
+        disposable = CompositeDisposable()
     }
 
     private fun startToGetSpleadSheetsData() {
-        disposable.add(importRepo.getResultFromApi()
+        importRepo.getResultFromApi()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     Log.d("test", "subscribed!!!")
-                }, {
-                    t: Throwable ->
+                }, { t: Throwable ->
                     Log.d("test", "Error happened! $t")
                     if (t is SpreadSheetsException) {
                         when (t.type) {
@@ -72,8 +68,7 @@ class ImportUrlFragment : Fragment() {
                     } else {
                         t.printStackTrace()
                     }
-                    disposable.dispose()
-                }))
+                }).let { disposable.add(it) }
     }
 
     override fun onStop() {
