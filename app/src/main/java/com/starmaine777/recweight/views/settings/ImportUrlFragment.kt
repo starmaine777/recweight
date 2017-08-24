@@ -20,7 +20,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
-import com.starmaine777.recweight.utils.Consts
+import com.starmaine777.recweight.utils.REQUESTS
+import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -54,14 +55,14 @@ class ImportUrlFragment : Fragment() {
                     if (t is SpreadSheetsException) {
                         when (t.type) {
                             ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
-                                ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
+                                ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
                             }
                             ERROR_TYPE.ACCOUNT_NOT_SELECTED -> {
-                                startActivityForResult(importRepo.credential.newChooseAccountIntent(), Consts.REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
+                                startActivityForResult(importRepo.credential.newChooseAccountIntent(), REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
                             }
                             ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR -> {
                                 val apiAvailability = GoogleApiAvailability.getInstance()
-                                apiAvailability.getErrorDialog(activity, t.errorCode, Consts.REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
+                                apiAvailability.getErrorDialog(activity, t.errorCode, REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
                             }
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
@@ -70,7 +71,7 @@ class ImportUrlFragment : Fragment() {
                         }
                     } else if (t is UserRecoverableAuthIOException) {
                         Log.d("test", "UserRecoverableAuthIOException startActivity")
-                        startActivityForResult(t.intent, Consts.REQUESTS.REQUEST_AUTHORIZATION.ordinal)
+                        startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
                 }).let { disposable.add(it) }
     }
@@ -82,16 +83,16 @@ class ImportUrlFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
-            Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
+            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 importRepo.getResultFromApi()
             }
 
-            Consts.REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
+            REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
                     if (!TextUtils.isEmpty(accountName)) {
                         val editor = activity.getPreferences(Context.MODE_PRIVATE).edit()
-                        editor.putString(Consts.PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
+                        editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                         editor.apply()
                         importRepo.credential.selectedAccountName = accountName!!
                         startToGetSpleadSheetsData()
@@ -99,13 +100,13 @@ class ImportUrlFragment : Fragment() {
                 }
             }
 
-            Consts.REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
+            REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
                     startToGetSpleadSheetsData()
                 }
             }
 
-            Consts.REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
+            REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
                     startToGetSpleadSheetsData()
                 }
@@ -118,7 +119,7 @@ class ImportUrlFragment : Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         Log.d("test", "onRequestPermissionResult requestCode = $requestCode")
         when (requestCode) {
-            Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
+            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startToGetSpleadSheetsData()
                 } else {

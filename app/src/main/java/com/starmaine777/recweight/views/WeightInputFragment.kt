@@ -21,8 +21,8 @@ import com.starmaine777.recweight.data.WeightInputViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
-import com.starmaine777.recweight.utils.Consts
-import com.starmaine777.recweight.utils.Consts.WEIGHT_INPUT_MODE
+import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
+import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import java.util.*
@@ -87,14 +87,14 @@ class WeightInputFragment : Fragment() {
             setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
             editDate.setOnClickListener { _ ->
                 dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
-                dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_DATE.ordinal)
+                dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_DATE.ordinal)
                 dialog?.show(fragmentManager, TAG_DIALOGS)
             }
 
             setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
             editTime.setOnClickListener { _ ->
                 dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
-                dialog?.setTargetFragment(this@WeightInputFragment, Consts.REQUESTS.INPUT_TIME.ordinal)
+                dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_TIME.ordinal)
                 dialog?.show(fragmentManager, TAG_DIALOGS)
             }
 
@@ -233,7 +233,7 @@ class WeightInputFragment : Fragment() {
 
         when (requestCode) {
 
-            Consts.REQUESTS.INPUT_DATE.ordinal -> {
+            REQUESTS.INPUT_DATE.ordinal -> {
                 if (resultCode != Activity.RESULT_OK) return
                 val year = data?.getIntExtra(DatePickerDialogFragment.RESULT_YEAR, -1) ?: -1
                 val month = data?.getIntExtra(DatePickerDialogFragment.RESULT_MONTH, -1) ?: -1
@@ -244,7 +244,7 @@ class WeightInputFragment : Fragment() {
                 }
             }
 
-            Consts.REQUESTS.INPUT_TIME.ordinal -> {
+            REQUESTS.INPUT_TIME.ordinal -> {
                 if (resultCode != Activity.RESULT_OK) return
                 val hour = data?.getIntExtra(TimePickerDialogFragment.RESULT_HOUR, -1) ?: -1
                 val minute = data?.getIntExtra(TimePickerDialogFragment.RESULT_MINUTE, -1) ?: -1
