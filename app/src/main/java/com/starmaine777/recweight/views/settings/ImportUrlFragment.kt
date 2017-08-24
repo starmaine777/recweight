@@ -15,6 +15,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.UserRecoverableException
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
@@ -24,6 +26,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
 /**
+ * ImportのURL入力Fragment
  * Created by 0025331458 on 2017/08/16.
  */
 class ImportUrlFragment : Fragment() {
@@ -65,8 +68,9 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.FATAL_ERROR -> {
                             }
                         }
-                    } else {
-                        t.printStackTrace()
+                    } else if (t is UserRecoverableAuthIOException) {
+                        Log.d("test", "UserRecoverableAuthIOException startActivity")
+                        startActivityForResult(t.intent, Consts.REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
                 }).let { disposable.add(it) }
     }
@@ -97,7 +101,13 @@ class ImportUrlFragment : Fragment() {
 
             Consts.REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    importRepo.getResultFromApi()
+                    startToGetSpleadSheetsData()
+                }
+            }
+
+            Consts.REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    startToGetSpleadSheetsData()
                 }
             }
 
@@ -110,7 +120,7 @@ class ImportUrlFragment : Fragment() {
         when (requestCode) {
             Consts.REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    importRepo.getResultFromApi()
+                    startToGetSpleadSheetsData()
                 } else {
 
                 }

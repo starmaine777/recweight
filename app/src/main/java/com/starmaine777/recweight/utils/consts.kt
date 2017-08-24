@@ -15,6 +15,7 @@ class Consts {
         SHOW_ACCOUNT_PICKER,
         SHOW_GOOGLE_PLAY_SERVICE,
         SHOW_ACCOUNT_PERMISSION,
+        REQUEST_AUTHORIZATION,
     }
 
     enum class WEIGHT_INPUT_MODE {

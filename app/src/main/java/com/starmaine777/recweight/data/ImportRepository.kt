@@ -14,6 +14,7 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
+import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.isDeviceOnline
@@ -44,25 +45,22 @@ class ImportRepository(val context: Context) {
     fun getResultFromApi(): Observable<Sheets.Spreadsheets.Values.BatchGet> {
         return Observable.create {
             if (!isGooglePlayServiceAvailable(context)) {
-                Log.d("test", "getResultFromApi1")
                 val apiAvailability = GoogleApiAvailability.getInstance()
                 val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
                 val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
                 throw SpreadSheetsException(error, statusCode)
             } else if (isAllowedAccountPermission()) {
-                Log.d("test", "getResultFromApi2")
                 throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED, -1)
             } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
-                Log.d("test", "getResultFromApi3")
                 throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED, -1)
             } else if (!isDeviceOnline(context)) {
-                Log.d("test", "getResultFromApi4")
                 throw SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE, -1)
             } else {
-                Log.d("test", "getDataApi!!")
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
-                val service = Sheets.Builder(transport, jsonFactory, credential).build()
+                val service = Sheets.Builder(transport, jsonFactory, credential)
+                        .setApplicationName(context.getString(R.string.app_name))
+                        .build()
 
                 getDataFromApi(service)
             }
@@ -72,9 +70,9 @@ class ImportRepository(val context: Context) {
     @Throws(IOException::class)
     fun getDataFromApi(service: Sheets) {
         val result = ArrayList<String>()
-        val response = service.spreadsheets().values().batchGet(spreadSheetsId)
+        val response = service.spreadsheets().get(spreadSheetsId).execute()
 
-        Log.d("test", "response = " + response.ranges)
+        Log.d("test", "response = " + response)
 
     }
 
