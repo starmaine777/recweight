@@ -11,6 +11,7 @@ class SpreadSheetsException(val type: ERROR_TYPE, val errorCode: Int) : Exceptio
         ACCOUNT_NOT_SELECTED,
         PLAY_SERVICE_AVAILABILITY_ERROR,
         DEVICE_OFFLINE,
+        SHEETS_ILLEGAL_TEMPLATE_ERROR,
         FATAL_ERROR,
     }
 }

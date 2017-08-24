@@ -19,6 +19,7 @@ import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.isDeviceOnline
 import io.reactivex.Observable
+import org.json.JSONObject
 import java.io.IOException
 
 /**
@@ -29,8 +30,8 @@ class ImportRepository(val context: Context) {
 
     companion object {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
-        val spreadSheetsId = "1mfbm9TcTq4clJxzur3S8LSP-ctWAls3pJdKkKFH5Qnw"
-        val range = "フォームの回答 1!A1:E5"
+        val spreadSheetsId = "1AX6hePR64bAX9JB8G3Z4pHXk2VciKu9VrcaYW8J5f0Q"
+        val range = "RecWeight 1!A1:E5"
     }
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
@@ -67,15 +68,18 @@ class ImportRepository(val context: Context) {
         }
     }
 
-    @Throws(IOException::class)
+    @Throws(SpreadSheetsException::class, IOException::class)
     fun getDataFromApi(service: Sheets) {
-        val result = ArrayList<String>()
-        val response = service.spreadsheets().get(spreadSheetsId).execute()
+        val response = JSONObject(service.spreadsheets().get(spreadSheetsId).execute())
 
-        Log.d("test", "response = " + response)
+        if (isExportFolder(response)) {
+            Log.d("test", "isExportFolder is true ")
+        } else {
+            Log.d("test", "isExportFolder is false")
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -1)
+        }
 
     }
-
 
     fun isGooglePlayServiceAvailable(context: Context): Boolean {
         val apiAvailability = GoogleApiAvailability.getInstance()
@@ -91,4 +95,11 @@ class ImportRepository(val context: Context) {
             return context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED
         }
     }
+
+    fun isExportFolder(response: JSONObject) : Boolean {
+        return response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
+             || response.getJSONArray("sheets").length() == 0
+             || TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
+    }
+
 }
