@@ -6,22 +6,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.text.TextUtils
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.UserRecoverableException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
-import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
+import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -33,10 +28,6 @@ import io.reactivex.schedulers.Schedulers
 class ImportUrlFragment : Fragment() {
     val importRepo: ImportRepository by lazy { ImportRepository(context) }
     var disposable = CompositeDisposable()
-
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
 
     override fun onStart() {
         super.onStart()
@@ -53,6 +44,7 @@ class ImportUrlFragment : Fragment() {
                 }, { t: Throwable ->
                     Log.d("test", "Error happened! $t")
                     if (t is SpreadSheetsException) {
+                        Log.d("test", "Error happened! ${t.type}")
                         when (t.type) {
                             ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
                                 ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
@@ -67,6 +59,8 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
+                            }
+                            ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
                             }
                         }
                     } else if (t is UserRecoverableAuthIOException) {
