@@ -3,18 +3,17 @@ package com.starmaine777.recweight.views.settings
 import android.Manifest
 import android.accounts.AccountManager
 import android.app.Activity
-import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.util.Log
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
+import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
@@ -31,6 +30,7 @@ import io.reactivex.schedulers.Schedulers
 class ImportUrlFragment : Fragment() {
     val importRepo: ImportRepository by lazy { ImportRepository(context) }
     var disposable = CompositeDisposable()
+    var dialog: AlertDialog? = null
 
     override fun onStart() {
         super.onStart()
@@ -62,6 +62,7 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
+                                showErrorDialog(R.string.err_import_title_fatal, R.string.err_import_fatal)
                             }
                             ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
                             }
@@ -76,6 +77,8 @@ class ImportUrlFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         disposable.dispose()
+        dialog?.dismiss()
+        dialog = null
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -127,5 +130,27 @@ class ImportUrlFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    fun showErrorDialog(titleId:Int, messageId:Int) {
+
+
+        showErrorDialog(resources.getString(titleId), resources.getString(messageId))
+    }
+
+    fun showErrorDialog(title:String, message:String) {
+        if (TextUtils.isEmpty(message)) {
+            return
+        }
+
+        val builder = AlertDialog.Builder(context)
+        if (!TextUtils.isEmpty(title)) {
+            builder.setTitle(title)
+        }
+        builder.setMessage(message)
+                .setOnDismissListener { fragmentManager.popBackStack() }
+                .setPositiveButton(android.R.string.ok
+                        , {dialog, _ -> dialog.dismiss()})
+
+        dialog = builder.show()
+    }
 
 }
