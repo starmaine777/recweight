@@ -17,6 +17,8 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
+import com.starmaine777.recweight.utils.EXPORT_DATE_STR
+import com.starmaine777.recweight.utils.convertToCalendar
 import com.starmaine777.recweight.utils.isDeviceOnline
 import io.reactivex.Observable
 import org.json.JSONObject
@@ -39,12 +41,14 @@ class ImportRepository(val context: Context) {
         WEIGHT(R.string.export_file_sheets_column_weight),
         FAT(R.string.export_file_sheets_column_fat),
         DUMBBELL(R.string.export_file_sheets_column_dumbbell),
+        LIQUOR(R.string.export_file_sheets_column_liquor),
         TOILET(R.string.export_file_sheets_column_toilet),
         MOON(R.string.export_file_sheets_column_moon),
-        LIQUOR(R.string.export_file_sheets_column_liquor),
         STAR(R.string.export_file_sheets_column_star),
         MEMO(R.string.export_file_sheets_column_memo),
     }
+
+    val columnArray = arrayOf("A", "B", "C", "D", "E", "F", "G", "H", "I")
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
@@ -63,11 +67,11 @@ class ImportRepository(val context: Context) {
                 val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
                 throw SpreadSheetsException(error, statusCode)
             } else if (isAllowedAccountPermission()) {
-                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED, -1)
+                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED)
             } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
-                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED, -1)
+                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED)
             } else if (!isDeviceOnline(context)) {
-                throw SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE, -1)
+                throw SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE)
             } else {
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
@@ -90,7 +94,7 @@ class ImportRepository(val context: Context) {
             val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
 
             if (sheetColumn != 9) {
-                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -1)
+                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
             }
 
             val data = service.spreadsheets().values()
@@ -101,9 +105,12 @@ class ImportRepository(val context: Context) {
             for (i in data.indices) {
                 when (i) {
                     0 -> {
-                        checkFirstRow(data[i])
+                        if (!isCorrectFirstRow(data[i])) {
+                            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
+                        }
                     }
                     else -> {
+                        importRowData(data[i])
                     }
                 }
             }
@@ -111,7 +118,7 @@ class ImportRepository(val context: Context) {
             Log.d("test", "isExportFolder RowCount=$sheetRow")
         } else {
             Log.d("test", "isExportFolder is false")
-            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -1)
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
         }
 
     }
@@ -137,13 +144,56 @@ class ImportRepository(val context: Context) {
                 || TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
     }
 
-    @Throws(SpreadSheetsException::class)
-    fun checkFirstRow(row: List<Any>) {
+    fun isCorrectFirstRow(row: List<Any>) : Boolean {
+        return row.indices.any { TextUtils.equals(context.getString(COLUMNS.values()[it].nameId), row[it] as String) }
+    }
+
+    fun importRowData(row : List<Any>) {
+        var weightItem = WeightItemEntity()
         for (i in row.indices) {
-            if (TextUtils.equals(context.getString(COLUMNS.values()[i].nameId), row[i] as String)) {
-                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -1)
+            val str = row[i] as String
+            Log.d("importRepository", "str = $str")
+            try {
+                when (COLUMNS.values()[i]) {
+                    COLUMNS.DATE -> {
+                        val date = convertToCalendar(str, EXPORT_DATE_STR)
+                        if (date == null) {
+                            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -2)
+                        } else {
+                            weightItem.recTime = date
+                        }
+                    }
+                    COLUMNS.WEIGHT -> {
+                        weightItem.weight = str.toDouble()
+                    }
+                    COLUMNS.FAT -> {
+                        weightItem.fat = str.toDouble()
+                    }
+                    COLUMNS.DUMBBELL -> {
+                        weightItem.showDumbbell = str.toBoolean()
+                    }
+                    COLUMNS.TOILET -> {
+                        weightItem.showToilet = str.toBoolean()
+                    }
+                    COLUMNS.MOON -> {
+                        weightItem.showMoon = str.toBoolean()
+                    }
+                    COLUMNS.LIQUOR -> {
+                        weightItem.showLiquor = str.toBoolean()
+                    }
+                    COLUMNS.STAR -> {
+                        weightItem.showStar = str.toBoolean()
+                    }
+                    COLUMNS.MEMO -> {
+                        weightItem.memo = str
+                    }
+                }
+            } catch (e:Exception) {
+                e.printStackTrace()
+                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -3)
             }
         }
+        WeightItemRepository.getDatabase(context).weightItemDao().insert(weightItem)
     }
 
 }

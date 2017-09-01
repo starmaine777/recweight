@@ -2,9 +2,13 @@ package com.starmaine777.recweight.utils
 
 import android.text.TextUtils
 import android.util.Log
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.regex.Pattern
 
 /**
+ * String関連のUtils
  * Created by ai on 2017/07/12.
  */
 
@@ -33,4 +37,11 @@ fun formatInputNumber(numStr: String, default: String): String {
     }
 }
 
+fun convertToCalendar(str: String, formatStr: String) : Calendar? {
 
+    val formatter = SimpleDateFormat(formatStr)
+    val date = formatter.parse(str)
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    return if (date == null) null else calendar
+}

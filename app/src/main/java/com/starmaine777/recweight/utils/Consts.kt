@@ -24,3 +24,5 @@ enum class WEIGHT_INPUT_MODE {
 enum class PREFERENCE_KEY {
     ACCOUNT_NAME
 }
+
+val EXPORT_DATE_STR = "yyyy/MM/dd HH:mm:ss"

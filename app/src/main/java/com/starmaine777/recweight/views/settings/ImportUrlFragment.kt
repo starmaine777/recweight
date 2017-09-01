@@ -3,9 +3,12 @@ package com.starmaine777.recweight.views.settings
 import android.Manifest
 import android.accounts.AccountManager
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.text.TextUtils
@@ -44,7 +47,7 @@ class ImportUrlFragment : Fragment() {
                 }, { t: Throwable ->
                     Log.d("test", "Error happened! $t")
                     if (t is SpreadSheetsException) {
-                        Log.d("test", "Error happened! ${t.type}")
+                        Log.d("test", "Error happened! ${t.type}, code = ${t.errorCode}")
                         when (t.type) {
                             ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
                                 ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
