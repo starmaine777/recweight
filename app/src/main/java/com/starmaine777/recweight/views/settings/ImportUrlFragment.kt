@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
@@ -39,18 +38,20 @@ class ImportUrlFragment : Fragment() {
     }
 
     private fun startToGetSpleadSheetsData() {
+        Log.d("test", "startToGetSpleadSheetsData!!!")
         importRepo.getResultFromApi()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.d("test", "subscribed!!!")
+                    Log.d("test", "onNext!!!")
+                    showFinishDialog(R.string.d_import_complete_title, R.string.d_import_complete)
                 }, { t: Throwable ->
                     Log.d("test", "Error happened! $t")
                     if (t is SpreadSheetsException) {
                         Log.d("test", "Error happened! ${t.type}, code = ${t.errorCode}")
                         when (t.type) {
                             ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
-                                ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
+                                requestPermissions(arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
                             }
                             ERROR_TYPE.ACCOUNT_NOT_SELECTED -> {
                                 startActivityForResult(importRepo.credential.newChooseAccountIntent(), REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
@@ -62,15 +63,20 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
-                                showErrorDialog(R.string.err_import_title_fatal, R.string.err_import_fatal)
+                                showFinishDialog(R.string.err_import_title_fatal, R.string.err_import_fatal)
                             }
                             ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
+                                showFinishDialog(getString(R.string.err_import_title_illegal_template),
+                                        getString(R.string.err_import_illegal_template, t.target))
                             }
                         }
                     } else if (t is UserRecoverableAuthIOException) {
                         Log.d("test", "UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
+                }, {
+                    Log.d("test", "Completed!!!")
+                    showFinishDialog(R.string.d_import_complete_title, R.string.d_import_complete)
                 }).let { disposable.add(it) }
     }
 
@@ -82,9 +88,11 @@ class ImportUrlFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.d("test", "onActivityResult requestCode = $requestCode")
         when (requestCode) {
             REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
-                importRepo.getResultFromApi()
+                Log.d("test", "onActivityResult SHOW_ACCOUNT_PERMISSION")
+                startToGetSpleadSheetsData()
             }
 
             REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
@@ -121,22 +129,23 @@ class ImportUrlFragment : Fragment() {
         when (requestCode) {
             REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("test", "onRequestPermissionResult OK!!!")
                     startToGetSpleadSheetsData()
                 } else {
-
+                    Log.d("test", "onRequestPermissionResult NG!!!")
                 }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    fun showErrorDialog(titleId:Int, messageId:Int) {
+    fun showFinishDialog(titleId: Int, messageId: Int) {
 
 
-        showErrorDialog(resources.getString(titleId), resources.getString(messageId))
+        showFinishDialog(resources.getString(titleId), resources.getString(messageId))
     }
 
-    fun showErrorDialog(title:String, message:String) {
+    fun showFinishDialog(title: String, message: String) {
         if (TextUtils.isEmpty(message)) {
             return
         }
@@ -148,8 +157,7 @@ class ImportUrlFragment : Fragment() {
         builder.setMessage(message)
                 .setOnDismissListener { fragmentManager.popBackStack() }
                 .setPositiveButton(android.R.string.ok
-                        , {dialog, _ -> dialog.dismiss()})
-
+                        , { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()
     }
 

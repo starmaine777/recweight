@@ -33,22 +33,19 @@ class ImportRepository(val context: Context) {
     companion object {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
         val spreadSheetsId = "1AX6hePR64bAX9JB8G3Z4pHXk2VciKu9VrcaYW8J5f0Q"
-        val range = "RecWeight 1!A1:E5"
     }
 
-    enum class COLUMNS(val nameId: Int) {
-        DATE(R.string.export_file_sheets_column_date),
-        WEIGHT(R.string.export_file_sheets_column_weight),
-        FAT(R.string.export_file_sheets_column_fat),
-        DUMBBELL(R.string.export_file_sheets_column_dumbbell),
-        LIQUOR(R.string.export_file_sheets_column_liquor),
-        TOILET(R.string.export_file_sheets_column_toilet),
-        MOON(R.string.export_file_sheets_column_moon),
-        STAR(R.string.export_file_sheets_column_star),
-        MEMO(R.string.export_file_sheets_column_memo),
+    enum class COLUMNS(val nameId: Int, val columnName: String) {
+        DATE(R.string.export_file_sheets_column_date, "A"),
+        WEIGHT(R.string.export_file_sheets_column_weight, "B"),
+        FAT(R.string.export_file_sheets_column_fat, "C"),
+        DUMBBELL(R.string.export_file_sheets_column_dumbbell, "D"),
+        LIQUOR(R.string.export_file_sheets_column_liquor, "E"),
+        TOILET(R.string.export_file_sheets_column_toilet, "F"),
+        MOON(R.string.export_file_sheets_column_moon, "G"),
+        STAR(R.string.export_file_sheets_column_star, "H"),
+        MEMO(R.string.export_file_sheets_column_memo, "I"),
     }
-
-    val columnArray = arrayOf("A", "B", "C", "D", "E", "F", "G", "H", "I")
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
@@ -60,18 +57,18 @@ class ImportRepository(val context: Context) {
 
     @Throws(SpreadSheetsException::class, IOException::class)
     fun getResultFromApi(): Observable<Sheets.Spreadsheets.Values.BatchGet> {
-        return Observable.create {
+        return Observable.create { emitter ->
             if (!isGooglePlayServiceAvailable(context)) {
                 val apiAvailability = GoogleApiAvailability.getInstance()
                 val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
                 val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
-                throw SpreadSheetsException(error, statusCode)
+                emitter.onError(SpreadSheetsException(error, statusCode))
             } else if (isAllowedAccountPermission()) {
-                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED)
+                emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
             } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
-                throw SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED)
+                emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
             } else if (!isDeviceOnline(context)) {
-                throw SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE)
+                emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
             } else {
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
@@ -79,7 +76,12 @@ class ImportRepository(val context: Context) {
                         .setApplicationName(context.getString(R.string.app_name))
                         .build()
 
-                getDataFromApi(service)
+                try {
+                    getDataFromApi(service)
+                    emitter.onComplete()
+                } catch (e: Exception) {
+                    emitter.onError(e)
+                }
             }
         }
     }
@@ -88,39 +90,45 @@ class ImportRepository(val context: Context) {
     fun getDataFromApi(service: Sheets) {
         val response = JSONObject(service.spreadsheets().get(spreadSheetsId).execute())
 
-        if (isExportFolder(response)) {
-            Log.d("test", "isExportFolder is true")
-            val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
-            val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
-
-            if (sheetColumn != 9) {
-                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
-            }
-
-            val data = service.spreadsheets().values()
-                    .get(spreadSheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
-                    .execute()
-                    .getValues()
-
-            for (i in data.indices) {
-                when (i) {
-                    0 -> {
-                        if (!isCorrectFirstRow(data[i])) {
-                            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
-                        }
-                    }
-                    else -> {
-                        importRowData(data[i])
-                    }
-                }
-            }
-
-            Log.d("test", "isExportFolder RowCount=$sheetRow")
-        } else {
-            Log.d("test", "isExportFolder is false")
-            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR)
+        if (!isCollectFileName(response)) {
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_file_name))
         }
 
+        if (!isCollectSheetsSize(response)) {
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_sheet_num))
+        }
+
+        if (!isCollectSheetsName(response)) {
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_sheet_name))
+        }
+
+        Log.d("test", "isExportFolder is true")
+        val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
+        val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
+
+        if (sheetColumn != COLUMNS.values().size) {
+            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_num))
+        }
+
+        val data = service.spreadsheets().values()
+                .get(spreadSheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
+                .execute()
+                .getValues()
+
+        for (i in data.indices) {
+            when (i) {
+                0 -> {
+                    if (!isCorrectFirstRow(data[i])) {
+                        throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_name))
+                    }
+                }
+                else -> {
+                    importRowData(data[i], i)
+                }
+            }
+        }
+
+        Log.d("test", "isExportFolder RowCount=$sheetRow")
     }
 
     fun isGooglePlayServiceAvailable(context: Context): Boolean {
@@ -138,18 +146,20 @@ class ImportRepository(val context: Context) {
         }
     }
 
-    fun isExportFolder(response: JSONObject): Boolean {
-        return response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
-                || response.getJSONArray("sheets").length() == 0
-                || TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
-    }
+    private fun isCollectFileName(response: JSONObject): Boolean
+            = response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
 
-    fun isCorrectFirstRow(row: List<Any>) : Boolean {
-        return row.indices.any { TextUtils.equals(context.getString(COLUMNS.values()[it].nameId), row[it] as String) }
-    }
+    private fun isCollectSheetsSize(response: JSONObject): Boolean
+            = response.getJSONArray("sheets").length() == 1
 
-    fun importRowData(row : List<Any>) {
-        var weightItem = WeightItemEntity()
+    private fun isCollectSheetsName(response: JSONObject): Boolean
+            = TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
+
+    fun isCorrectFirstRow(row: List<Any>): Boolean
+            = row.indices.any { TextUtils.equals(context.getString(COLUMNS.values()[it].nameId), row[it] as String) }
+
+    fun importRowData(row: List<Any>, rowNum: Int) {
+        val weightItem = WeightItemEntity()
         for (i in row.indices) {
             val str = row[i] as String
             Log.d("importRepository", "str = $str")
@@ -158,7 +168,7 @@ class ImportRepository(val context: Context) {
                     COLUMNS.DATE -> {
                         val date = convertToCalendar(str, EXPORT_DATE_STR)
                         if (date == null) {
-                            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -2)
+                            throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, getErrorCell(i, rowNum))
                         } else {
                             weightItem.recTime = date
                         }
@@ -188,12 +198,15 @@ class ImportRepository(val context: Context) {
                         weightItem.memo = str
                     }
                 }
-            } catch (e:Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, -3)
+                throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, getErrorCell(i, rowNum))
             }
         }
         WeightItemRepository.getDatabase(context).weightItemDao().insert(weightItem)
     }
+
+    private fun getErrorCell(columnNum: Int, rowNum: Int): String
+            = COLUMNS.values().get(columnNum).columnName + rowNum
 
 }

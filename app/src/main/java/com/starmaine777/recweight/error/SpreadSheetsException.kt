@@ -6,6 +6,8 @@ package com.starmaine777.recweight.error
  */
 class SpreadSheetsException(val type: ERROR_TYPE, val errorCode: Int, val target: String) : Exception() {
 
+    constructor(type: ERROR_TYPE, target: String) : this(type, -1, target)
+
     constructor(type: ERROR_TYPE, errorCode: Int) : this(type, errorCode, "")
 
     constructor(type: ERROR_TYPE) : this(type, -1, "")
@@ -17,12 +19,6 @@ class SpreadSheetsException(val type: ERROR_TYPE, val errorCode: Int, val target
         DEVICE_OFFLINE,
         SHEETS_ILLEGAL_TEMPLATE_ERROR,
         FATAL_ERROR,
-    }
-
-    enum class ILLEGAL_TEMPLATE_TYPE {
-        FILE_NAME,
-        SHEET_NAME,
-        COLUMN_NAME,
     }
 
 }

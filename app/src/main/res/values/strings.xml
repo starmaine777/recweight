@@ -22,11 +22,20 @@
 
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
+    <string name="d_import_complete_title">インポート完了</string>
+    <string name="d_import_complete">インポートが成功しました。</string>
 
     <string name="err_title_input">入力値エラー</string>
     <string name="err_weight_empty">体重を入力して下さい。</string>
     <string name="err_title_db">データベースエラー</string>
     <string name="err_db">データベースから情報が取得できませんでした。\n 再度読み込みなおしてください。</string>
+    <string name="err_import_title_illegal_template">インポートファイルエラー</string>
+    <string name="err_import_illegal_template">インポートファイルの形式が違うため読み込めません。正しい形式のファイルを指定してください。\n エラー箇所:%s</string>
+    <string name="err_import_illegal_file_name">ファイル名</string>
+    <string name="err_import_illegal_sheet_name">シート名</string>
+    <string name="err_import_illegal_sheet_num">シート数</string>
+    <string name="err_import_illegal_column_name">カラム名</string>
+    <string name="err_import_illegal_column_num">カラム数</string>
     <string name="err_import_title_fatal">致命的エラー</string>
     <string name="err_import_fatal">致命的エラーが発生しました。再試行してください。</string>
 
