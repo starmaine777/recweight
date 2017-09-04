@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.text.TextUtils
-import android.util.Log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
@@ -22,6 +21,7 @@ import com.starmaine777.recweight.utils.convertToCalendar
 import com.starmaine777.recweight.utils.isDeviceOnline
 import io.reactivex.Observable
 import org.json.JSONObject
+import timber.log.Timber
 import java.io.IOException
 
 /**
@@ -48,12 +48,6 @@ class ImportRepository(val context: Context) {
     }
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
-
-    fun retryGetResult(accountName: String) {
-        Log.d("test", "retryGetResult")
-        credential.selectedAccountName = accountName
-        getResultFromApi()
-    }
 
     @Throws(SpreadSheetsException::class, IOException::class)
     fun getResultFromApi(): Observable<Sheets.Spreadsheets.Values.BatchGet> {
@@ -102,7 +96,7 @@ class ImportRepository(val context: Context) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_sheet_name))
         }
 
-        Log.d("test", "isExportFolder is true")
+        Timber.d("isExportFolder is true")
         val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
         val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
 
@@ -128,7 +122,7 @@ class ImportRepository(val context: Context) {
             }
         }
 
-        Log.d("test", "isExportFolder RowCount=$sheetRow")
+        Timber.d("isExportFolder RowCount=$sheetRow")
     }
 
     fun isGooglePlayServiceAvailable(context: Context): Boolean {
@@ -138,10 +132,10 @@ class ImportRepository(val context: Context) {
 
     fun isAllowedAccountPermission(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            Log.d("test", "isAllowedAccountPermission sdk version")
+            Timber.d("isAllowedAccountPermission sdk version")
             return true
         } else {
-            Log.d("test", "isAllowedAccountPermission readContactsPermissionCheck ${context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS)}")
+            Timber.d("isAllowedAccountPermission readContactsPermissionCheck ${context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS)}")
             return context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED
         }
     }
@@ -162,7 +156,7 @@ class ImportRepository(val context: Context) {
         val weightItem = WeightItemEntity()
         for (i in row.indices) {
             val str = row[i] as String
-            Log.d("importRepository", "str = $str")
+            Timber.d("str = $str")
             try {
                 when (COLUMNS.values()[i]) {
                     COLUMNS.DATE -> {
@@ -207,6 +201,6 @@ class ImportRepository(val context: Context) {
     }
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String
-            = COLUMNS.values().get(columnNum).columnName + rowNum
+            = COLUMNS.values()[columnNum].columnName + rowNum
 
 }

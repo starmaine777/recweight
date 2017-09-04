@@ -13,7 +13,6 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.text.format.DateFormat
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
@@ -25,6 +24,7 @@ import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_weight_input.*
+import timber.log.Timber
 import java.util.*
 
 /**
@@ -49,7 +49,7 @@ class WeightInputFragment : Fragment() {
         val TAG_DIALOGS = "dialogs"
 
         fun newInstance(weightInputMode: WEIGHT_INPUT_MODE, id: Long?): WeightInputFragment {
-            Log.d("test", "newInstance")
+            Timber.d("newInstance mode = $weightInputMode, id = $id")
             val fragment = WeightInputFragment()
             val bundle = Bundle()
             bundle.putSerializable(ARGS_MODE, weightInputMode)
@@ -79,7 +79,6 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        Log.d(TAG, "onViewCreated")
         weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID), {
             //dataGetSuccess
             dataBinding?.weightItem = weightInputVm.inputEntity
@@ -203,7 +202,7 @@ class WeightInputFragment : Fragment() {
                 toggleStar.isChecked,
                 editMemo.text.toString(),
                 {
-                    Log.d(TAG, "insertOrUpdateWeightItem complete")
+                    Timber.d(TAG, "insertOrUpdateWeightItem complete")
                     fragmentManager.popBackStack()
                 }
         )

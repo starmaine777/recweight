@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
-import android.util.Log
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
@@ -21,6 +20,7 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 
 /**
  * ImportのURL入力Fragment
@@ -38,17 +38,15 @@ class ImportUrlFragment : Fragment() {
     }
 
     private fun startToGetSpleadSheetsData() {
-        Log.d("test", "startToGetSpleadSheetsData!!!")
+        Timber.d("startToGetSpleadSheetsData!!!")
         importRepo.getResultFromApi()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    Log.d("test", "onNext!!!")
-                    showFinishDialog(R.string.d_import_complete_title, R.string.d_import_complete)
                 }, { t: Throwable ->
-                    Log.d("test", "Error happened! $t")
+                    Timber.d("Error happened! $t")
                     if (t is SpreadSheetsException) {
-                        Log.d("test", "Error happened! ${t.type}, code = ${t.errorCode}")
+                        Timber.d("Error happened! ${t.type}, code = ${t.errorCode}")
                         when (t.type) {
                             ERROR_TYPE.ACCOUNT_PERMISSION_DENIED -> {
                                 requestPermissions(arrayOf(Manifest.permission.GET_ACCOUNTS), REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal)
@@ -71,11 +69,11 @@ class ImportUrlFragment : Fragment() {
                             }
                         }
                     } else if (t is UserRecoverableAuthIOException) {
-                        Log.d("test", "UserRecoverableAuthIOException startActivity")
+                        Timber.d("UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
                 }, {
-                    Log.d("test", "Completed!!!")
+                    Timber.d("Completed!!!")
                     showFinishDialog(R.string.d_import_complete_title, R.string.d_import_complete)
                 }).let { disposable.add(it) }
     }
@@ -88,10 +86,9 @@ class ImportUrlFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.d("test", "onActivityResult requestCode = $requestCode")
+        Timber.d("onActivityResult requestCode = $requestCode")
         when (requestCode) {
             REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
-                Log.d("test", "onActivityResult SHOW_ACCOUNT_PERMISSION")
                 startToGetSpleadSheetsData()
             }
 
@@ -125,14 +122,11 @@ class ImportUrlFragment : Fragment() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        Log.d("test", "onRequestPermissionResult requestCode = $requestCode")
+        Timber.d("onRequestPermissionResult requestCode = $requestCode")
         when (requestCode) {
             REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("test", "onRequestPermissionResult OK!!!")
                     startToGetSpleadSheetsData()
-                } else {
-                    Log.d("test", "onRequestPermissionResult NG!!!")
                 }
             }
         }

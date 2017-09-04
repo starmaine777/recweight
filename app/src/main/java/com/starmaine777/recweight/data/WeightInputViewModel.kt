@@ -2,10 +2,10 @@ package com.starmaine777.recweight.data
 
 import android.arch.lifecycle.ViewModel
 import android.content.Context
-import android.util.Log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.util.*
 
 /**
@@ -21,7 +21,7 @@ class WeightInputViewModel : ViewModel() {
 
     var selectedEntityId: Long? = 0L
     fun selectedEntityId(context: Context, id: Long?, successCallback: () -> Unit, errorCallback: () -> Unit) {
-        Log.d(TAG, "selectedEntityId id = $id")
+        Timber.d("selectedEntityId id = $id")
         if (id == null) {
             selectedEntityId = null
             inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
@@ -38,9 +38,9 @@ class WeightInputViewModel : ViewModel() {
                         }
                         calendar = inputEntity.recTime.clone() as Calendar
                         successCallback()
-                        Log.d(TAG, "selectedEntity getInputEntities $inputEntity")
+                        Timber.d("selectedEntity getInputEntities $inputEntity")
                     }, { _ ->
-                        Log.d(TAG, "selectedEntity Error!")
+                        Timber.d("selectedEntity Error!")
                         errorCallback()
                     }
                     )
@@ -66,7 +66,7 @@ class WeightInputViewModel : ViewModel() {
                                  callback: () -> Unit
     ) {
 
-        Log.d(TAG, "insertOrupdateWeightItem id = ${inputEntity.id}")
+        Timber.d("insertOrupdateWeightItem id = ${inputEntity.id}")
         inputEntity = inputEntity.copy(recTime = calendar,
                 weight = weight,
                 fat = fat,
@@ -84,14 +84,14 @@ class WeightInputViewModel : ViewModel() {
                 WeightItemRepository.getWeightItemById(context, inputEntity.id)
                         .subscribeOn(Schedulers.io())
                         .subscribe { t: List<WeightItemEntity> ->
-                            Log.d(TAG, "getWeightItemEntityById $t")
+                            Timber.d("getWeightItemEntityById $t")
 
                             if (t.isEmpty()) {
                                 disposable.add(WeightItemRepository.insertWeightItem(context, inputEntity)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe {
-                                            Log.d(TAG, "insertEntity complete")
+                                            Timber.d("insertEntity complete")
                                             callback()
                                             disposable.dispose()
                                         })
@@ -100,7 +100,7 @@ class WeightInputViewModel : ViewModel() {
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe {
-                                            Log.d(TAG, "updateItemComplete complete")
+                                            Timber.d("updateItemComplete complete")
                                             callback()
                                             disposable.dispose()
                                         })
