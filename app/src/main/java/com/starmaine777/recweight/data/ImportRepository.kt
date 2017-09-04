@@ -17,6 +17,7 @@ import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.EXPORT_DATE_STR
+import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.convertToCalendar
 import com.starmaine777.recweight.utils.isDeviceOnline
 import io.reactivex.Observable
@@ -59,7 +60,7 @@ class ImportRepository(val context: Context) {
                 emitter.onError(SpreadSheetsException(error, statusCode))
             } else if (isAllowedAccountPermission()) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
-            } else if (TextUtils.isEmpty(credential.selectedAccountName)) {
+            } else if (!existsChoicedAccount()) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
             } else if (!isDeviceOnline(context)) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
@@ -140,6 +141,18 @@ class ImportRepository(val context: Context) {
         }
     }
 
+    fun existsChoicedAccount() :Boolean {
+        if (!TextUtils.isEmpty(credential.selectedAccountName)) return true
+        val savedName = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, "")
+        Timber.d("savedName = $savedName")
+        if (!TextUtils.isEmpty(savedName)) {
+            credential.selectedAccountName = savedName
+            return true
+        } else {
+            return false
+        }
+    }
+
     private fun isCollectFileName(response: JSONObject): Boolean
             = response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
 
@@ -197,7 +210,7 @@ class ImportRepository(val context: Context) {
                 throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, getErrorCell(i, rowNum))
             }
         }
-        WeightItemRepository.getDatabase(context).weightItemDao().insert(weightItem)
+        WeightItemRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
     }
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String

@@ -96,7 +96,7 @@ class ImportUrlFragment : Fragment() {
                 if (resultCode == Activity.RESULT_OK) {
                     val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
                     if (!TextUtils.isEmpty(accountName)) {
-                        val editor = activity.getPreferences(Context.MODE_PRIVATE).edit()
+                        val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
                         editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                         editor.apply()
                         importRepo.credential.selectedAccountName = accountName!!
