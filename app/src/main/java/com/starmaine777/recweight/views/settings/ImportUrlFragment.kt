@@ -61,7 +61,7 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
-                                showFinishDialog(R.string.err_import_title_fatal, R.string.err_import_fatal)
+                                showFinishDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
                             ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
                                 showFinishDialog(getString(R.string.err_import_title_illegal_template),

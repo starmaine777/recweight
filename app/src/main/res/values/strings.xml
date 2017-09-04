@@ -22,6 +22,11 @@
 
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
+    <string name="settings_main_all_delete">体重データの全削除</string>
+    <string name="d_settings_all_delete_title">体重データの全削除</string>
+    <string name="d_settings_all_delete">体重のデータをすべて削除します。本当によろしいですか？</string>
+    <string name="d_settings_complete_all_delete">すべての体重のデータを削除しました。</string>
+
     <string name="d_import_complete_title">インポート完了</string>
     <string name="d_import_complete">インポートが成功しました。</string>
 
@@ -36,8 +41,8 @@
     <string name="err_import_illegal_sheet_num">シート数</string>
     <string name="err_import_illegal_column_name">カラム名</string>
     <string name="err_import_illegal_column_num">カラム数</string>
-    <string name="err_import_title_fatal">致命的エラー</string>
-    <string name="err_import_fatal">致命的エラーが発生しました。再試行してください。</string>
+    <string name="err_fatal_title">致命的エラー</string>
+    <string name="err_fatal">致命的エラーが発生しました。再試行してください。</string>
 
     <string name="export_file_name_header">RecWeight_export_</string>
     <string name="export_file_sheets_name">RecWeight</string>
