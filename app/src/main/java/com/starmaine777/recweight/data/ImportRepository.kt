@@ -51,7 +51,7 @@ class ImportRepository(val context: Context) {
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
     @Throws(SpreadSheetsException::class, IOException::class)
-    fun getResultFromApi(): Observable<Sheets.Spreadsheets.Values.BatchGet> {
+    fun getResultFromApi(): Observable<Int> {
         return Observable.create { emitter ->
             if (!isGooglePlayServiceAvailable(context)) {
                 val apiAvailability = GoogleApiAvailability.getInstance()
@@ -70,9 +70,32 @@ class ImportRepository(val context: Context) {
                 val service = Sheets.Builder(transport, jsonFactory, credential)
                         .setApplicationName(context.getString(R.string.app_name))
                         .build()
-
                 try {
-                    getDataFromApi(service)
+                    val response = JSONObject(service.spreadsheets().get(spreadSheetsId).execute())
+                    checkFileTemplate(response)
+                    val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
+
+                    emitter.onNext(sheetRow)
+
+                    val data = service.spreadsheets().values()
+                            .get(spreadSheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
+                            .execute()
+                            .getValues()
+
+                    for (i in data.indices) {
+                        when (i) {
+                            0 -> {
+                                if (!isCorrectFirstRow(data[i])) {
+                                    throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_name))
+                                }
+                            }
+                            else -> {
+                                importRowData(data[i], i)
+                            }
+                        }
+                        emitter.onNext(i)
+                    }
+
                     emitter.onComplete()
                 } catch (e: Exception) {
                     emitter.onError(e)
@@ -81,9 +104,10 @@ class ImportRepository(val context: Context) {
         }
     }
 
+
+
     @Throws(SpreadSheetsException::class, IOException::class)
-    fun getDataFromApi(service: Sheets) {
-        val response = JSONObject(service.spreadsheets().get(spreadSheetsId).execute())
+    fun checkFileTemplate(response: JSONObject) {
 
         if (!isCollectFileName(response)) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_file_name))
@@ -97,33 +121,11 @@ class ImportRepository(val context: Context) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_sheet_name))
         }
 
-        Timber.d("isExportFolder is true")
-        val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
         val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
 
         if (sheetColumn != COLUMNS.values().size) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_num))
         }
-
-        val data = service.spreadsheets().values()
-                .get(spreadSheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
-                .execute()
-                .getValues()
-
-        for (i in data.indices) {
-            when (i) {
-                0 -> {
-                    if (!isCorrectFirstRow(data[i])) {
-                        throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_name))
-                    }
-                }
-                else -> {
-                    importRowData(data[i], i)
-                }
-            }
-        }
-
-        Timber.d("isExportFolder RowCount=$sheetRow")
     }
 
     fun isGooglePlayServiceAvailable(context: Context): Boolean {

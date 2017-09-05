@@ -6,9 +6,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
@@ -20,6 +24,7 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_import_url.*
 import timber.log.Timber
 
 /**
@@ -31,18 +36,56 @@ class ImportUrlFragment : Fragment() {
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 
-    override fun onStart() {
-        super.onStart()
-        startToGetSpleadSheetsData()
-        disposable = CompositeDisposable()
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater?.inflate(R.layout.fragment_import_url, container, false)
     }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        buttonImportStart.setOnClickListener {
+            if (TextUtils.isEmpty(editImportUrl.text)) {
+                dialog = AlertDialog.Builder(context)
+                        .setTitle(R.string.err_title_input)
+                        .setMessage(R.string.err_url_empty)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
+            } else {
+                changeInputView(true)
+                startToGetSpleadSheetsData()
+            }
+        }
+    }
+
+    fun changeInputView(startProgress:Boolean) {
+        if (startProgress) {
+            areaUrlInput.visibility = View.GONE
+            areaProgress.visibility = View.VISIBLE
+            progressImport.isIndeterminate = true
+        } else {
+            areaUrlInput.visibility = View.VISIBLE
+            areaProgress.visibility = View.GONE
+            progressImport.isIndeterminate = false
+        }
+    }
+
 
     private fun startToGetSpleadSheetsData() {
         Timber.d("startToGetSpleadSheetsData!!!")
+        var isImporting = false
         importRepo.getResultFromApi()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
+                    index ->
+                    if (isImporting) {
+                        progressImport.progress++
+                    } else {
+                        // 各行import開始時.ProgressBarの設定変更
+                        progressImport.isIndeterminate = false
+                        progressImport.max = index
+                        progressImport.progress = 0
+                        isImporting = true
+                    }
                 }, { t: Throwable ->
                     Timber.d("Error happened! $t")
                     if (t is SpreadSheetsException) {
@@ -61,10 +104,10 @@ class ImportUrlFragment : Fragment() {
                             ERROR_TYPE.DEVICE_OFFLINE -> {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
-                                showFinishDialog(R.string.err_fatal_title, R.string.err_fatal)
+                                showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
                             ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
-                                showFinishDialog(getString(R.string.err_import_title_illegal_template),
+                                showRetryDialog(getString(R.string.err_import_title_illegal_template),
                                         getString(R.string.err_import_illegal_template, t.target))
                             }
                         }
@@ -74,7 +117,14 @@ class ImportUrlFragment : Fragment() {
                     }
                 }, {
                     Timber.d("Completed!!!")
-                    showFinishDialog(R.string.d_import_complete_title, R.string.d_import_complete)
+                    dialog = AlertDialog.Builder(context)
+                            .setTitle(R.string.d_import_complete_title)
+                            .setMessage(R.string.d_import_complete)
+                            .setOnDismissListener { fragmentManager.popBackStackImmediate() }
+                            .setPositiveButton(android.R.string.ok
+                                    , { dialog, _ -> dialog.dismiss() })
+                            .show()
+
                 }).let { disposable.add(it) }
     }
 
@@ -133,13 +183,13 @@ class ImportUrlFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    fun showFinishDialog(titleId: Int, messageId: Int) {
+    fun showRetryDialog(titleId: Int, messageId: Int) {
 
 
-        showFinishDialog(resources.getString(titleId), resources.getString(messageId))
+        showRetryDialog(resources.getString(titleId), resources.getString(messageId))
     }
 
-    fun showFinishDialog(title: String, message: String) {
+    fun showRetryDialog(title: String, message: String) {
         if (TextUtils.isEmpty(message)) {
             return
         }
@@ -149,7 +199,7 @@ class ImportUrlFragment : Fragment() {
             builder.setTitle(title)
         }
         builder.setMessage(message)
-                .setOnDismissListener { fragmentManager.popBackStack() }
+                .setOnDismissListener { changeInputView(false) }
                 .setPositiveButton(android.R.string.ok
                         , { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()
