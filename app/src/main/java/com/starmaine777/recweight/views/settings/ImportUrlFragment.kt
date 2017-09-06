@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,9 +55,22 @@ class ImportUrlFragment : Fragment() {
                 startToGetSpleadSheetsData()
             }
         }
+
+        view?.setOnKeyListener { view, i, keyEvent ->
+            // import中はbackさせない
+            Timber.d("onKey keyCode=$keyEvent, disposableSize=${disposable.size()}")
+            if (view != editImportUrl
+                    && keyEvent.keyCode == KeyEvent.KEYCODE_BACK
+                    && disposable.size() > 0
+                    ) {
+                return@setOnKeyListener false
+            }
+            return@setOnKeyListener true
+        }
+        view?.isFocusableInTouchMode = true
     }
 
-    fun changeInputView(startProgress:Boolean) {
+    fun changeInputView(startProgress: Boolean) {
         if (startProgress) {
             areaUrlInput.visibility = View.GONE
             areaProgress.visibility = View.VISIBLE
@@ -72,11 +86,10 @@ class ImportUrlFragment : Fragment() {
     private fun startToGetSpleadSheetsData() {
         Timber.d("startToGetSpleadSheetsData!!!")
         var isImporting = false
-        importRepo.getResultFromApi()
+        importRepo.getResultFromApi(editImportUrl.text.toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    index ->
+                .subscribe({ index ->
                     if (isImporting) {
                         progressImport.progress++
                     } else {
@@ -105,6 +118,9 @@ class ImportUrlFragment : Fragment() {
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
+                            }
+                            ERROR_TYPE.SHEETS_URL_ERROR -> {
+                                showRetryDialog(R.string.err_incorrect_url_title, R.string.err_incorrect_url)
                             }
                             ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
                                 showRetryDialog(getString(R.string.err_import_title_illegal_template),

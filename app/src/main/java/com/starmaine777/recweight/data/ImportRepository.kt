@@ -24,6 +24,7 @@ import io.reactivex.Observable
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
+import java.net.URL
 
 /**
  * Import用Api取得クラス
@@ -33,7 +34,8 @@ class ImportRepository(val context: Context) {
 
     companion object {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
-        val spreadSheetsId = "1AX6hePR64bAX9JB8G3Z4pHXk2VciKu9VrcaYW8J5f0Q"
+        val PATH_PREFIX = "/spreadsheets/d/"
+        val PATH_SUFFIX = "/edit"
     }
 
     enum class COLUMNS(val nameId: Int, val columnName: String) {
@@ -51,8 +53,25 @@ class ImportRepository(val context: Context) {
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
     @Throws(SpreadSheetsException::class, IOException::class)
-    fun getResultFromApi(): Observable<Int> {
+    fun getResultFromApi(urlStr: String): Observable<Int> {
         return Observable.create { emitter ->
+            var sheetsId: String?
+            try {
+                val url = URL(urlStr)
+                val path = url.path
+                if (path.startsWith(PATH_PREFIX)) {
+                    sheetsId = path.removePrefix(PATH_PREFIX)
+                    sheetsId = sheetsId.removeSuffix(PATH_SUFFIX)
+                } else {
+                    emitter.onError(SpreadSheetsException(ERROR_TYPE.SHEETS_URL_ERROR))
+                    return@create
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emitter.onError(SpreadSheetsException(ERROR_TYPE.SHEETS_URL_ERROR))
+                return@create
+            }
+
             if (!isGooglePlayServiceAvailable(context)) {
                 val apiAvailability = GoogleApiAvailability.getInstance()
                 val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
@@ -65,20 +84,23 @@ class ImportRepository(val context: Context) {
             } else if (!isDeviceOnline(context)) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
             } else {
+
+
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
                 val service = Sheets.Builder(transport, jsonFactory, credential)
                         .setApplicationName(context.getString(R.string.app_name))
                         .build()
                 try {
-                    val response = JSONObject(service.spreadsheets().get(spreadSheetsId).execute())
+
+                    val response = JSONObject(service.spreadsheets().get(sheetsId).execute())
                     checkFileTemplate(response)
                     val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
 
                     emitter.onNext(sheetRow)
 
                     val data = service.spreadsheets().values()
-                            .get(spreadSheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
+                            .get(sheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
                             .execute()
                             .getValues()
 
@@ -103,7 +125,6 @@ class ImportRepository(val context: Context) {
             }
         }
     }
-
 
 
     @Throws(SpreadSheetsException::class, IOException::class)
@@ -143,7 +164,7 @@ class ImportRepository(val context: Context) {
         }
     }
 
-    fun existsChoicedAccount() :Boolean {
+    fun existsChoicedAccount(): Boolean {
         if (!TextUtils.isEmpty(credential.selectedAccountName)) return true
         val savedName = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, "")
         Timber.d("savedName = $savedName")
