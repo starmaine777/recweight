@@ -1,11 +1,7 @@
 package com.starmaine777.recweight.data
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.text.TextUtils
-import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -16,10 +12,7 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
-import com.starmaine777.recweight.utils.EXPORT_DATE_STR
-import com.starmaine777.recweight.utils.PREFERENCE_KEY
-import com.starmaine777.recweight.utils.convertToCalendar
-import com.starmaine777.recweight.utils.isDeviceOnline
+import com.starmaine777.recweight.utils.*
 import io.reactivex.Observable
 import org.json.JSONObject
 import timber.log.Timber
@@ -36,18 +29,6 @@ class ImportRepository(val context: Context) {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
         val PATH_PREFIX = "/spreadsheets/d/"
         val PATH_SUFFIX = "/edit"
-    }
-
-    enum class COLUMNS(val nameId: Int, val columnName: String) {
-        DATE(R.string.export_file_sheets_column_date, "A"),
-        WEIGHT(R.string.export_file_sheets_column_weight, "B"),
-        FAT(R.string.export_file_sheets_column_fat, "C"),
-        DUMBBELL(R.string.export_file_sheets_column_dumbbell, "D"),
-        LIQUOR(R.string.export_file_sheets_column_liquor, "E"),
-        TOILET(R.string.export_file_sheets_column_toilet, "F"),
-        MOON(R.string.export_file_sheets_column_moon, "G"),
-        STAR(R.string.export_file_sheets_column_star, "H"),
-        MEMO(R.string.export_file_sheets_column_memo, "I"),
     }
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
@@ -77,9 +58,9 @@ class ImportRepository(val context: Context) {
                 val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
                 val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
                 emitter.onError(SpreadSheetsException(error, statusCode))
-            } else if (isAllowedAccountPermission()) {
+            } else if (isAllowedAccountPermission(context)) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
-            } else if (!existsChoicedAccount()) {
+            } else if (!existsChoseAccount(context, credential)) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
             } else if (!isDeviceOnline(context)) {
                 emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
@@ -144,35 +125,8 @@ class ImportRepository(val context: Context) {
 
         val sheetColumn = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("columnCount")
 
-        if (sheetColumn != COLUMNS.values().size) {
+        if (sheetColumn != SHEETS_COLUMNS.values().size) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_column_num))
-        }
-    }
-
-    fun isGooglePlayServiceAvailable(context: Context): Boolean {
-        val apiAvailability = GoogleApiAvailability.getInstance()
-        return apiAvailability.isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
-    }
-
-    fun isAllowedAccountPermission(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            Timber.d("isAllowedAccountPermission sdk version")
-            return true
-        } else {
-            Timber.d("isAllowedAccountPermission readContactsPermissionCheck ${context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS)}")
-            return context.checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    fun existsChoicedAccount(): Boolean {
-        if (!TextUtils.isEmpty(credential.selectedAccountName)) return true
-        val savedName = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, "")
-        Timber.d("savedName = $savedName")
-        if (!TextUtils.isEmpty(savedName)) {
-            credential.selectedAccountName = savedName
-            return true
-        } else {
-            return false
         }
     }
 
@@ -186,7 +140,7 @@ class ImportRepository(val context: Context) {
             = TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
 
     fun isCorrectFirstRow(row: List<Any>): Boolean
-            = row.indices.any { TextUtils.equals(context.getString(COLUMNS.values()[it].nameId), row[it] as String) }
+            = row.indices.any { TextUtils.equals(context.getString(SHEETS_COLUMNS.values()[it].nameId), row[it] as String) }
 
     fun importRowData(row: List<Any>, rowNum: Int) {
         val weightItem = WeightItemEntity()
@@ -194,8 +148,8 @@ class ImportRepository(val context: Context) {
             val str = row[i] as String
             Timber.d("str = $str")
             try {
-                when (COLUMNS.values()[i]) {
-                    COLUMNS.DATE -> {
+                when (SHEETS_COLUMNS.values()[i]) {
+                    SHEETS_COLUMNS.DATE -> {
                         val date = convertToCalendar(str, EXPORT_DATE_STR)
                         if (date == null) {
                             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, getErrorCell(i, rowNum))
@@ -203,28 +157,28 @@ class ImportRepository(val context: Context) {
                             weightItem.recTime = date
                         }
                     }
-                    COLUMNS.WEIGHT -> {
+                    SHEETS_COLUMNS.WEIGHT -> {
                         weightItem.weight = str.toDouble()
                     }
-                    COLUMNS.FAT -> {
+                    SHEETS_COLUMNS.FAT -> {
                         weightItem.fat = str.toDouble()
                     }
-                    COLUMNS.DUMBBELL -> {
+                    SHEETS_COLUMNS.DUMBBELL -> {
                         weightItem.showDumbbell = str.toBoolean()
                     }
-                    COLUMNS.TOILET -> {
+                    SHEETS_COLUMNS.TOILET -> {
                         weightItem.showToilet = str.toBoolean()
                     }
-                    COLUMNS.MOON -> {
+                    SHEETS_COLUMNS.MOON -> {
                         weightItem.showMoon = str.toBoolean()
                     }
-                    COLUMNS.LIQUOR -> {
+                    SHEETS_COLUMNS.LIQUOR -> {
                         weightItem.showLiquor = str.toBoolean()
                     }
-                    COLUMNS.STAR -> {
+                    SHEETS_COLUMNS.STAR -> {
                         weightItem.showStar = str.toBoolean()
                     }
-                    COLUMNS.MEMO -> {
+                    SHEETS_COLUMNS.MEMO -> {
                         weightItem.memo = str
                     }
                 }
@@ -237,6 +191,6 @@ class ImportRepository(val context: Context) {
     }
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String
-            = COLUMNS.values()[columnNum].columnName + rowNum
+            = SHEETS_COLUMNS.values()[columnNum].columnName + rowNum
 
 }
