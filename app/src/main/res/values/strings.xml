@@ -33,6 +33,7 @@
 
     <string name="settings_import_text_from_info">URLから情報を取得中です。</string>
     <string name="settings_import_text_importing">インポート中です</string>
+    <string name="snack_settings_import_backpress">処理中によりバックキーは押せません。</string>
     <string name="d_import_complete_title">インポート完了</string>
     <string name="d_import_complete">インポートが成功しました。</string>
 

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
@@ -14,6 +15,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
@@ -33,6 +35,11 @@ import timber.log.Timber
  * Created by 0025331458 on 2017/08/16.
  */
 class ImportUrlFragment : Fragment() {
+
+    companion object {
+        val TAG = "ImportUrlFragment"
+    }
+
     val importRepo: ImportRepository by lazy { ImportRepository(context) }
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
@@ -56,16 +63,19 @@ class ImportUrlFragment : Fragment() {
             }
         }
 
-        view?.setOnKeyListener { view, i, keyEvent ->
+        view?.setOnKeyListener { v, _, keyEvent ->
             // import中はbackさせない
-            Timber.d("onKey keyCode=$keyEvent, disposableSize=${disposable.size()}")
-            if (view != editImportUrl
+            Timber.d("setOnKeyListener keyEvent = $keyEvent")
+            if (v != editImportUrl
                     && keyEvent.keyCode == KeyEvent.KEYCODE_BACK
                     && disposable.size() > 0
                     ) {
-                return@setOnKeyListener false
+                if (keyEvent.action == KeyEvent.ACTION_UP) {
+                    Snackbar.make(this@ImportUrlFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
+                }
+                return@setOnKeyListener true
             }
-            return@setOnKeyListener true
+            return@setOnKeyListener false
         }
         view?.isFocusableInTouchMode = true
     }
@@ -220,5 +230,7 @@ class ImportUrlFragment : Fragment() {
                         , { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()
     }
+
+    fun canFinishFragment(): Boolean = (disposable.size() <= 0)
 
 }
