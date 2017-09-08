@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.ExportRepository
 import com.starmaine777.recweight.data.WeightItemRepository
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.views.adapter.SettingItem
@@ -38,6 +39,11 @@ class SettingsMainFragment : Fragment() {
                 activity.supportFragmentManager
                         .beginTransaction()
                         .replace(R.id.fragment, ImportUrlFragment(), null).addToBackStack(null).commit()
+            }),
+            SettingItem(R.string.settings_main_export, {
+                Timber.d("clicked Export")
+
+                createNewSheet()
             }),
             SettingItem(R.string.settings_main_all_delete, {
                 dialog = AlertDialog.Builder(context)
@@ -96,5 +102,20 @@ class SettingsMainFragment : Fragment() {
         }
 
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun createNewSheet() {
+        Timber.d("createNewSheets!")
+        val exportRepo = ExportRepository(context)
+
+        exportRepo.exportDatas(context)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    value ->
+                    Timber.d("createNewSheets result = $value")
+
+
+                }, {}, {}).let { disposable.add(it) }
     }
 }
