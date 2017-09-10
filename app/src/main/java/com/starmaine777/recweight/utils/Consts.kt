@@ -26,4 +26,5 @@ enum class PREFERENCE_KEY {
     ACCOUNT_NAME
 }
 
+val EXPORT_TITLE_DATE_STR = "yyyyMMdd_HHmm"
 val EXPORT_DATE_STR = "yyyy/MM/dd HH:mm:ss"
