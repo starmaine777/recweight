@@ -210,8 +210,6 @@ class ImportUrlFragment : Fragment() {
     }
 
     fun showRetryDialog(titleId: Int, messageId: Int) {
-
-
         showRetryDialog(resources.getString(titleId), resources.getString(messageId))
     }
 

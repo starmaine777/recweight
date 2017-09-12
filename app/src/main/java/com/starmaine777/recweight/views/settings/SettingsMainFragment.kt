@@ -42,8 +42,9 @@ class SettingsMainFragment : Fragment() {
             }),
             SettingItem(R.string.settings_main_export, {
                 Timber.d("clicked Export")
-
-                createNewSheet()
+                activity.supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment, ExportFragment(), null).addToBackStack(null).commit()
             }),
             SettingItem(R.string.settings_main_all_delete, {
                 dialog = AlertDialog.Builder(context)
@@ -102,20 +103,5 @@ class SettingsMainFragment : Fragment() {
         }
 
         super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    fun createNewSheet() {
-        Timber.d("createNewSheets!")
-        val exportRepo = ExportRepository(context)
-
-        exportRepo.exportDatas(context)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    value ->
-                    Timber.d("createNewSheets result = $value")
-
-
-                }, {}, {}).let { disposable.add(it) }
     }
 }
