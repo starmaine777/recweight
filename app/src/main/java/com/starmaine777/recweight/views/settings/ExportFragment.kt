@@ -1,10 +1,16 @@
 package com.starmaine777.recweight.views.settings
 
 import android.Manifest
+import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
@@ -14,15 +20,39 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_export.*
 import timber.log.Timber
 
 /**
+ * Export用画面
  * Created by 0025331458 on 2017/09/12.
  */
 class ExportFragment : Fragment() {
 
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
+
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater?.inflate(R.layout.fragment_export, container, false)
+    }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view?.setOnKeyListener { v, _, keyEvent ->
+            // import中はbackさせない
+            Timber.d("setOnKeyListener keyEvent = $keyEvent")
+            if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK
+                    && disposable.size() > 0
+                    ) {
+                if (keyEvent.action == KeyEvent.ACTION_UP) {
+                    Snackbar.make(this@ExportFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
+                }
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
+        view?.isFocusableInTouchMode = true
+    }
 
     override fun onResume() {
         super.onResume()
@@ -41,8 +71,6 @@ class ExportFragment : Fragment() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    value ->
-                    Timber.d("createNewSheets result = $value")
                 }, { t: Throwable ->
                     Timber.d("Error happened! $t")
                     if (t is SpreadSheetsException) {
@@ -76,6 +104,7 @@ class ExportFragment : Fragment() {
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
                 }, {
+                    progressExport.visibility = View.GONE
                 }).let { disposable.add(it) }
     }
 

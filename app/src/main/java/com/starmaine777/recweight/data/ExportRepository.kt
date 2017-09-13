@@ -1,6 +1,7 @@
 package com.starmaine777.recweight.data
 
 import android.content.Context
+import android.text.TextUtils
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
@@ -16,8 +17,11 @@ import timber.log.Timber
 import com.google.api.services.sheets.v4.model.*
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.utils.*
+import io.reactivex.Emitter
 import io.reactivex.Observable.create
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -34,7 +38,7 @@ class ExportRepository(val context: Context) {
 
     val credential: GoogleAccountCredential by lazy { GoogleAccountCredential.usingOAuth2(context, WRITE_SCOPES).setBackOff(ExponentialBackOff()) }
 
-    fun exportDatas(context: Context): Observable<String> {
+    fun exportDatas(context: Context): Observable<Int> {
         return create { emitter ->
 
             if (!isGooglePlayServiceAvailable(context)) {
@@ -61,60 +65,92 @@ class ExportRepository(val context: Context) {
 
                 Timber.d("startExportData service=$service")
 
+                val id = createExportFile(service)
 
-                writeExportDateToSheet(service, SHEET_ID)
-                Timber.d("writeExportDateToSheet complete")
+                if (TextUtils.isEmpty(id)) {
 
-//            val timeStamp = System.currentTimeMillis()
-//            val calendar = Calendar.getInstance()
-//
-//            calendar.timeInMillis = timeStamp
-//            val content = BatchUpdateSpreadsheetRequest()
-//            val requests = ArrayList<Request>()
-//            val addSheets = AddSheetRequest()
-//            val e = Request()
-//            val properties = SheetProperties()
-//            val formatter = SimpleDateFormat(EXPORT_TITLE_DATE_STR)
-//            properties.title = context.getString(R.string.export_file_name_header) + formatter.format(calendar.time)
-//            addSheets.properties = properties
-//            e.addSheet = addSheets
-//            requests.add(e)
-//            content.requests = requests
-//            Timber.d("startExportData startBatchUpdate")
-//            val response = service.spreadsheets().batchUpdate(properties.title, content)
-//            Timber.d("response = $response")
-//            emitter.onNext(response.toString())
-//
-//            val range = properties.title + "!A1:D1"
-//            val valueRange = ValueRange()
-//            val row = ArrayList<List<Any>>()
-//            val col = ArrayList<Any>()
-//            col.add("this")
-//            col.add("is")
-//            col.add("api")
-//            col.add("test")
-//            row.add(col)
-//            valueRange.setValues(row)
-//            valueRange.range = range
-//            service.spreadsheets().values()
-//                    .update(properties.title, range, valueRange)
-//                    .setValueInputOption("USER_ENTERED")
-//                    .execute()
-
+                } else {
+                    writeExportDateToSheet(service, id!!)
+                    emitter.onComplete()
+                }
             }
         }
 
     }
 
+    fun createExportFile(service: Sheets): String? {
+        val request = Spreadsheet()
+        val timeStamp = System.currentTimeMillis()
+        val calendar = Calendar.getInstance()
+
+        calendar.timeInMillis = timeStamp
+
+
+        val formatter = SimpleDateFormat(EXPORT_TITLE_DATE_STR)
+        val title = context.getString(R.string.export_file_name_header) + formatter.format(calendar.time)
+        request.spreadsheetId = title
+        val properties = SpreadsheetProperties()
+        properties.title = title
+        request.properties = properties
+
+        val sheet = Sheet()
+        val sheetProperties = SheetProperties()
+        sheetProperties.title = context.getString(R.string.export_file_sheets_name)
+        sheet.properties = sheetProperties
+        val sheetList = mutableListOf(sheet)
+
+        request.sheets = sheetList
+
+        try {
+            val response = service.spreadsheets().create(request).execute()
+            Timber.d("response = $response")
+            return response.spreadsheetId
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
     @Throws(UserRecoverableAuthIOException::class, IOException::class)
     fun writeExportDateToSheet(service: Sheets, spreadSheetId: String) {
-        val values = ArrayList<MutableList<Any>>()
-        val row = ArrayList<Any>()
+        val values = ArrayList<MutableList<Any?>>()
+        val row = ArrayList<Any?>()
         SHEETS_COLUMNS.values().mapTo(row) { it.name }
         values.add(row)
         val body = ValueRange().setValues(values)
-        Timber.d("writeExportDateToSheet !!")
-        val result = service.spreadsheets().values().update(spreadSheetId, "aaa!A1:I1", body).setValueInputOption("RAW").execute()
+
+        WeightItemRepository.getWeightItemList(context).subscribe { t ->
+            if (t.isEmpty()) {
+                return@subscribe
+            }
+
+            t.map { (recTime, weight, fat, showDumbbell, showLiquor, showToilet, showMoon, showStar, memo) ->
+                val weightRow = mutableListOf(convertToExportDateString(recTime),
+                        weight,
+                        fat,
+                        showDumbbell,
+                        showLiquor,
+                        showToilet,
+                        showMoon,
+                        showStar,
+                        memo
+                )
+                values.add(weightRow)
+            }
+
+            val range = "${context.getString(R.string.export_file_sheets_name)}!" +
+                    "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
+
+            service.spreadsheets().values().update(spreadSheetId, range, body).setValueInputOption("RAW").execute()
+            // TODO:シートサイズ小さくする
+
+
+        }
+    }
+
+    fun convertToExportDateString(calendar: Calendar): String? {
+        val formatter = SimpleDateFormat(EXPORT_DATE_STR)
+        return formatter.format(calendar.time)
     }
 
 

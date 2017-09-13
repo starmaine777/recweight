@@ -37,7 +37,7 @@ fun formatInputNumber(numStr: String, default: String): String {
     }
 }
 
-fun convertToCalendar(str: String, formatStr: String) : Calendar? {
+fun convertToCalendar(str: String, formatStr: String): Calendar? {
 
     val formatter = SimpleDateFormat(formatStr)
     val date = formatter.parse(str)
