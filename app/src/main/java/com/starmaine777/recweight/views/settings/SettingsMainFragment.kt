@@ -10,8 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.ExportRepository
 import com.starmaine777.recweight.data.WeightItemRepository
+import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.views.adapter.SettingItem
 import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
@@ -69,6 +70,11 @@ class SettingsMainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         recyclerSettingsMain.layoutManager = LinearLayoutManager(context)
         recyclerSettingsMain.adapter = SettingsMainAdapter(settingsItems)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.activity_settings)))
     }
 
     override fun onStop() {

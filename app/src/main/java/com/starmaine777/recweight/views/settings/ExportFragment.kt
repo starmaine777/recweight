@@ -1,10 +1,10 @@
 package com.starmaine777.recweight.views.settings
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.view.KeyEvent
@@ -16,6 +16,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ExportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
+import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -29,8 +31,13 @@ import timber.log.Timber
  */
 class ExportFragment : Fragment() {
 
+    companion object {
+        val TAG = "ExportFragment"
+    }
+
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
+    val exportRepo: ExportRepository by lazy { ExportRepository(context) }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater?.inflate(R.layout.fragment_export, container, false)
@@ -38,6 +45,15 @@ class ExportFragment : Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        btnExportShare.setOnClickListener {
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_TEXT, exportRepo.exportedUrlStr)
+
+            startActivity(intent)
+        }
+
         view?.setOnKeyListener { v, _, keyEvent ->
             // import中はbackさせない
             Timber.d("setOnKeyListener keyEvent = $keyEvent")
@@ -54,9 +70,14 @@ class ExportFragment : Fragment() {
         view?.isFocusableInTouchMode = true
     }
 
+    override fun onStart() {
+        super.onStart()
+        RxBus.publish(UpdateToolbarEvent(false, context.getString(R.string.toolbar_title_import)))
+    }
+
     override fun onResume() {
         super.onResume()
-        exportDatas()
+        exportData()
     }
 
     override fun onStop() {
@@ -65,8 +86,8 @@ class ExportFragment : Fragment() {
     }
 
     @Throws()
-    fun exportDatas() {
-        val exportRepo = ExportRepository(context)
+    fun exportData() {
+        Timber.d("exportData repo=$exportRepo")
         exportRepo.exportDatas(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -91,12 +112,8 @@ class ExportFragment : Fragment() {
                             SpreadSheetsException.ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
-                            SpreadSheetsException.ERROR_TYPE.SHEETS_URL_ERROR -> {
-                                showRetryDialog(R.string.err_incorrect_url_title, R.string.err_incorrect_url)
-                            }
-                            SpreadSheetsException.ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR -> {
-                                showRetryDialog(getString(R.string.err_import_title_illegal_template),
-                                        getString(R.string.err_import_illegal_template, t.target))
+                            else -> {
+                                showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
                         }
                     } else if (t is UserRecoverableAuthIOException) {
@@ -104,7 +121,12 @@ class ExportFragment : Fragment() {
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                     }
                 }, {
-                    progressExport.visibility = View.GONE
+                    Timber.d("complete exportData!! repo=$exportRepo url=${exportRepo.exportedUrlStr}")
+                    editExportUrl.setText(exportRepo.exportedUrlStr)
+                    areaProgress.visibility = View.GONE
+                    areaExportUrl.visibility = View.VISIBLE
+                    RxBus.publish(UpdateToolbarEvent(true))
+
                 }).let { disposable.add(it) }
     }
 

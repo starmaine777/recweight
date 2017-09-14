@@ -15,13 +15,14 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
+import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -96,6 +97,7 @@ class ImportUrlFragment : Fragment() {
     private fun startToGetSpleadSheetsData() {
         Timber.d("startToGetSpleadSheetsData!!!")
         var isImporting = false
+        RxBus.publish(UpdateToolbarEvent(false))
         importRepo.getResultFromApi(editImportUrl.text.toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -140,6 +142,7 @@ class ImportUrlFragment : Fragment() {
                     } else if (t is UserRecoverableAuthIOException) {
                         Timber.d("UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
+                        RxBus.publish(UpdateToolbarEvent(true))
                     }
                 }, {
                     Timber.d("Completed!!!")
@@ -152,6 +155,11 @@ class ImportUrlFragment : Fragment() {
                             .show()
 
                 }).let { disposable.add(it) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_import)))
     }
 
     override fun onStop() {

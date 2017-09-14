@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
     <RelativeLayout
         android:id="@+id/areaProgress"
@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="48dp"
-            android:layout_marginStart="48dp" />
+            android:layout_marginStart="48dp"/>
 
     </RelativeLayout>
 
@@ -23,8 +23,8 @@
         android:id="@+id/areaExportUrl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/textImportDescription"
@@ -32,17 +32,28 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:padding="16dp"
-            android:text="@string/settings_import_description" />
+            android:text="@string/settings_export_description"/>
 
         <EditText
-            android:id="@+id/editImportUrl"
+            android:id="@+id/editExportUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/textImportDescription"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:hint="@string/settings_import_hint_url"
-            android:inputType="textUri" />
+            android:inputType="textUri"/>
+
+        <Button
+            android:id="@+id/btnExportShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editExportUrl"
+            android:layout_centerHorizontal="true"
+            android:drawableStart="@drawable/icon_share"
+            android:paddingTop="16dp"
+            android:text="@string/settings_export_share"
+            />
 
     </RelativeLayout>
 

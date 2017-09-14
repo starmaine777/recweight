@@ -2,7 +2,6 @@ package com.starmaine777.recweight.data
 
 import android.content.Context
 import android.text.TextUtils
-import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -32,13 +31,12 @@ class ExportRepository(val context: Context) {
 
     companion object {
         private val WRITE_SCOPES = mutableListOf(SheetsScopes.DRIVE_FILE, SheetsScopes.SPREADSHEETS)
-        private val SHEET_ID = "1s4SSJwTzQUSQMHbEyROZRYr__NGkUYHd14NIoSrzQdU"
-
     }
 
     val credential: GoogleAccountCredential by lazy { GoogleAccountCredential.usingOAuth2(context, WRITE_SCOPES).setBackOff(ExponentialBackOff()) }
+    var exportedUrlStr: String? = null
 
-    fun exportDatas(context: Context): Observable<Int> {
+    fun exportDatas(context: Context): Observable<String> {
         return create { emitter ->
 
             if (!isGooglePlayServiceAvailable(context)) {
@@ -53,8 +51,6 @@ class ExportRepository(val context: Context) {
             } else if (!isDeviceOnline(context)) {
                 emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.DEVICE_OFFLINE))
             } else {
-
-
                 Timber.d("startExportData")
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
@@ -68,10 +64,8 @@ class ExportRepository(val context: Context) {
                 val id = createExportFile(service)
 
                 if (TextUtils.isEmpty(id)) {
-
                 } else {
-                    writeExportDateToSheet(service, id!!)
-                    emitter.onComplete()
+                    writeExportDateToSheet(service, id!!, emitter)
                 }
             }
         }
@@ -112,10 +106,10 @@ class ExportRepository(val context: Context) {
     }
 
     @Throws(UserRecoverableAuthIOException::class, IOException::class)
-    fun writeExportDateToSheet(service: Sheets, spreadSheetId: String) {
+    fun writeExportDateToSheet(service: Sheets, spreadSheetId: String, emitter: Emitter<String>) {
         val values = ArrayList<MutableList<Any?>>()
         val row = ArrayList<Any?>()
-        SHEETS_COLUMNS.values().mapTo(row) { it.name }
+        SHEETS_COLUMNS.values().mapTo(row) { context.getString(it.nameId) }
         values.add(row)
         val body = ValueRange().setValues(values)
 
@@ -144,7 +138,9 @@ class ExportRepository(val context: Context) {
             service.spreadsheets().values().update(spreadSheetId, range, body).setValueInputOption("RAW").execute()
             // TODO:シートサイズ小さくする
 
+            exportedUrlStr = "https://docs.google.com/spreadsheets/d/$spreadSheetId"
 
+            emitter.onComplete()
         }
     }
 
