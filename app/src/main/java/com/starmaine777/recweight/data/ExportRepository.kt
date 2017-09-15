@@ -1,7 +1,6 @@
 package com.starmaine777.recweight.data
 
 import android.content.Context
-import android.text.TextUtils
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -36,7 +35,7 @@ class ExportRepository(val context: Context) {
     val credential: GoogleAccountCredential by lazy { GoogleAccountCredential.usingOAuth2(context, WRITE_SCOPES).setBackOff(ExponentialBackOff()) }
     var exportedUrlStr: String? = null
 
-    fun exportDatas(context: Context): Observable<String> {
+    fun exportData(context: Context): Observable<String> {
         return create { emitter ->
 
             if (!isGooglePlayServiceAvailable(context)) {
@@ -60,53 +59,14 @@ class ExportRepository(val context: Context) {
                         .build()
 
                 Timber.d("startExportData service=$service")
-
-                val id = createExportFile(service)
-
-                if (TextUtils.isEmpty(id)) {
-                } else {
-                    writeExportDateToSheet(service, id!!, emitter)
-                }
+                writeExportDate(service, emitter)
             }
         }
 
     }
 
-    fun createExportFile(service: Sheets): String? {
-        val request = Spreadsheet()
-        val timeStamp = System.currentTimeMillis()
-        val calendar = Calendar.getInstance()
-
-        calendar.timeInMillis = timeStamp
-
-
-        val formatter = SimpleDateFormat(EXPORT_TITLE_DATE_STR)
-        val title = context.getString(R.string.export_file_name_header) + formatter.format(calendar.time)
-        request.spreadsheetId = title
-        val properties = SpreadsheetProperties()
-        properties.title = title
-        request.properties = properties
-
-        val sheet = Sheet()
-        val sheetProperties = SheetProperties()
-        sheetProperties.title = context.getString(R.string.export_file_sheets_name)
-        sheet.properties = sheetProperties
-        val sheetList = mutableListOf(sheet)
-
-        request.sheets = sheetList
-
-        try {
-            val response = service.spreadsheets().create(request).execute()
-            Timber.d("response = $response")
-            return response.spreadsheetId
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return null
-    }
-
-    @Throws(UserRecoverableAuthIOException::class, IOException::class)
-    fun writeExportDateToSheet(service: Sheets, spreadSheetId: String, emitter: Emitter<String>) {
+    @Throws(UserRecoverableAuthIOException::class, IOException::class, SpreadSheetsException::class)
+    fun writeExportDate(service: Sheets, emitter: Emitter<String>) {
         val values = ArrayList<MutableList<Any?>>()
         val row = ArrayList<Any?>()
         SHEETS_COLUMNS.values().mapTo(row) { context.getString(it.nameId) }
@@ -135,18 +95,59 @@ class ExportRepository(val context: Context) {
             val range = "${context.getString(R.string.export_file_sheets_name)}!" +
                     "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
 
-            service.spreadsheets().values().update(spreadSheetId, range, body).setValueInputOption("RAW").execute()
-            // TODO:シートサイズ小さくする
+            // sheet作成
+            val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1)
+            if (spreadSheet != null) {
+                service.spreadsheets().values().update(spreadSheet.spreadsheetId, range, body).setValueInputOption("RAW").execute()
 
-            exportedUrlStr = "https://docs.google.com/spreadsheets/d/$spreadSheetId"
+                exportedUrlStr = "https://docs.google.com/spreadsheets/d/${spreadSheet.spreadsheetId}"
 
-            emitter.onComplete()
+                emitter.onComplete()
+            } else {
+                throw SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.FATAL_ERROR)
+            }
         }
     }
 
     fun convertToExportDateString(calendar: Calendar): String? {
-        val formatter = SimpleDateFormat(EXPORT_DATE_STR)
+        val formatter = SimpleDateFormat(EXPORT_DATE_STR, Locale.US)
         return formatter.format(calendar.time)
+    }
+
+    fun createExportFile(service: Sheets, rowCount: Int, columnCount: Int): Spreadsheet? {
+        val request = Spreadsheet()
+        val timeStamp = System.currentTimeMillis()
+        val calendar = Calendar.getInstance()
+
+        calendar.timeInMillis = timeStamp
+
+        val formatter = SimpleDateFormat(EXPORT_TITLE_DATE_STR, Locale.US)
+        val title = context.getString(R.string.export_file_name_header) + formatter.format(calendar.time)
+        request.spreadsheetId = title
+        val properties = SpreadsheetProperties()
+        properties.title = title
+        request.properties = properties
+
+        val sheet = Sheet()
+        val sheetProperties = SheetProperties()
+        sheetProperties.title = context.getString(R.string.export_file_sheets_name)
+        val gridProperty = GridProperties()
+        gridProperty.rowCount = rowCount
+        gridProperty.columnCount = columnCount
+        sheetProperties.gridProperties = gridProperty
+        sheet.properties = sheetProperties
+        val sheetList = mutableListOf(sheet)
+
+        request.sheets = sheetList
+
+        try {
+            val response = service.spreadsheets().create(request).execute()
+            Timber.d("response = $response")
+            return response
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
 

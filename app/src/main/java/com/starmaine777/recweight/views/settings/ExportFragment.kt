@@ -88,7 +88,7 @@ class ExportFragment : Fragment() {
     @Throws()
     fun exportData() {
         Timber.d("exportData repo=$exportRepo")
-        exportRepo.exportDatas(context)
+        exportRepo.exportData(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
