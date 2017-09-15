@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -15,6 +16,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
@@ -51,17 +53,13 @@ class ImportUrlFragment : Fragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        editImportUrl.setOnEditorActionListener { _, _, _ ->
+            startImport()
+            return@setOnEditorActionListener true
+        }
+
         buttonImportStart.setOnClickListener {
-            if (TextUtils.isEmpty(editImportUrl.text)) {
-                dialog = AlertDialog.Builder(context)
-                        .setTitle(R.string.err_title_input)
-                        .setMessage(R.string.err_url_empty)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
-            } else {
-                changeInputView(true)
-                startToGetSpleadSheetsData()
-            }
+            startImport()
         }
 
         view?.setOnKeyListener { v, _, keyEvent ->
@@ -162,6 +160,19 @@ class ImportUrlFragment : Fragment() {
         RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_import)))
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.showSoftInput(editImportUrl, InputMethodManager.SHOW_IMPLICIT)
+        editImportUrl.requestFocus()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hideKeyboard()
+    }
+
     override fun onStop() {
         super.onStop()
         disposable.dispose()
@@ -202,6 +213,30 @@ class ImportUrlFragment : Fragment() {
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    fun hideKeyboard() {
+        if (editImportUrl.hasFocus()) editImportUrl.clearFocus()
+
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (activity.currentFocus != null) {
+            inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+        }
+
+    }
+
+    fun startImport() {
+        if (TextUtils.isEmpty(editImportUrl.text)) {
+            dialog = AlertDialog.Builder(context)
+                    .setTitle(R.string.err_title_input)
+                    .setMessage(R.string.err_url_empty)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+        } else {
+            hideKeyboard()
+            changeInputView(true)
+            startToGetSpleadSheetsData()
         }
     }
 
