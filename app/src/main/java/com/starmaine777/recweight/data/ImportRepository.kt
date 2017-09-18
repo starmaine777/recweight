@@ -142,6 +142,7 @@ class ImportRepository(val context: Context) {
     fun isCorrectFirstRow(row: List<Any>): Boolean
             = row.indices.any { TextUtils.equals(context.getString(SHEETS_COLUMNS.values()[it].nameId), row[it] as String) }
 
+    @Throws(SpreadSheetsException::class)
     fun importRowData(row: List<Any>, rowNum: Int) {
         val weightItem = WeightItemEntity()
         for (i in row.indices) {

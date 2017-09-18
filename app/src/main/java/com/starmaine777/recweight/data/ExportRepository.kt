@@ -9,14 +9,14 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
-import com.starmaine777.recweight.R
-import io.reactivex.Observable
-import timber.log.Timber
 import com.google.api.services.sheets.v4.model.*
+import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.utils.*
 import io.reactivex.Emitter
+import io.reactivex.Observable
 import io.reactivex.Observable.create
+import timber.log.Timber
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,7 +59,11 @@ class ExportRepository(val context: Context) {
                         .build()
 
                 Timber.d("startExportData service=$service")
-                writeExportDate(service, emitter)
+                try {
+                    writeExportDate(service, emitter)
+                } catch (e: Exception) {
+                    emitter.onError(e)
+                }
             }
         }
 
@@ -96,7 +100,7 @@ class ExportRepository(val context: Context) {
                     "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
 
             // sheet作成
-            val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1)
+            val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1, emitter)
             if (spreadSheet != null) {
                 service.spreadsheets().values().update(spreadSheet.spreadsheetId, range, body).setValueInputOption("RAW").execute()
 
@@ -114,7 +118,7 @@ class ExportRepository(val context: Context) {
         return formatter.format(calendar.time)
     }
 
-    fun createExportFile(service: Sheets, rowCount: Int, columnCount: Int): Spreadsheet? {
+    fun createExportFile(service: Sheets, rowCount: Int, columnCount: Int, emitter: Emitter<String>): Spreadsheet? {
         val request = Spreadsheet()
         val timeStamp = System.currentTimeMillis()
         val calendar = Calendar.getInstance()
@@ -123,7 +127,6 @@ class ExportRepository(val context: Context) {
 
         val formatter = SimpleDateFormat(EXPORT_TITLE_DATE_STR, Locale.US)
         val title = context.getString(R.string.export_file_name_header) + formatter.format(calendar.time)
-        request.spreadsheetId = title
         val properties = SpreadsheetProperties()
         properties.title = title
         request.properties = properties
@@ -145,9 +148,9 @@ class ExportRepository(val context: Context) {
             Timber.d("response = $response")
             return response
         } catch (e: Exception) {
-            e.printStackTrace()
+            emitter.onError(e)
+            return null
         }
-        return null
     }
 
 
