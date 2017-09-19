@@ -58,6 +58,8 @@
     <string name="err_url_empty">URLを入力してください。</string>
     <string name="err_incorrect_url_title">誤ったURL</string>
     <string name="err_incorrect_url">正しいURLを入力してください。</string>
+    <string name="err_offline_title">ネットワーク利用不可</string>
+    <string name="err_offline">ネットワークが利用できません。ネットワーク接続可能な状態にしてください。</string>
 
     <string name="export_file_name_header">RecWeight_export_</string>
     <string name="export_file_sheets_name">RecWeight</string>

@@ -16,8 +16,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ExportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
-import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -39,9 +39,8 @@ class ExportFragment : Fragment() {
     var dialog: AlertDialog? = null
     val exportRepo: ExportRepository by lazy { ExportRepository(context) }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_export, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater?.inflate(R.layout.fragment_export, container, false)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -108,6 +107,7 @@ class ExportFragment : Fragment() {
                                 apiAvailability.getErrorDialog(activity, t.errorCode, REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
                             }
                             SpreadSheetsException.ERROR_TYPE.DEVICE_OFFLINE -> {
+                                showRetryDialog(R.string.err_offline_title, R.string.err_offline)
                             }
                             SpreadSheetsException.ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)

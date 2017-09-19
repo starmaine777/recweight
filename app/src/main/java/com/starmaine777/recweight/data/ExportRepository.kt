@@ -39,16 +39,24 @@ class ExportRepository(val context: Context) {
         return create { emitter ->
 
             if (!isGooglePlayServiceAvailable(context)) {
-                val apiAvailability = GoogleApiAvailability.getInstance()
-                val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
-                val error = if (apiAvailability.isUserResolvableError(statusCode)) SpreadSheetsException.ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else SpreadSheetsException.ERROR_TYPE.FATAL_ERROR
-                emitter.onError(SpreadSheetsException(error, statusCode))
+                if (!emitter.isDisposed) {
+                    val apiAvailability = GoogleApiAvailability.getInstance()
+                    val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
+                    val error = if (apiAvailability.isUserResolvableError(statusCode)) SpreadSheetsException.ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else SpreadSheetsException.ERROR_TYPE.FATAL_ERROR
+                    emitter.onError(SpreadSheetsException(error, statusCode))
+                }
             } else if (isAllowedAccountPermission(context)) {
-                emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
+                }
             } else if (!existsChoseAccount(context, credential)) {
-                emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.ACCOUNT_NOT_SELECTED))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.ACCOUNT_NOT_SELECTED))
+                }
             } else if (!isDeviceOnline(context)) {
-                emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.DEVICE_OFFLINE))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.DEVICE_OFFLINE))
+                }
             } else {
                 Timber.d("startExportData")
                 val transport = AndroidHttp.newCompatibleTransport()
@@ -62,7 +70,9 @@ class ExportRepository(val context: Context) {
                 try {
                     writeExportDate(service, emitter)
                 } catch (e: Exception) {
-                    emitter.onError(e)
+                    if (!emitter.isDisposed) {
+                        emitter.onError(e)
+                    }
                 }
             }
         }

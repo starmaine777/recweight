@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -23,8 +22,8 @@ import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
-import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -47,9 +46,8 @@ class ImportUrlFragment : Fragment() {
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_import_url, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater?.inflate(R.layout.fragment_import_url, container, false)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -125,6 +123,7 @@ class ImportUrlFragment : Fragment() {
                                 apiAvailability.getErrorDialog(activity, t.errorCode, REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
                             }
                             ERROR_TYPE.DEVICE_OFFLINE -> {
+                                showRetryDialog(R.string.err_offline_title, R.string.err_offline)
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)

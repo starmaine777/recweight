@@ -33,7 +33,6 @@ class ImportRepository(val context: Context) {
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
 
-    @Throws(SpreadSheetsException::class, IOException::class)
     fun getResultFromApi(urlStr: String): Observable<Int> {
         return Observable.create { emitter ->
             var sheetsId: String?
@@ -54,19 +53,25 @@ class ImportRepository(val context: Context) {
             }
 
             if (!isGooglePlayServiceAvailable(context)) {
-                val apiAvailability = GoogleApiAvailability.getInstance()
-                val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
-                val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
-                emitter.onError(SpreadSheetsException(error, statusCode))
+                if (!emitter.isDisposed) {
+                    val apiAvailability = GoogleApiAvailability.getInstance()
+                    val statusCode = apiAvailability.isGooglePlayServicesAvailable(context)
+                    val error = if (apiAvailability.isUserResolvableError(statusCode)) ERROR_TYPE.PLAY_SERVICE_AVAILABILITY_ERROR else ERROR_TYPE.FATAL_ERROR
+                    emitter.onError(SpreadSheetsException(error, statusCode))
+                }
             } else if (isAllowedAccountPermission(context)) {
-                emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_PERMISSION_DENIED))
+                }
             } else if (!existsChoseAccount(context, credential)) {
-                emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
+                }
             } else if (!isDeviceOnline(context)) {
-                emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
+                if (!emitter.isDisposed) {
+                    emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
+                }
             } else {
-
-
                 val transport = AndroidHttp.newCompatibleTransport()
                 val jsonFactory = JacksonFactory.getDefaultInstance()
                 val service = Sheets.Builder(transport, jsonFactory, credential)
@@ -101,7 +106,9 @@ class ImportRepository(val context: Context) {
 
                     emitter.onComplete()
                 } catch (e: Exception) {
-                    emitter.onError(e)
+                    if (!emitter.isDisposed) {
+                        emitter.onError(e)
+                    }
                 }
             }
         }
