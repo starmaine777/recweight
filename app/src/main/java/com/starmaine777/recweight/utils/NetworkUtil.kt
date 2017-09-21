@@ -39,7 +39,7 @@ fun isGooglePlayServiceAvailable(context: Context): Boolean {
     return apiAvailability.isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
 }
 
-fun isAllowedAccountPermission(context:Context): Boolean {
+fun isAllowedAccountPermission(context: Context): Boolean {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
         Timber.d("isAllowedAccountPermission sdk version")
         return true
@@ -49,7 +49,7 @@ fun isAllowedAccountPermission(context:Context): Boolean {
     }
 }
 
-fun existsChoseAccount(context:Context, credential: GoogleAccountCredential): Boolean {
+fun existsChoseAccount(context: Context, credential: GoogleAccountCredential): Boolean {
     if (!TextUtils.isEmpty(credential.selectedAccountName)) return true
     val savedName = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, "")
     Timber.d("savedName = $savedName")

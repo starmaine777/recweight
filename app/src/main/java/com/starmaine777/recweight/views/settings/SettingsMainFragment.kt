@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemRepository
+import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.views.adapter.SettingItem
 import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
@@ -39,6 +41,12 @@ class SettingsMainFragment : Fragment() {
                         .beginTransaction()
                         .replace(R.id.fragment, ImportUrlFragment(), null).addToBackStack(null).commit()
             }),
+            SettingItem(R.string.settings_main_export, {
+                Timber.d("clicked Export")
+                activity.supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment, ExportFragment(), null).addToBackStack(null).commit()
+            }),
             SettingItem(R.string.settings_main_all_delete, {
                 dialog = AlertDialog.Builder(context)
                         .setTitle(R.string.d_settings_all_delete_title)
@@ -62,6 +70,11 @@ class SettingsMainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         recyclerSettingsMain.layoutManager = LinearLayoutManager(context)
         recyclerSettingsMain.adapter = SettingsMainAdapter(settingsItems)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.activity_settings)))
     }
 
     override fun onStop() {

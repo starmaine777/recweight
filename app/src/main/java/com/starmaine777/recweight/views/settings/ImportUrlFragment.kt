@@ -15,13 +15,15 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
+import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,23 +46,18 @@ class ImportUrlFragment : Fragment() {
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_import_url, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater?.inflate(R.layout.fragment_import_url, container, false)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        editImportUrl.setOnEditorActionListener { _, _, _ ->
+            startImport()
+            return@setOnEditorActionListener true
+        }
+
         buttonImportStart.setOnClickListener {
-            if (TextUtils.isEmpty(editImportUrl.text)) {
-                dialog = AlertDialog.Builder(context)
-                        .setTitle(R.string.err_title_input)
-                        .setMessage(R.string.err_url_empty)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
-            } else {
-                changeInputView(true)
-                startToGetSpleadSheetsData()
-            }
+            startImport()
         }
 
         view?.setOnKeyListener { v, _, keyEvent ->
@@ -96,6 +93,7 @@ class ImportUrlFragment : Fragment() {
     private fun startToGetSpleadSheetsData() {
         Timber.d("startToGetSpleadSheetsData!!!")
         var isImporting = false
+        RxBus.publish(UpdateToolbarEvent(false))
         importRepo.getResultFromApi(editImportUrl.text.toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -125,6 +123,7 @@ class ImportUrlFragment : Fragment() {
                                 apiAvailability.getErrorDialog(activity, t.errorCode, REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal).show()
                             }
                             ERROR_TYPE.DEVICE_OFFLINE -> {
+                                showRetryDialog(R.string.err_offline_title, R.string.err_offline)
                             }
                             ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
@@ -140,6 +139,7 @@ class ImportUrlFragment : Fragment() {
                     } else if (t is UserRecoverableAuthIOException) {
                         Timber.d("UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
+                        RxBus.publish(UpdateToolbarEvent(true))
                     }
                 }, {
                     Timber.d("Completed!!!")
@@ -152,6 +152,24 @@ class ImportUrlFragment : Fragment() {
                             .show()
 
                 }).let { disposable.add(it) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_import)))
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.showSoftInput(editImportUrl, InputMethodManager.SHOW_IMPLICIT)
+        editImportUrl.requestFocus()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hideKeyboard()
     }
 
     override fun onStop() {
@@ -197,6 +215,30 @@ class ImportUrlFragment : Fragment() {
         }
     }
 
+    fun hideKeyboard() {
+        if (editImportUrl.hasFocus()) editImportUrl.clearFocus()
+
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (activity.currentFocus != null) {
+            inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+        }
+
+    }
+
+    fun startImport() {
+        if (TextUtils.isEmpty(editImportUrl.text)) {
+            dialog = AlertDialog.Builder(context)
+                    .setTitle(R.string.err_title_input)
+                    .setMessage(R.string.err_url_empty)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+        } else {
+            hideKeyboard()
+            changeInputView(true)
+            startToGetSpleadSheetsData()
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         Timber.d("onRequestPermissionResult requestCode = $requestCode")
         when (requestCode) {
@@ -210,8 +252,6 @@ class ImportUrlFragment : Fragment() {
     }
 
     fun showRetryDialog(titleId: Int, messageId: Int) {
-
-
         showRetryDialog(resources.getString(titleId), resources.getString(messageId))
     }
 
