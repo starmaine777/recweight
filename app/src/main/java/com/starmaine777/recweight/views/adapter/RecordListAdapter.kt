@@ -3,9 +3,7 @@ package com.starmaine777.recweight.views.adapter
 import android.app.Activity
 import android.content.Context
 import android.support.v7.widget.RecyclerView
-import android.text.TextUtils
 import android.text.format.DateUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,13 +27,12 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
         }
     }
 
-    override fun onBindViewHolder(holder: RecordViewHolder?, position: Int): Unit = holder!!.bind(recordItems?.get(position))
+    override fun onBindViewHolder(holder: RecordViewHolder?, position: Int) = holder!!.bind(recordItems?.get(position))
 
     override fun getItemCount(): Int = recordItems?.size ?: 0
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecordViewHolder? {
-        return RecordViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_weight, parent, false))
-    }
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecordViewHolder? =
+            RecordViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_weight, parent, false))
 
 
     class RecordViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
@@ -65,6 +62,10 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
 
             itemView.setOnClickListener {
                 RxBus.publish(WeightItemClickEvent(item))
+            }
+            itemView.setOnLongClickListener {
+                RxBus.publish(WeightItemClickEvent(item, true))
+                return@setOnLongClickListener true
             }
         }
     }

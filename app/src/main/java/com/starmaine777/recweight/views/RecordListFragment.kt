@@ -1,5 +1,7 @@
 package com.starmaine777.recweight.views
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.ShowRecordsViewModel
 import com.starmaine777.recweight.data.WeightItemEntity
@@ -31,9 +34,9 @@ class RecordListFragment : Fragment() {
         val TAG = "RecordListFragment"
     }
 
-    val mWeightItemVm: ShowRecordsViewModel by lazy { ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java) }
+    val weightItemVm: ShowRecordsViewModel by lazy { ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java) }
     val disposable = CompositeDisposable()
-
+    var dialog: Dialog? = null
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_record_list, container, false)
@@ -47,26 +50,65 @@ class RecordListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        disposable.add(mWeightItemVm.getWeightItemList(context)
+        weightItemVm.getWeightItemList(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    t1: List<WeightItemEntity>? ->
+                .subscribe({ t1: List<WeightItemEntity>? ->
                     val adapter = RecordListAdapter(t1, context)
                     recyclerRecords.adapter = adapter
-                }
-                ))
+                }).let { disposable.add(it) }
 
-        disposable.add(RxBus.subscribe(WeightItemClickEvent::class.java).subscribe({
-            t: WeightItemClickEvent ->
-            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
-        }))
+        RxBus.subscribe(WeightItemClickEvent::class.java)
+                .subscribe({ t: WeightItemClickEvent ->
+
+                    if (t.isLongTap) {
+                        t.weightItemEntity?.let { showMenuDialog(it) }
+                    } else {
+                        RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
+                    }
+
+                }).let { disposable.add(it) }
     }
 
     override fun onStop() {
         super.onStop()
-
         disposable.dispose()
+        dialog?.dismiss()
+        dialog = null
+    }
+
+    private fun showMenuDialog(item: WeightItemEntity) {
+        dialog = MaterialDialog.Builder(context)
+                .items(R.array.list_menus)
+                .itemsCallback({ md, _, position, _ ->
+                    md.dismiss()
+                    when (position) {
+                        0 -> {
+                            // update
+                            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, item.id))
+                        }
+                        1 -> {
+                            // delete
+                            showDeleteConfirmDialog(item)
+                        }
+                    }
+                })
+                .show()
+    }
+
+    private fun showDeleteConfirmDialog(item: WeightItemEntity) {
+        dialog = AlertDialog.Builder(context)
+                .setTitle(R.string.d_delete_item_title)
+                .setMessage(R.string.d_delete_item)
+                .setPositiveButton(android.R.string.ok, { _, _ ->
+                    weightItemVm.deleteItem(context, item)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe {
+                            }.let { disposable.add(it) }
+                })
+                .setNegativeButton(android.R.string.cancel, { _, _ -> })
+                .show()
     }
 }
 

@@ -12,13 +12,11 @@ import android.widget.TextView
  */
 class SettingsMainAdapter(var itemList: List<SettingItem>?) : RecyclerView.Adapter<SettingsMainAdapter.SettingsMainViewHolder>() {
     override fun onBindViewHolder(holder: SettingsMainViewHolder?, position: Int) {
-        val item = itemList?.get(position)
         holder!!.bind(itemList?.get(position))
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): SettingsMainViewHolder {
-        return SettingsMainViewHolder(LayoutInflater.from(parent?.context).inflate(android.R.layout.simple_list_item_1, parent, false))
-    }
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): SettingsMainViewHolder =
+            SettingsMainViewHolder(LayoutInflater.from(parent?.context).inflate(android.R.layout.simple_list_item_1, parent, false))
 
     override fun getItemCount(): Int = itemList?.size ?: 0
 
@@ -28,7 +26,7 @@ class SettingsMainAdapter(var itemList: List<SettingItem>?) : RecyclerView.Adapt
             itemView.setOnClickListener {
                 item?.onClick?.invoke()
             }
-            (itemView.findViewById(android.R.id.text1) as TextView).text = itemView.context.getString(item?.titleId!!)
+            itemView.findViewById<TextView>(android.R.id.text1).text = itemView.context.getString(item?.titleId!!)
         }
     }
 }

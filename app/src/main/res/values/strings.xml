@@ -21,6 +21,13 @@
     <string name="list_weight_pattern">%skg</string>
     <string name="list_fat_default">0.0%</string>
     <string name="list_fat_pattern">%s%%</string>
+    <string-array name="list_menus">
+        <item>更新</item>
+        <item>削除</item>
+    </string-array>
+
+    <string name="d_delete_item_title">体重データの削除</string>
+    <string name="d_delete_item">このデータを削除します。よろしいですか？</string>
 
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
