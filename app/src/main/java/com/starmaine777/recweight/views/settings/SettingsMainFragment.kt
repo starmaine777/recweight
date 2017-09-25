@@ -11,8 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.WeightItemRepository
-import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.views.adapter.SettingItem
 import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
@@ -42,7 +42,6 @@ class SettingsMainFragment : Fragment() {
                         .replace(R.id.fragment, ImportUrlFragment(), null).addToBackStack(null).commit()
             }),
             SettingItem(R.string.settings_main_export, {
-                Timber.d("clicked Export")
                 activity.supportFragmentManager
                         .beginTransaction()
                         .replace(R.id.fragment, ExportFragment(), null).addToBackStack(null).commit()
@@ -55,16 +54,21 @@ class SettingsMainFragment : Fragment() {
                         .setNegativeButton(android.R.string.cancel, { _, _ -> onActivityResult(REQUESTS.DELETE_ALL_WEIGHT_ITEMS.ordinal, Activity.RESULT_CANCELED, null) })
                         .setOnDismissListener { onActivityResult(REQUESTS.DELETE_ALL_WEIGHT_ITEMS.ordinal, Activity.RESULT_CANCELED, null) }
                         .show()
+            }),
+            SettingItem(R.string.settings_main_license, {
+                activity.supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment, LicenseFragment(), null).addToBackStack(null).commit()
             })
+
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_settings_main, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater?.inflate(R.layout.fragment_settings_main, container, false)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

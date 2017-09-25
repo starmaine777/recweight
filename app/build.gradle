@@ -50,6 +50,8 @@ dependencies {
     compile "com.android.support:cardview-v7:${rootProject.supportLibVersion}"
     kapt "com.android.databinding:compiler:$gradle_version"
 
+    compile 'net.yslibrary.licenseadapter:licenseadapter:1.4.0'
+
     compile "android.arch.lifecycle:runtime:${rootProject.archLifecycleVersion}"
     compile "android.arch.lifecycle:extensions:${rootProject.archLifecycleVersion}"
 
