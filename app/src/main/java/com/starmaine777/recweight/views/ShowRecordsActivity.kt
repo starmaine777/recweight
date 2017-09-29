@@ -7,6 +7,7 @@ import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_show_records.*
+import timber.log.Timber
 
 class ShowRecordsActivity : AppCompatActivity() {
 
@@ -25,6 +26,7 @@ class ShowRecordsActivity : AppCompatActivity() {
         super.onResume()
         disposable.add(RxBus.subscribe(InputFragmentStartEvent::class.java).subscribe(
                 { t: InputFragmentStartEvent ->
+                    Timber.d("")
                     val inputFragment = WeightInputFragment.newInstance(t.viewMode, t.id)
                     supportFragmentManager
                             .beginTransaction()
@@ -36,7 +38,7 @@ class ShowRecordsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        disposable.dispose()
+        disposable.clear()
     }
 
     override fun onBackPressed() {

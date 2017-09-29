@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="setting_long_tap">
+        <item>@string/settings_lt_show_menu</item>
+        <item>@string/settings_lt_edit</item>
+        <item>@string/settings_lt_delete</item>
+        <item>@string/settings_lt_nothing</item>
+    </string-array>
+
+</resources>

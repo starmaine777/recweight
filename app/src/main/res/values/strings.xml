@@ -22,18 +22,25 @@
     <string name="list_weight_pattern">%skg</string>
     <string name="list_fat_default">0.0%</string>
     <string name="list_fat_pattern">%s%%</string>
-    <string-array name="list_menus">
-        <item>更新</item>
-        <item>削除</item>
+    <string-array name="long_tap_menus">
+        <item>@string/settings_lt_edit</item>
+        <item>@string/settings_lt_delete</item>
     </string-array>
 
     <string name="d_delete_item_title">体重データの削除</string>
     <string name="d_delete_item">このデータを削除します。よろしいですか？</string>
 
+    <string name="settings_main_long_tap">体重データ長押し時の処理</string>
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
     <string name="settings_main_all_delete">体重データの全削除</string>
     <string name="settings_main_license">ライセンス</string>
+
+    <string name="settings_lt_show_menu">メニュー表示(編集、削除)</string>
+    <string name="settings_lt_edit">編集</string>
+    <string name="settings_lt_delete">削除</string>
+    <string name="settings_lt_nothing">何もしない</string>
+
 
     <string name="d_settings_all_delete_title">体重データの全削除</string>
     <string name="d_settings_all_delete">体重のデータをすべて削除します。本当によろしいですか？</string>

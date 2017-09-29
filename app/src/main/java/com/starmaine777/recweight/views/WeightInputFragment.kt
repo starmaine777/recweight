@@ -263,7 +263,7 @@ class WeightInputFragment : Fragment() {
                 || weightInputVm.calendar.get(Calendar.DAY_OF_MONTH) != day) {
             weightInputVm.calendar.set(year, month, day)
         }
-        editDate.setText(DateFormat.getDateFormat(activity.applicationContext).format(weightInputVm.calendar.time))
+        editDate.setText(DateFormat.getDateFormat(context).format(weightInputVm.calendar.time))
     }
 
     fun setRecordTime(hour: Int, minute: Int) {

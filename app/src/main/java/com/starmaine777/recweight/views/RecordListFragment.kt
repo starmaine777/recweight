@@ -3,6 +3,7 @@ package com.starmaine777.recweight.views
 import android.app.AlertDialog
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -16,12 +17,15 @@ import com.starmaine777.recweight.data.WeightItemEntity
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
+import com.starmaine777.recweight.utils.PREFERENCES_NAME
+import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.views.adapter.RecordListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_record_list.*
+import timber.log.Timber
 
 /**
  * 体重記録ListFragment
@@ -61,8 +65,10 @@ class RecordListFragment : Fragment() {
         RxBus.subscribe(WeightItemClickEvent::class.java)
                 .subscribe({ t: WeightItemClickEvent ->
 
+                    Timber.d("weightItemClickEvent longtap?=${t.isLongTap}")
+
                     if (t.isLongTap) {
-                        t.weightItemEntity?.let { showMenuDialog(it) }
+                        t.weightItemEntity?.let { onItemLongTap(it) }
                     } else {
                         RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.VIEW, t.weightItemEntity?.id))
                     }
@@ -77,9 +83,18 @@ class RecordListFragment : Fragment() {
         dialog = null
     }
 
+    private fun onItemLongTap(item: WeightItemEntity) {
+        val value = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.LONG_TAP.name, resources.getStringArray(R.array.setting_long_tap)[0])
+        when (value) {
+            getString(R.string.settings_lt_show_menu) -> showMenuDialog(item)
+            getString(R.string.settings_lt_edit) -> RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, item.id))
+            getString(R.string.settings_lt_delete) -> showDeleteConfirmDialog(item)
+        }
+    }
+
     private fun showMenuDialog(item: WeightItemEntity) {
         dialog = MaterialDialog.Builder(context)
-                .items(R.array.list_menus)
+                .items(R.array.long_tap_menus)
                 .itemsCallback({ md, _, position, _ ->
                     md.dismiss()
                     when (position) {

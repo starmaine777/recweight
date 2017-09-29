@@ -1,5 +1,7 @@
 package com.starmaine777.recweight.utils
 
+import com.starmaine777.recweight.R
+
 /**
  * Created by ai on 2017/07/01.
  * global consts
@@ -22,8 +24,11 @@ enum class WEIGHT_INPUT_MODE {
     VIEW
 }
 
+val PREFERENCES_NAME = "RecWeightSettings"
+
 enum class PREFERENCE_KEY {
-    ACCOUNT_NAME
+    ACCOUNT_NAME,
+    LONG_TAP
 }
 
 val EXPORT_TITLE_DATE_STR = "yyyyMMdd_HHmm"
