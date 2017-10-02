@@ -78,7 +78,7 @@ class RecordListFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        disposable.dispose()
+        disposable.clear()
         dialog?.dismiss()
         dialog = null
     }

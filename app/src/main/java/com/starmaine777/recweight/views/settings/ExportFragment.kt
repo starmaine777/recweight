@@ -81,7 +81,7 @@ class ExportFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        disposable.dispose()
+        disposable.clear()
     }
 
     @Throws()

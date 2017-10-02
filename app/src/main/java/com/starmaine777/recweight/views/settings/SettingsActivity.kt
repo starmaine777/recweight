@@ -47,6 +47,6 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        disposal.dispose()
+        disposal.clear()
     }
 }
