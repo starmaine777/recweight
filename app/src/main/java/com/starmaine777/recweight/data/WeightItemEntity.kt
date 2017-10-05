@@ -23,7 +23,8 @@ data class WeightItemEntity(
         @ColumnInfo(name = COL_SHOW_TOILET) var showToilet: Boolean,
         @ColumnInfo(name = COL_SHOW_MOON) var showMoon: Boolean,
         @ColumnInfo(name = COL_SHOW_STAR) var showStar: Boolean,
-        @ColumnInfo(name = COL_MEMO) var memo: String) {
+        @ColumnInfo(name = COL_MEMO) var memo: String,
+        @ColumnInfo(name = COL_ID) @PrimaryKey(autoGenerate = true) var id: Long = 0) {
 
     @Ignore
     constructor() : this(Calendar.getInstance(), 0.0, 0.0, 0.0, 0.0, false, false, false, false, false, "")
@@ -46,15 +47,8 @@ data class WeightItemEntity(
 
     }
 
-    @ColumnInfo(name = COL_ID)
-    @PrimaryKey(autoGenerate = true)
-    var id: Long = 0
 
-    fun weightString(): String {
-        return if (weight == 0.0) "" else weight.toString()
-    }
+    fun weightString(): String = if (weight == 0.0) "" else weight.toString()
 
-    fun fatString(): String {
-        return if (fat == 0.0) "" else fat.toString()
-    }
+    fun fatString(): String = if (fat == 0.0) "" else fat.toString()
 }
