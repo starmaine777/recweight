@@ -24,7 +24,7 @@ class WeightInputViewModel : ViewModel() {
         Timber.d("selectedEntityId id = $id")
         if (id == null) {
             selectedEntityId = null
-            inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
+            inputEntity = WeightItemEntity()
         } else {
             selectedEntityId = id
             val disposable = CompositeDisposable()
@@ -34,7 +34,7 @@ class WeightInputViewModel : ViewModel() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ t: List<WeightItemEntity> ->
                         if (t.isEmpty()) {
-                            inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
+                            inputEntity = WeightItemEntity()
                         } else {
                             inputEntity = t[0]
                         }
@@ -51,7 +51,7 @@ class WeightInputViewModel : ViewModel() {
         }
     }
 
-    var inputEntity: WeightItemEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
+    var inputEntity: WeightItemEntity = WeightItemEntity()
 
     var calendar: Calendar = inputEntity.recTime.clone() as Calendar
 
