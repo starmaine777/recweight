@@ -2,6 +2,7 @@ package com.starmaine777.recweight.data
 
 import android.arch.persistence.room.*
 import io.reactivex.Flowable
+import java.util.*
 
 /**
  * WeightItem操作Dao
@@ -11,11 +12,17 @@ import io.reactivex.Flowable
 @Dao
 interface WeightItemDao {
 
-    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY recTime DESC")
+    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} ORDER BY ${WeightItemEntity.COL_REC_TIME} DESC")
     fun getAllListDateSorted(): Flowable<List<WeightItemEntity>>
 
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ID = :id")
     fun getWeightItemById(id:Long): Flowable<List<WeightItemEntity>>
+
+    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ${WeightItemEntity.COL_REC_TIME} > :targetTime ORDER BY ${WeightItemEntity.COL_REC_TIME} ASC LIMIT 1")
+    fun getItemJustAfterRecTime(targetTime:Calendar): Flowable<List<WeightItemEntity>>
+
+    @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ${WeightItemEntity.COL_REC_TIME} < :targetTime ORDER BY ${WeightItemEntity.COL_REC_TIME} DESC LIMIT 1")
+    fun getItemJustBeforeRecTime(targetTime:Calendar): Flowable<List<WeightItemEntity>>
 
     @Insert
     fun insertItem(weightItemEntity: WeightItemEntity)

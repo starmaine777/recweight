@@ -153,6 +153,58 @@ class WeightItemDaoTest {
     }
 
     @Test
+    fun getItemJustAfterTargetTime() {
+        database.weightItemDao().insertItem(ITEM1)
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        val item3 = ITEM3.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item3)
+        calendar.add(Calendar.DAY_OF_MONTH, 5)
+        val item5 = ITEM5.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item5)
+        calendar.add(Calendar.DAY_OF_MONTH, -10)
+        val item2 = ITEM2.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item2)
+        calendar.add(Calendar.DAY_OF_MONTH, 2)
+        val item4 = ITEM4.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item4)
+
+        val sortedExpectedList = listOf(item2, item4, ITEM1, item3, item5)
+        database.weightItemDao().getItemJustAfterRecTime(ITEM1.recTime)
+                .test().awaitDone(5, TimeUnit.SECONDS)
+                .assertOf {
+                    Assert.assertEquals(it.values()[0].size, 1)
+                    equalItems(it.values()[0][0], sortedExpectedList[3])
+                }
+    }
+
+    @Test
+    fun getItemJustBeforeTargetTime() {
+        database.weightItemDao().insertItem(ITEM1)
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        val item3 = ITEM3.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item3)
+        calendar.add(Calendar.DAY_OF_MONTH, 5)
+        val item5 = ITEM5.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item5)
+        calendar.add(Calendar.DAY_OF_MONTH, -10)
+        val item2 = ITEM2.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item2)
+        calendar.add(Calendar.DAY_OF_MONTH, 2)
+        val item4 = ITEM4.copy(recTime = calendar.clone() as Calendar)
+        database.weightItemDao().insertItem(item4)
+
+        val sortedExpectedList = listOf(item2, item4, ITEM1, item3, item5)
+        database.weightItemDao().getItemJustAfterRecTime(ITEM1.recTime)
+                .test().awaitDone(5, TimeUnit.SECONDS)
+                .assertOf {
+                    Assert.assertEquals(it.values()[0].size, 1)
+                    equalItems(it.values()[0][0], sortedExpectedList[1])
+                }
+    }
+
+    @Test
     fun deleteWeightItem() {
         database.weightItemDao().insertItem(ITEM1)
         val calendar = Calendar.getInstance()
