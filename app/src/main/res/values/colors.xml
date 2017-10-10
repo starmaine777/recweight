@@ -14,4 +14,8 @@
     <color name="stamp_moon_selected">#fffa8072</color>
     <color name="stamp_star_selected">#ffffa500</color>
 
+    <color name="weight_down">#fa8072</color>
+    <color name="weight_up">#00bfff</color>
+    <color name="weight_keep">#ffffa500</color>
+
 </resources>
