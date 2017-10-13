@@ -14,5 +14,5 @@ class ShowRecordsViewModel : ViewModel() {
 
     fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = WeightItemRepository.getWeightItemList(context)
 
-    fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction = WeightItemRepository.deleteWeightItem(context, weightItemEntity)
+    fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction = WeightItemRepository.deleteWeightItemCompletable(context, weightItemEntity)
 }

@@ -36,18 +36,27 @@ class WeightItemRepository {
         fun getWeightItemJustBeforeRecTime(context: Context, recTime: Calendar): Flowable<List<WeightItemEntity>> =
                 getDatabase(context).weightItemDao().getItemJustBeforeRecTime(recTime)
 
-        fun insertWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
+        fun insertWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
+                getDatabase(context).weightItemDao().insertItem(weightItemEntity)
+
+        fun insertWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
                 CompletableFromAction(Action {
-                    getDatabase(context).weightItemDao().insertItem(weightItemEntity)
+                    insertWeightItem(context, weightItemEntity)
                 })
 
-        fun updateWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
+        fun updateWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
+                getDatabase(context).weightItemDao().updateItem(weightItemEntity)
+
+        fun updateWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().updateItem(weightItemEntity) })
 
-        fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
+        fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
+                getDatabase(context).weightItemDao().deleteItem(weightItemEntity)
+
+        fun deleteWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteItem(weightItemEntity) })
 
-        fun deleteAllItem(context: Context): CompletableFromAction =
+        fun deleteAllItemCompletable(context: Context): CompletableFromAction =
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteAllItem() })
     }
 }

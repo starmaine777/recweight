@@ -13,6 +13,7 @@ import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.item_weight.view.*
+import timber.log.Timber
 
 /**
  * 体重リストのAdapter
@@ -39,6 +40,7 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
 
         fun bind(item: WeightItemEntity?): Unit = with(itemView) {
 
+            Timber.d("ItemBind recTime = ${item?.recTime}, weight =${item?.weight}, weightDiff=${item?.weightDiff} fat= ${item?.fat}, fatDiff= ${item?.fatDiff}")
             itemView.textDate.text = DateUtils.formatDateTime(context, item?.recTime!!.timeInMillis,
                     DateUtils.FORMAT_SHOW_YEAR
                             .or(DateUtils.FORMAT_SHOW_DATE)
@@ -52,6 +54,10 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
                 itemView.textFat.text = context.getString(R.string.list_fat_pattern, formatInputNumber(item.fat.toString(), context.getString(R.string.weight_input_fat_default)))
                 itemView.textFat.visibility = View.VISIBLE
             }
+
+            if (item.weightDiff == 0.0) itemView.imageRatio.setImageResource(R.drawable.weight_keep)
+            else if (item.weightDiff > 0) itemView.imageRatio.setImageResource(R.drawable.weight_up)
+            else itemView.imageRatio.setImageResource(R.drawable.weight_down)
 
             itemView.toggleDumbbell.isChecked = item.showDumbbell
             itemView.toggleLiquor.isChecked = item.showLiquor

@@ -25,6 +25,8 @@ class WeightInputViewModel : ViewModel() {
         if (id == null) {
             selectedEntityId = null
             inputEntity = WeightItemEntity()
+            originalEntity = inputEntity
+            isCreate = true
         } else {
             selectedEntityId = id
             val disposable = CompositeDisposable()
@@ -35,9 +37,12 @@ class WeightInputViewModel : ViewModel() {
                     .subscribe({ t: List<WeightItemEntity> ->
                         if (t.isEmpty()) {
                             inputEntity = WeightItemEntity()
+                            isCreate = true
                         } else {
                             inputEntity = t[0]
+                            isCreate = false
                         }
+                        originalEntity = inputEntity.copy()
                         calendar = inputEntity.recTime.clone() as Calendar
                         successCallback()
                         Timber.d("selectedEntity getInputEntities $inputEntity")
@@ -51,7 +56,9 @@ class WeightInputViewModel : ViewModel() {
         }
     }
 
+    var isCreate = true
     var inputEntity: WeightItemEntity = WeightItemEntity()
+    private var originalEntity: WeightItemEntity? = inputEntity
 
     var calendar: Calendar = inputEntity.recTime.clone() as Calendar
 
@@ -81,52 +88,162 @@ class WeightInputViewModel : ViewModel() {
                 showStar = showStar,
                 memo = memo)
 
-        val disposable = CompositeDisposable()
-
-
-        disposable.add(
-                WeightItemRepository.getWeightItemById(context, inputEntity.id)
-                        .subscribeOn(Schedulers.io())
-                        .subscribe { t: List<WeightItemEntity> ->
-                            Timber.d("getWeightItemEntityById $t")
-
-                            if (t.isEmpty()) {
-                                disposable.add(WeightItemRepository.insertWeightItem(context, inputEntity)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe {
-                                            Timber.d("insertEntity complete")
-                                            callback()
-                                            disposable.clear()
-                                        })
-                            } else {
-                                disposable.add(WeightItemRepository.updateWeightItem(context, inputEntity)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe {
-                                            Timber.d("updateItemComplete complete")
-                                            callback()
-                                            disposable.clear()
-                                        })
-                            }
-                        }
-        )
+        if (isCreate) {
+            insertWeightItem(context, callback, {})
+        } else {
+            updateWeightItem(context, callback, {})
+        }
     }
 
+    private fun insertWeightItem(context: Context, successCallback: () -> Unit, errorCallback: () -> Unit) {
+        var beforeWeight: WeightItemEntity? = null
+        var afterWeight: WeightItemEntity? = null
+
+        var disposable = CompositeDisposable()
+        WeightItemRepository.getWeightItemJustBeforeRecTime(context, inputEntity.recTime)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap { t1 ->
+                    Timber.d("insertWeightItem 1!")
+                    if (!t1.isEmpty()) beforeWeight = t1[0]
+                    return@flatMap WeightItemRepository.getWeightItemJustAfterRecTime(context, inputEntity.recTime)
+                }
+                .subscribe({
+                    t1 ->
+                    Timber.d("insertWeightItem 2!")
+                    if (!t1.isEmpty()) afterWeight = t1[0]
+
+                    afterWeight?.let {
+                        afterWeight!!.weightDiff = afterWeight!!.weight - inputEntity.weight
+                        afterWeight!!.fatDiff = afterWeight!!.fat - inputEntity.fat
+
+                        WeightItemRepository.updateWeightItem(context, afterWeight!!)
+                    }
+
+                    if (beforeWeight != null) {
+                        inputEntity.weightDiff = inputEntity.weight - beforeWeight!!.weight
+                        inputEntity.fatDiff = inputEntity.fat - beforeWeight!!.fat
+                    } else {
+                        inputEntity.weightDiff = 0.0
+                        inputEntity.fatDiff = 0.0
+                    }
+
+                    if (isCreate) {
+                        WeightItemRepository.insertWeightItem(context, inputEntity)
+                    } else {
+                        WeightItemRepository.updateWeightItem(context, inputEntity)
+                    }
+                    disposable.clear()
+                    successCallback()
+                }, {
+                    e ->
+                    e.printStackTrace()
+                    errorCallback()
+                }).let { disposable.add(it) }
+    }
+
+    private fun updateWeightItem(context: Context, successCallback: () -> Unit, errorCallback: () -> Unit) {
+        var beforeWeight: WeightItemEntity? = null
+        var afterWeight: WeightItemEntity? = null
+
+        var disposable = CompositeDisposable()
+        WeightItemRepository.getWeightItemJustBeforeRecTime(context, inputEntity.recTime)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap { t1 ->
+                    if (!t1.isEmpty()) beforeWeight = t1[0]
+                    return@flatMap WeightItemRepository.getWeightItemJustAfterRecTime(context, inputEntity.recTime)
+                }
+                .flatMap {
+                    t1 ->
+                    if (!t1.isEmpty()) afterWeight = t1[0]
+                    afterWeight?.let {
+                        afterWeight!!.weightDiff = afterWeight!!.weight - inputEntity.weight
+                        afterWeight!!.fatDiff = afterWeight!!.fat - inputEntity.fat
+
+                        Timber.d("updateWeightItem after1 = $afterWeight")
+                        WeightItemRepository.updateWeightItem(context, afterWeight!!)
+                    }
+
+                    if (beforeWeight != null) {
+                        inputEntity.weightDiff = inputEntity.weight - beforeWeight!!.weight
+                        inputEntity.fatDiff = inputEntity.fat - beforeWeight!!.fat
+                    } else {
+                        inputEntity.weightDiff = 0.0
+                        inputEntity.fatDiff = 0.0
+                    }
+
+                    Timber.d("updateWeightItem update 1= $inputEntity")
+                    WeightItemRepository.updateWeightItem(context, inputEntity)
+                    return@flatMap WeightItemRepository.getWeightItemJustAfterRecTime(context, originalEntity!!.recTime)
+                }
+                .flatMap { t1 ->
+                    if (!t1.isEmpty()) beforeWeight = t1[0]
+                    return@flatMap WeightItemRepository.getWeightItemJustAfterRecTime(context, originalEntity!!.recTime)
+                }
+                .subscribe({
+                    t1 ->
+                    if (!t1.isEmpty()) afterWeight = t1[0]
+
+                    afterWeight?.let {
+                        if (beforeWeight == null) {
+                            afterWeight!!.weightDiff = 0.0
+                            afterWeight!!.fatDiff = 0.0
+                        } else {
+                            afterWeight!!.weightDiff = afterWeight!!.weight - beforeWeight!!.weight
+                            afterWeight!!.fatDiff = afterWeight!!.fat - beforeWeight!!.fat
+                        }
+                        Timber.d("updateWeightItem after 1= $inputEntity")
+                        WeightItemRepository.updateWeightItem(context, afterWeight!!)
+                    }
+                    disposable.clear()
+                    successCallback()
+                }, {
+                    e ->
+                    e.printStackTrace()
+                    errorCallback()
+                }).let { disposable.add(it) }
+    }
+
+
     fun deleteWeightItem(context: Context, successCallback: () -> Unit, errorCallback: () -> Unit) {
-        val disposable = CompositeDisposable()
+        deleteWeightItem(context, inputEntity, successCallback, errorCallback)
+    }
 
-        disposable.add(
-                WeightItemRepository.deleteWeightItem(context, inputEntity)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe ({
-                            successCallback()
-                            disposable.dispose()
-                        }, {
-                            errorCallback()
-                        }))
+    private fun deleteWeightItem(context: Context, target: WeightItemEntity, successCallback: () -> Unit, errorCallback: () -> Unit) {
+        var beforeWeight: WeightItemEntity? = null
+        var afterWeight: WeightItemEntity? = null
 
+        WeightItemRepository.getWeightItemJustBeforeRecTime(context, target.recTime)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap { t1 ->
+                    Timber.d("deleteItem1")
+                    if (!t1.isEmpty()) beforeWeight = t1[0]
+                    return@flatMap WeightItemRepository.getWeightItemJustAfterRecTime(context, inputEntity.recTime)
+                }
+                .subscribe({
+                    t1 ->
+                    Timber.d("deleteItem2")
+                    if (!t1.isEmpty()) afterWeight = t1[0]
+
+                    afterWeight?.let {
+                        if (beforeWeight == null) {
+                            afterWeight!!.weightDiff = 0.0
+                            afterWeight!!.fatDiff = 0.0
+                        } else {
+                            afterWeight!!.weightDiff = afterWeight!!.weight - beforeWeight!!.weight
+                            afterWeight!!.fatDiff = afterWeight!!.fat - beforeWeight!!.fat
+                        }
+                        WeightItemRepository.updateWeightItem(context, afterWeight!!)
+                    }
+                    WeightItemRepository.deleteWeightItem(context, inputEntity)
+                    successCallback()
+                }, {
+                    e ->
+                    e.printStackTrace()
+                    errorCallback()
+                })
     }
 
 }

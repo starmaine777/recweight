@@ -110,7 +110,7 @@ class SettingsMainFragment : Fragment() {
 
                 Timber.d("startDeleteAllItems!")
                 WeightItemRepository
-                        .deleteAllItem(context)
+                        .deleteAllItemCompletable(context)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe({
