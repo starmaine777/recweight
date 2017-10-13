@@ -183,6 +183,7 @@ class WeightInputFragment : Fragment() {
     }
 
     fun saveWeightData() {
+        Timber.d("saveWeightData")
         if (TextUtils.isEmpty(editWeight.text)) {
             AlertDialog.Builder(context)
                     .setTitle(R.string.err_title_input)

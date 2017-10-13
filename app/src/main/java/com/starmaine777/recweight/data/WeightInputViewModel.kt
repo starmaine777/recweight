@@ -27,6 +27,8 @@ class WeightInputViewModel : ViewModel() {
             inputEntity = WeightItemEntity(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
         } else {
             selectedEntityId = id
+            val disposable = CompositeDisposable()
+
             WeightItemRepository.getWeightItemById(context, selectedEntityId!!)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -39,11 +41,13 @@ class WeightInputViewModel : ViewModel() {
                         calendar = inputEntity.recTime.clone() as Calendar
                         successCallback()
                         Timber.d("selectedEntity getInputEntities $inputEntity")
+                        disposable.clear()
                     }, { _ ->
                         Timber.d("selectedEntity Error!")
                         errorCallback()
+                        disposable.clear()
                     }
-                    )
+                    ).let { disposable.add(it) }
         }
     }
 
@@ -93,7 +97,7 @@ class WeightInputViewModel : ViewModel() {
                                         .subscribe {
                                             Timber.d("insertEntity complete")
                                             callback()
-                                            disposable.dispose()
+                                            disposable.clear()
                                         })
                             } else {
                                 disposable.add(WeightItemRepository.updateWeightItem(context, inputEntity)
@@ -102,7 +106,7 @@ class WeightInputViewModel : ViewModel() {
                                         .subscribe {
                                             Timber.d("updateItemComplete complete")
                                             callback()
-                                            disposable.dispose()
+                                            disposable.clear()
                                         })
                             }
                         }
