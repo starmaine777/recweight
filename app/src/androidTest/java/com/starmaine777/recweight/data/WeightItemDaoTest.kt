@@ -4,6 +4,7 @@ import android.arch.persistence.room.Room
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
 import android.text.TextUtils
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -40,7 +41,7 @@ class WeightItemDaoTest {
 
     @Test
     fun getWeightItemListByIdNoUser() {
-        database.weightItemDao().getWeightItemById(0).test().assertNoValues()
+        Assert.assertTrue(database.weightItemDao().getWeightItemById(0).isEmpty())
     }
 
     @Test
@@ -53,20 +54,18 @@ class WeightItemDaoTest {
                             && it[0].id == 1L
                             && equalItems(it[0], ITEM1)
                 }
-        database.weightItemDao().getWeightItemById(1).test()
-                .awaitDone(5, TimeUnit.SECONDS)
-                .assertValue {
-                    it.size == 1
-                            && it[0].id == 1L
-                            && equalItems(it[0], ITEM1)
-                }
+        val item = database.weightItemDao().getWeightItemById(1)
+
+        Assert.assertEquals(item.size, 1)
+        Assert.assertEquals(item[0].id, 1L)
+        Assert.assertTrue(equalItems(item[0], ITEM1))
     }
 
     @Test
     fun updateWeightItem() {
         database.weightItemDao().insertItem(ITEM1)
 
-        val item = database.weightItemDao().getWeightItemById(1).blockingFirst()[0]
+        val item = database.weightItemDao().getWeightItemById(1)[0]
         val updatedItem = item.copy(
                 weight = 55.0,
                 weightDiff = 5.0,
@@ -80,13 +79,11 @@ class WeightItemDaoTest {
                 memo = "updatedMemo"
         )
         database.weightItemDao().updateItem(updatedItem)
-        database.weightItemDao().getWeightItemById(updatedItem.id)
-                .test()
-                .awaitDone(5, TimeUnit.SECONDS)
-                .assertOf {
-                    Assert.assertEquals(it.values()[0].size, 1)
-                    Assert.assertEquals(it.values()[0], listOf(updatedItem))
-                }
+
+        val idQueryItems = database.weightItemDao().getWeightItemById(1)
+
+        Assert.assertEquals(idQueryItems.size, 1)
+        Assert.assertEquals(idQueryItems, listOf(updatedItem))
     }
 
     @Test
@@ -135,21 +132,15 @@ class WeightItemDaoTest {
         database.weightItemDao().insertItem(item4)
 
         val expectedList = listOf(ITEM1, item3, item5, item2, item4)
-        database.weightItemDao().getWeightItemById(2)
-                .test().awaitDone(5, TimeUnit.SECONDS)
-                .assertValue {
-                    it.size == 1
-                            && it[0].id == 2L
-                            && equalItems(it[0], expectedList[1])
-                }
+        val query2 = database.weightItemDao().getWeightItemById(2)
+        Assert.assertEquals(query2.size, 1)
+        Assert.assertEquals(query2[0].id, 2L)
+        Assert.assertTrue(equalItems(query2[0], expectedList[1]))
 
-        database.weightItemDao().getWeightItemById(4)
-                .test().awaitDone(5, TimeUnit.SECONDS)
-                .assertValue {
-                    it.size == 1
-                            && it[0].id == 4L
-                            && equalItems(it[0], expectedList[3])
-                }
+        val query4 = database.weightItemDao().getWeightItemById(4)
+        Assert.assertEquals(query4.size, 1)
+        Assert.assertEquals(query4[0].id, 4L)
+        Assert.assertTrue(equalItems(query4[0], expectedList[3]))
     }
 
     @Test
@@ -170,12 +161,10 @@ class WeightItemDaoTest {
         database.weightItemDao().insertItem(item4)
 
         val sortedExpectedList = listOf(item2, item4, ITEM1, item3, item5)
-        database.weightItemDao().getItemJustAfterRecTime(ITEM1.recTime)
-                .test().awaitDone(5, TimeUnit.SECONDS)
-                .assertOf {
-                    Assert.assertEquals(it.values()[0].size, 1)
-                    equalItems(it.values()[0][0], sortedExpectedList[3])
-                }
+
+        val afterItems = database.weightItemDao().getItemJustAfterRecTime(ITEM1.recTime)
+        Assert.assertEquals(afterItems.size, 1)
+        Assert.assertTrue(equalItems(afterItems[0], sortedExpectedList[3]))
     }
 
     @Test
@@ -196,12 +185,10 @@ class WeightItemDaoTest {
         database.weightItemDao().insertItem(item4)
 
         val sortedExpectedList = listOf(item2, item4, ITEM1, item3, item5)
-        database.weightItemDao().getItemJustAfterRecTime(ITEM1.recTime)
-                .test().awaitDone(5, TimeUnit.SECONDS)
-                .assertOf {
-                    Assert.assertEquals(it.values()[0].size, 1)
-                    equalItems(it.values()[0][0], sortedExpectedList[1])
-                }
+
+        val beforeItems = database.weightItemDao().getItemJustBeforeRecTime(ITEM1.recTime)
+        Assert.assertEquals(beforeItems.size, 1)
+        Assert.assertTrue(equalItems(beforeItems[0], sortedExpectedList[1]))
     }
 
     @Test

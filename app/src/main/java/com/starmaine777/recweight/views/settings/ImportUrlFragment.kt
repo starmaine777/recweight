@@ -19,7 +19,7 @@ import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.ImportRepository
+import com.starmaine777.recweight.data.repo.ImportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.event.RxBus

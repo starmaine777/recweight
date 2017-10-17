@@ -1,6 +1,7 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.dao
 
 import android.arch.persistence.room.*
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 import io.reactivex.Flowable
 import java.util.*
 

@@ -15,7 +15,7 @@ import android.text.format.DateFormat
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.WeightInputViewModel
+import com.starmaine777.recweight.data.viewmodel.WeightInputViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus

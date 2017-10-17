@@ -1,12 +1,11 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.viewmodel
 
 import android.arch.lifecycle.ViewModel
 import android.content.Context
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
+import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
-import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.util.*
 

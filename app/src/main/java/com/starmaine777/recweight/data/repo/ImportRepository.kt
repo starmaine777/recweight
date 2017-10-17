@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.repo
 
 import android.content.Context
 import android.text.TextUtils
@@ -10,6 +10,7 @@ import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.*

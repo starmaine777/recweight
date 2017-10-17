@@ -1,7 +1,9 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.viewmodel
 
 import android.arch.lifecycle.ViewModel
 import android.content.Context
+import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.reactivex.Flowable
 import io.reactivex.internal.operators.completable.CompletableFromAction
 

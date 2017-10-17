@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.WeightItemRepository
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.PREFERENCES_NAME

@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.repo
 
 import android.content.Context
 import com.google.android.gms.common.GoogleApiAvailability

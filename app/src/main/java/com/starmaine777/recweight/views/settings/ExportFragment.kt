@@ -14,7 +14,7 @@ import android.view.ViewGroup
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.ExportRepository
+import com.starmaine777.recweight.data.repo.ExportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
@@ -53,7 +53,7 @@ class ExportFragment : Fragment() {
             startActivity(intent)
         }
 
-        view?.setOnKeyListener { v, _, keyEvent ->
+        view?.setOnKeyListener { _, _, keyEvent ->
             // import中はbackさせない
             Timber.d("setOnKeyListener keyEvent = $keyEvent")
             if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK

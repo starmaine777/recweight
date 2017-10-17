@@ -1,6 +1,6 @@
 package com.starmaine777.recweight.event
 
-import com.starmaine777.recweight.data.WeightItemEntity
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 
 /**
  * ItemListからアイテムクリック時の処理

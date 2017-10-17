@@ -1,7 +1,9 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.repo
 
 import android.arch.persistence.room.Room
 import android.content.Context
+import com.starmaine777.recweight.data.AppDatabase
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 import io.reactivex.Flowable
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
@@ -56,7 +58,7 @@ class WeightItemRepository {
          * @param context Context.
          * @return 削除が完了したCompletableFromAction
          */
-        fun deleteWeightItemWithDiffUpdate(context: Context, entity:WeightItemEntity): CompletableFromAction =
+        fun deleteWeightItemWithDiffUpdate(context: Context, entity: WeightItemEntity): CompletableFromAction =
                 CompletableFromAction(Action {
                     val nearTimeItems = getNearTimeItems(context, entity.recTime)
                     nearTimeItems.second?.let {
@@ -73,9 +75,9 @@ class WeightItemRepository {
          * @return first == 直前のEntity, second = 直後のEntity
          */
         fun getNearTimeItems(context: Context, recTime: Calendar): Pair<WeightItemEntity?, WeightItemEntity?> {
-            val beforeItemList = WeightItemRepository.getWeightItemJustBeforeRecTime(context, recTime)
+            val beforeItemList = getWeightItemJustBeforeRecTime(context, recTime)
             val beforeItem = if (beforeItemList.isEmpty()) null else beforeItemList[0]
-            val afterItemList = WeightItemRepository.getWeightItemJustAfterRecTime(context, recTime)
+            val afterItemList = getWeightItemJustAfterRecTime(context, recTime)
             val afterItem = if (afterItemList.isEmpty()) null else afterItemList[0]
 
             return Pair(beforeItem, afterItem)
@@ -86,7 +88,7 @@ class WeightItemRepository {
          * @param after 更新されるEntity.
          * @param before afterの直前のEntity
          */
-        fun calculateDiffs(after:WeightItemEntity?, before:WeightItemEntity?) {
+        fun calculateDiffs(after: WeightItemEntity?, before: WeightItemEntity?) {
             after?.let {
                 if (before == null) {
                     after.weightDiff = 0.0

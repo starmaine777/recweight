@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data
+package com.starmaine777.recweight.data.entity
 
 import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
@@ -11,7 +11,7 @@ import java.util.*
  * Entity about weight and information
  */
 
-@Entity(tableName = WeightItemEntity.Companion.TABLE_WEIGHT_ITEM)
+@Entity(tableName = WeightItemEntity.TABLE_WEIGHT_ITEM)
 data class WeightItemEntity(
         @ColumnInfo(name = COL_REC_TIME) var recTime: Calendar,
         @ColumnInfo(name = COL_WEIGHT) var weight: Double,
