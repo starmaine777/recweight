@@ -107,7 +107,7 @@ class WeightInputViewModel : ViewModel() {
 
     private fun insertWeightItem(context: Context): CompletableFromAction =
             CompletableFromAction(Action {
-                val nearTimeItems = getNearTimeItems(context, inputEntity.recTime)
+                val nearTimeItems = WeightItemRepository.getNearTimeItems(context, inputEntity.recTime)
                 nearTimeItems.second?.let {
                     WeightItemRepository.calculateDiffs(nearTimeItems.second, inputEntity)
                     WeightItemRepository.updateWeightItem(context, nearTimeItems.second!!)
@@ -119,7 +119,7 @@ class WeightInputViewModel : ViewModel() {
 
     private fun updateWeightItem(context: Context, orgRecTime: Calendar): CompletableFromAction =
             CompletableFromAction(Action {
-                val nearTimeItems = getNearTimeItems(context, inputEntity.recTime)
+                val nearTimeItems = WeightItemRepository.getNearTimeItems(context, inputEntity.recTime)
 
                 nearTimeItems.second?.let {
                     WeightItemRepository.calculateDiffs(nearTimeItems.second, inputEntity)
@@ -129,7 +129,7 @@ class WeightInputViewModel : ViewModel() {
                 WeightItemRepository.calculateDiffs(inputEntity, nearTimeItems.first)
                 WeightItemRepository.updateWeightItem(context, inputEntity)
 
-                val orgNearTimeItems = getNearTimeItems(context, orgRecTime)
+                val orgNearTimeItems = WeightItemRepository.getNearTimeItems(context, orgRecTime)
                 orgNearTimeItems.second?.let {
                     WeightItemRepository.calculateDiffs(orgNearTimeItems.second, orgNearTimeItems.first)
                     WeightItemRepository.updateWeightItem(context, orgNearTimeItems.second!!)
@@ -141,29 +141,6 @@ class WeightInputViewModel : ViewModel() {
      * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction =
-            CompletableFromAction(Action {
-                val nearTimeItems = getNearTimeItems(context, inputEntity.recTime)
-                nearTimeItems.second?.let {
-                    WeightItemRepository.calculateDiffs(nearTimeItems.second, nearTimeItems.first)
-                    WeightItemRepository.updateWeightItem(context, nearTimeItems.second!!)
-                }
-                WeightItemRepository.deleteWeightItem(context, inputEntity)
-            })
-
-    /**
-     * recTimeの直前/直後のEntityを取得
-     * @param context Context
-     * @param recTime 基準となる時間
-     * @return first == 直前のEntity, second = 直後のEntity
-     */
-    private fun getNearTimeItems(context: Context, recTime: Calendar): Pair<WeightItemEntity?, WeightItemEntity?> {
-        val beforeItemList = WeightItemRepository.getWeightItemJustBeforeRecTime(context, recTime)
-        val beforeItem = if (beforeItemList.isEmpty()) null else beforeItemList[0]
-        val afterItemList = WeightItemRepository.getWeightItemJustAfterRecTime(context, recTime)
-        val afterItem = if (afterItemList.isEmpty()) null else afterItemList[0]
-
-        return Pair(beforeItem, afterItem)
-    }
+    fun deleteWeightItem(context: Context): CompletableFromAction = WeightItemRepository.deleteWeightItemWithDiffUpdate(context, inputEntity)
 
 }

@@ -45,11 +45,38 @@ class WeightItemRepository {
         fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
                 getDatabase(context).weightItemDao().deleteItem(weightItemEntity)
 
-        fun deleteWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-                CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteItem(weightItemEntity) })
-
         fun deleteAllItemCompletable(context: Context): CompletableFromAction =
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteAllItem() })
+
+        /**
+         * 現在表示しているEntityを削除する.
+         * @param context Context.
+         * @return 削除が完了したCompletableFromAction
+         */
+        fun deleteWeightItemWithDiffUpdate(context: Context, entity:WeightItemEntity): CompletableFromAction =
+                CompletableFromAction(Action {
+                    val nearTimeItems = getNearTimeItems(context, entity.recTime)
+                    nearTimeItems.second?.let {
+                        calculateDiffs(nearTimeItems.second, nearTimeItems.first)
+                        updateWeightItem(context, nearTimeItems.second!!)
+                    }
+                    deleteWeightItem(context, entity)
+                })
+
+        /**
+         * recTimeの直前/直後のEntityを取得
+         * @param context Context
+         * @param recTime 基準となる時間
+         * @return first == 直前のEntity, second = 直後のEntity
+         */
+        fun getNearTimeItems(context: Context, recTime: Calendar): Pair<WeightItemEntity?, WeightItemEntity?> {
+            val beforeItemList = WeightItemRepository.getWeightItemJustBeforeRecTime(context, recTime)
+            val beforeItem = if (beforeItemList.isEmpty()) null else beforeItemList[0]
+            val afterItemList = WeightItemRepository.getWeightItemJustAfterRecTime(context, recTime)
+            val afterItem = if (afterItemList.isEmpty()) null else afterItemList[0]
+
+            return Pair(beforeItem, afterItem)
+        }
 
         /**
          * weightDiff,fatDiffの計算.
