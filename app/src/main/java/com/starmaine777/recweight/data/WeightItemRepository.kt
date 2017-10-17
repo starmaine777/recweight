@@ -30,25 +30,17 @@ class WeightItemRepository {
         fun getWeightItemById(context: Context, id: Long): Flowable<List<WeightItemEntity>> =
                 getDatabase(context).weightItemDao().getWeightItemById(id)
 
-        fun getWeightItemJustAfterRecTime(context: Context, recTime: Calendar): Flowable<List<WeightItemEntity>> =
+        fun getWeightItemJustAfterRecTime(context: Context, recTime: Calendar): List<WeightItemEntity> =
                 getDatabase(context).weightItemDao().getItemJustAfterRecTime(recTime)
 
-        fun getWeightItemJustBeforeRecTime(context: Context, recTime: Calendar): Flowable<List<WeightItemEntity>> =
+        fun getWeightItemJustBeforeRecTime(context: Context, recTime: Calendar): List<WeightItemEntity> =
                 getDatabase(context).weightItemDao().getItemJustBeforeRecTime(recTime)
 
         fun insertWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
                 getDatabase(context).weightItemDao().insertItem(weightItemEntity)
 
-        fun insertWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-                CompletableFromAction(Action {
-                    insertWeightItem(context, weightItemEntity)
-                })
-
         fun updateWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
                 getDatabase(context).weightItemDao().updateItem(weightItemEntity)
-
-        fun updateWeightItemCompletable(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-                CompletableFromAction(Action { getDatabase(context).weightItemDao().updateItem(weightItemEntity) })
 
         fun deleteWeightItem(context: Context, weightItemEntity: WeightItemEntity) =
                 getDatabase(context).weightItemDao().deleteItem(weightItemEntity)
@@ -58,5 +50,22 @@ class WeightItemRepository {
 
         fun deleteAllItemCompletable(context: Context): CompletableFromAction =
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteAllItem() })
+
+        /**
+         * weightDiff,fatDiffの計算.
+         * @param after 更新されるEntity.
+         * @param before afterの直前のEntity
+         */
+        fun calculateDiffs(after:WeightItemEntity?, before:WeightItemEntity?) {
+            after?.let {
+                if (before == null) {
+                    after.weightDiff = 0.0
+                    after.fatDiff = 0.0
+                } else {
+                    after.weightDiff = after.weight - before.weight
+                    after.fatDiff = after.fat - before.fat
+                }
+            }
+        }
     }
 }

@@ -22,6 +22,8 @@ import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.REQUESTS
 import com.starmaine777.recweight.utils.formatInputNumber
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import timber.log.Timber
 import java.util.*
@@ -191,6 +193,11 @@ class WeightInputFragment : Fragment() {
                     .show()
             return
         }
+
+        val progressDialog = ProgressDialog(context)
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+
         weightInputVm.insertOrUpdateWeightItem(
                 context,
                 editWeight.text.toString().toDouble(),
@@ -200,12 +207,17 @@ class WeightInputFragment : Fragment() {
                 toggleToilet.isChecked,
                 toggleMoon.isChecked,
                 toggleStar.isChecked,
-                editMemo.text.toString(),
-                {
+                editMemo.text.toString())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
                     Timber.d(TAG, "insertOrUpdateWeightItem complete")
+                    progressDialog.dismiss()
                     fragmentManager.popBackStack()
-                }
-        )
+                }, {
+                    e ->
+                    e.printStackTrace()
+                })
     }
 
     fun deleteWeightData() {
@@ -215,16 +227,21 @@ class WeightInputFragment : Fragment() {
             progressDialog.setCancelable(false)
             progressDialog.show()
 
-            weightInputVm.deleteWeightItem(context, {
-                progressDialog.dismiss()
-                fragmentManager.popBackStack()
-            }, {
-                AlertDialog.Builder(context)
-                        .setTitle(R.string.err_title_db)
-                        .setMessage(R.string.err_db)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
-            })
+
+
+            weightInputVm.deleteWeightItem(context)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({
+                        progressDialog.dismiss()
+                        fragmentManager.popBackStack()
+                    }, {
+                        AlertDialog.Builder(context)
+                                .setTitle(R.string.err_title_db)
+                                .setMessage(R.string.err_db)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show()
+                    })
         }
     }
 

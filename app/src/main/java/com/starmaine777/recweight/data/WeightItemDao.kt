@@ -19,10 +19,10 @@ interface WeightItemDao {
     fun getWeightItemById(id:Long): Flowable<List<WeightItemEntity>>
 
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ${WeightItemEntity.COL_REC_TIME} > :targetTime ORDER BY ${WeightItemEntity.COL_REC_TIME} ASC LIMIT 1")
-    fun getItemJustAfterRecTime(targetTime:Calendar): Flowable<List<WeightItemEntity>>
+    fun getItemJustAfterRecTime(targetTime:Calendar): List<WeightItemEntity>
 
     @Query("SELECT * FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM} WHERE ${WeightItemEntity.COL_REC_TIME} < :targetTime ORDER BY ${WeightItemEntity.COL_REC_TIME} DESC LIMIT 1")
-    fun getItemJustBeforeRecTime(targetTime:Calendar): Flowable<List<WeightItemEntity>>
+    fun getItemJustBeforeRecTime(targetTime:Calendar): List<WeightItemEntity>
 
     @Insert
     fun insertItem(weightItemEntity: WeightItemEntity)
