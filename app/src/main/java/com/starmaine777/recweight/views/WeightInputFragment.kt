@@ -30,7 +30,7 @@ import java.util.*
 
 /**
  * Created by 0025331458 on 2017/06/29.
- * Fragment to input weight and informations
+ * Fragment to input weight and information
  */
 class WeightInputFragment : Fragment() {
 
@@ -80,47 +80,51 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID), {
-            //dataGetSuccess
-            dataBinding?.weightItem = weightInputVm.inputEntity
 
-            setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
-            editDate.setOnClickListener { _ ->
-                dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
-                dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_DATE.ordinal)
-                dialog?.show(fragmentManager, TAG_DIALOGS)
-            }
+        weightInputVm.selectedEntityId(context, arguments.getLong(ARGS_ID))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    dataBinding?.weightItem = weightInputVm.inputEntity
 
-            setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
-            editTime.setOnClickListener { _ ->
-                dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
-                dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_TIME.ordinal)
-                dialog?.show(fragmentManager, TAG_DIALOGS)
-            }
+                    setRecordDate(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
+                    editDate.setOnClickListener { _ ->
+                        dialog = DatePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.YEAR), weightInputVm.calendar.get(Calendar.MONTH), weightInputVm.calendar.get(Calendar.DAY_OF_MONTH))
+                        dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_DATE.ordinal)
+                        dialog?.show(fragmentManager, TAG_DIALOGS)
+                    }
 
-            editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
-            editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+                    setRecordTime(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
+                    editTime.setOnClickListener { _ ->
+                        dialog = TimePickerDialogFragment.newInstance(weightInputVm.calendar.get(Calendar.HOUR_OF_DAY), weightInputVm.calendar.get(Calendar.MINUTE))
+                        dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_TIME.ordinal)
+                        dialog?.show(fragmentManager, TAG_DIALOGS)
+                    }
 
-            if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
-                showViewMode()
-                fab.setOnClickListener {
-                    RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments.getLong(ARGS_ID)))
-                }
-            } else {
-                fab.hide()
-                editMemo.maxLines = 5
-            }
-        }, {
-            //Error
-            alertDialog = AlertDialog.Builder(context)
-                    .setTitle(R.string.err_title_db)
-                    .setMessage(R.string.err_title_db)
-                    .setPositiveButton(android.R.string.ok, { _, _ ->
-                        fragmentManager.popBackStack()
-                    })
-                    .setOnDismissListener { fragmentManager.popBackStack() }
-                    .show()
-        })
+                    editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+                    editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+
+                    if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+                        showViewMode()
+                        fab.setOnClickListener {
+                            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments.getLong(ARGS_ID)))
+                        }
+                    } else {
+                        fab.hide()
+                        editMemo.maxLines = 5
+                    }
+                }, {
+                    alertDialog = AlertDialog.Builder(context)
+                            .setTitle(R.string.err_title_db)
+                            .setMessage(R.string.err_title_db)
+                            .setPositiveButton(android.R.string.ok, { _, _ ->
+                                fragmentManager.popBackStack()
+                            })
+                            .setOnDismissListener { fragmentManager.popBackStack() }
+                            .show()
+
+
+                })
     }
 
     fun showViewMode() {

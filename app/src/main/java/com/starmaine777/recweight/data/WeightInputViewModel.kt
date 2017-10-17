@@ -21,42 +21,35 @@ class WeightInputViewModel : ViewModel() {
         val TAG = "WeightInputViewModel"
     }
 
-    var selectedEntityId: Long? = 0L
-    fun selectedEntityId(context: Context, id: Long?, successCallback: () -> Unit, errorCallback: () -> Unit) {
-        Timber.d("selectedEntityId id = $id")
-        if (id == null) {
-            selectedEntityId = null
-            inputEntity = WeightItemEntity()
-            originalEntity = inputEntity
-            isCreate = true
-        } else {
-            selectedEntityId = id
-            val disposable = CompositeDisposable()
+    /**
+     * IDからEntityを取得する.
+     * @param context Context
+     * @param id 対象のid. nullの時はcreate扱い.
+     * @return inputEntityを設定後のCompletableFromAction
+     */
+    fun selectedEntityId(context: Context, id: Long?): CompletableFromAction =
+            CompletableFromAction(Action {
+                Timber.d("selectedEntityId id = $id")
+                if (id == null) {
+                    inputEntity = WeightItemEntity()
+                    originalEntity = inputEntity
+                    isCreate = true
+                } else {
 
-            WeightItemRepository.getWeightItemById(context, selectedEntityId!!)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ t: List<WeightItemEntity> ->
-                        if (t.isEmpty()) {
-                            inputEntity = WeightItemEntity()
-                            isCreate = true
-                        } else {
-                            inputEntity = t[0]
-                            isCreate = false
-                        }
-                        originalEntity = inputEntity.copy()
-                        calendar = inputEntity.recTime.clone() as Calendar
-                        successCallback()
-                        Timber.d("selectedEntity getInputEntities $inputEntity")
-                        disposable.clear()
-                    }, { _ ->
-                        Timber.d("selectedEntity Error!")
-                        errorCallback()
-                        disposable.clear()
+                    val idList = WeightItemRepository.getWeightItemById(context, id)
+                    if (idList.isEmpty()) {
+                        inputEntity = WeightItemEntity()
+                        isCreate = true
+                    } else {
+                        inputEntity = idList[0]
+                        isCreate = false
                     }
-                    ).let { disposable.add(it) }
-        }
-    }
+                    originalEntity = inputEntity.copy()
+                    calendar = inputEntity.recTime.clone() as Calendar
+                    Timber.d("selectedEntity getInputEntities $inputEntity")
+                }
+
+            })
 
     var isCreate = true
     var inputEntity: WeightItemEntity = WeightItemEntity()
