@@ -27,6 +27,9 @@ class WeightItemRepository {
         fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> =
                 getDatabase(context).weightItemDao().getAllListDateSorted()
 
+        fun getWeightItemListOnce(context: Context): List<WeightItemEntity> =
+                getDatabase(context).weightItemDao().getAllListDateSortedOnce()
+
         fun getWeightItemById(context: Context, id: Long): Flowable<List<WeightItemEntity>> =
                 getDatabase(context).weightItemDao().getWeightItemById(id)
 

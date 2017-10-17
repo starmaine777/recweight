@@ -13,6 +13,7 @@ import com.starmaine777.recweight.R
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.*
+import io.reactivex.Emitter
 import io.reactivex.Observable
 import org.json.JSONObject
 import timber.log.Timber
@@ -83,7 +84,7 @@ class ImportRepository(val context: Context) {
                     checkFileTemplate(response)
                     val sheetRow = response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getJSONObject("gridProperties").getInt("rowCount")
 
-                    emitter.onNext(sheetRow)
+                    emitter.onNext(sheetRow * 2)
 
                     val data = service.spreadsheets().values()
                             .get(sheetsId, "${context.getString(R.string.export_file_sheets_name)}!A1:I$sheetRow")
@@ -104,6 +105,7 @@ class ImportRepository(val context: Context) {
                         emitter.onNext(i)
                     }
 
+                    updateAllItemDiff(context, emitter)
                     emitter.onComplete()
                 } catch (e: Exception) {
                     if (!emitter.isDisposed) {
@@ -200,5 +202,22 @@ class ImportRepository(val context: Context) {
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String
             = SHEETS_COLUMNS.values()[columnNum].columnName + rowNum
+
+    private fun updateAllItemDiff(context: Context, emitter: Emitter<Int>) {
+        val allItem = WeightItemRepository.getWeightItemListOnce(context)
+
+        for (i in allItem.indices) {
+            val item = allItem[i]
+            if (i == allItem.lastIndex) {
+                item.weightDiff = 0.0
+                item.fatDiff = 0.0
+            } else {
+                val beforeItem = allItem[i + 1]
+                WeightItemRepository.calculateDiffs(item, beforeItem)
+            }
+            WeightItemRepository.updateWeightItem(context, item)
+            emitter.onNext(allItem.size + i)
+        }
+    }
 
 }
