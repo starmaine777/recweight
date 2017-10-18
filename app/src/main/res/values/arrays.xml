@@ -7,4 +7,12 @@
         <item>@string/settings_lt_nothing</item>
     </string-array>
 
+    <string-array name="chart_duration">
+        <item>@string/chart_duration_week</item>
+        <item>@string/chart_duration_month</item>
+        <item>@string/chart_duration_season</item>
+        <item>@string/chart_duration_year</item>
+    </string-array>
+
+    <style name="array">array</style>
 </resources>

@@ -3,6 +3,13 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.starmaine777.recweight.views.ShowRecordsActivity">
     <item
+        android:id="@+id/action_change_show_type"
+        android:orderInCategory="10"
+        android:icon="@drawable/icon_show_list"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_change_show_type"/>
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

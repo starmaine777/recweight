@@ -31,6 +31,7 @@ class LicenseFragment : Fragment() {
 
         dataSet.add(GitHubLicenseEntry(Licenses.NAME_APACHE_V2, "ReactiveX/RxJava", ".x", null, Licenses.FILE_NO_EXTENSION))
         dataSet.add(Licenses.fromGitHubApacheV2("JakeWharton/timber"))
+        dataSet.add(Licenses.fromGitHubApacheV2("PhilJay/MPAndroidChart"))
         dataSet.add(Licenses.fromGitHubMIT("afollestad/material-dialogs"))
         dataSet.add(Licenses.fromGitHubApacheV2("yshrsmz/LicenseAdapter"))
 

@@ -20,7 +20,15 @@ class ShowRecordsFragment : Fragment() {
 
     companion object {
         val TAG = "ShowRecordsFragment"
+        val CHILD_FRAGMENT_TAG = "showWeightFragment"
     }
+
+    enum class SHOW_TYPE(var fragment: Fragment?, var iconId: Int) {
+        LIST(null, R.drawable.icon_show_list),
+        CHART(null, R.drawable.icon_show_chart)
+    }
+
+    private var showType: SHOW_TYPE = SHOW_TYPE.LIST
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         activity.title = getString(R.string.app_name)
@@ -29,12 +37,24 @@ class ShowRecordsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        childFragmentManager.beginTransaction().replace(R.id.list_fragment, RecordListFragment(), RecordListFragment.TAG).commit()
-
+        changeRecordsFragment(SHOW_TYPE.LIST)
 
         fab.setOnClickListener { _ ->
             RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
         }
+    }
+
+    private fun changeRecordsFragment(newShowType: SHOW_TYPE) {
+        showType = newShowType
+        if (showType.fragment == null) {
+            var fragment: Fragment? = null
+            when (showType) {
+                SHOW_TYPE.LIST -> fragment = RecordListFragment()
+                SHOW_TYPE.CHART -> fragment = WeightChartFragment()
+            }
+            showType.fragment = fragment
+        }
+        childFragmentManager.beginTransaction().replace(R.id.list_fragment, showType.fragment, CHILD_FRAGMENT_TAG).commit()
     }
 
 
@@ -44,11 +64,15 @@ class ShowRecordsFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-
-        if (id == R.id.action_settings) {
-            val intent = Intent(activity, SettingsActivity::class.java)
-            startActivity(intent)
+        when (item.itemId) {
+            R.id.action_settings -> {
+                val intent = Intent(activity, SettingsActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.action_change_show_type -> {
+                changeRecordsFragment(if (showType == SHOW_TYPE.LIST) SHOW_TYPE.CHART else SHOW_TYPE.LIST)
+                item.setIcon(showType.iconId)
+            }
         }
 
         return super.onOptionsItemSelected(item)
