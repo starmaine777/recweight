@@ -32,15 +32,20 @@ import timber.log.Timber
  * Created by ai on 2017/07/15.
  */
 
-class RecordListFragment : Fragment() {
+class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListener {
 
     companion object {
         val TAG = "RecordListFragment"
     }
 
-    val weightItemVm: ShowRecordsViewModel by lazy { ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java) }
+    private lateinit var viewModel: ShowRecordsViewModel
     val disposable = CompositeDisposable()
     var dialog: Dialog? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java)
+    }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_record_list, container, false)
@@ -54,13 +59,6 @@ class RecordListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        weightItemVm.getWeightItemList(context)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ t1: List<WeightItemEntity>? ->
-                    val adapter = RecordListAdapter(t1, context)
-                    recyclerRecords.adapter = adapter
-                }).let { disposable.add(it) }
 
         RxBus.subscribe(WeightItemClickEvent::class.java)
                 .subscribe({ t: WeightItemClickEvent ->
@@ -81,6 +79,11 @@ class RecordListFragment : Fragment() {
         disposable.clear()
         dialog?.dismiss()
         dialog = null
+    }
+
+    override fun updateListItem() {
+        val adapter = RecordListAdapter(viewModel.weightItemList, context)
+        recyclerRecords.adapter = adapter
     }
 
     private fun onItemLongTap(item: WeightItemEntity) {
@@ -116,7 +119,7 @@ class RecordListFragment : Fragment() {
                 .setTitle(R.string.d_delete_item_title)
                 .setMessage(R.string.d_delete_item)
                 .setPositiveButton(android.R.string.ok, { _, _ ->
-                    weightItemVm.deleteItem(context, item)
+                    viewModel.deleteItem(context, item)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe {
