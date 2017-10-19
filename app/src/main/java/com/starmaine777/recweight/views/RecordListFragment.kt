@@ -74,6 +74,11 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
                 }).let { disposable.add(it) }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateListItem()
+    }
+
     override fun onStop() {
         super.onStop()
         disposable.clear()
