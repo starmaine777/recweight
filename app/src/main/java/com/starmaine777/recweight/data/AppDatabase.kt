@@ -10,7 +10,7 @@ import com.starmaine777.recweight.data.entity.WeightItemEntity
  * Created by ai on 2017/07/02.
  */
 
-@Database(entities = arrayOf(WeightItemEntity::class), version = 1)
+@Database(entities = arrayOf(WeightItemEntity::class), version = 2)
 @TypeConverters(DBTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
 
