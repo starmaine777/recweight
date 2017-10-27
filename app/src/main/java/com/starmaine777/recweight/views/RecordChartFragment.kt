@@ -1,33 +1,30 @@
 package com.starmaine777.recweight.views
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Entity
-import android.graphics.Color
+import android.content.Context
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
-import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import com.github.mikephil.charting.components.XAxis
+import android.widget.*
+import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
 import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber
-import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 /**
@@ -57,6 +54,15 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
                     , DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
             )
         }
+        val weightAxis = viewChart.axisLeft
+        weightAxis.setValueFormatter { value, _ ->
+            return@setValueFormatter value.toString() + "kg"
+        }
+        val fatAxis = viewChart.axisRight
+        fatAxis.setValueFormatter { value, _ ->
+            return@setValueFormatter value.toString() + "%"
+        }
+
         spinnerDuration.onItemSelectedListener = this
         radioGroupStamps.setOnCheckedChangeListener { _, _ ->
             Timber.d("radioGroup onCheckedChangeListener ")
@@ -87,11 +93,10 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
                 if (item.fat == 0.0) {
                     if (viewModel.weightItemList!!.size <= 2) {
-                        var modelEntity :WeightItemEntity?
-                        if (i == 0) {
-                            modelEntity = viewModel.weightItemList!![1]
+                        val modelEntity = if (i == 0) {
+                            viewModel.weightItemList!![1]
                         } else {
-                            modelEntity = viewModel.weightItemList!![0]
+                            viewModel.weightItemList!![0]
                         }
                         fats.add(Entry(item.recTime.timeInMillis.toFloat(), modelEntity.fat.toFloat()))
                     } else {
@@ -118,12 +123,14 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
             weightDataSet.setDrawIcons(true)
             weightDataSet.iconsOffset = MPPointF(0F, -30F)
+            weightDataSet.setDrawValues(false)
 
             val fatDataSet = LineDataSet(fats, getString(R.string.weight_input_fat_title))
             fatDataSet.color = ContextCompat.getColor(context, R.color.chart_fat)
             fatDataSet.lineWidth = 1.5f
             fatDataSet.setDrawCircles(false)
             fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+            fatDataSet.setDrawValues(false)
 
             val lineData = LineData(fatDataSet, weightDataSet)
             fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
@@ -135,6 +142,10 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
 
             if (refreshPosition) viewChart.moveViewToX(nowDate)
+
+            viewChart.setDrawMarkers(true)
+
+            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, viewModel.weightItemList!!)
 
             viewChart.invalidate()
         }
@@ -177,6 +188,48 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
     }
 
     override fun onNothingSelected(p0: AdapterView<*>?) {
+    }
+
+    @SuppressLint("ViewConstructor")
+    class ItemMarkerView(context: Context?, layoutResource: Int, private var itemList: List<WeightItemEntity>) : MarkerView(context, layoutResource) {
+        private var mOffset: MPPointF? = null
+        private var target: WeightItemEntity? = null
+        override fun getOffset(): MPPointF {
+            if (mOffset == null) {
+                mOffset = MPPointF((-(width / 2)).toFloat(), (-height).toFloat() - 100F)
+            }
+            return mOffset!!
+        }
+
+        @SuppressLint("WrongViewCast")
+        override fun refreshContent(e: Entry?, highlight: Highlight?) {
+            super.refreshContent(e, highlight)
+            if (e == null) {
+                visibility = View.INVISIBLE
+                target = null
+            } else {
+                visibility = View.VISIBLE
+                target = itemList.firstOrNull { e.x == it.recTime.timeInMillis.toFloat() }
+                if (target == null) {
+                    visibility = View.INVISIBLE
+                } else {
+                    findViewById<TextView>(R.id.textWeight).text = context.getString(R.string.list_weight_pattern, target!!.weight.toString())
+                    findViewById<TextView>(R.id.textFat).text = if (target!!.fat == 0.0) "" else context.getString(R.string.list_fat_pattern, target!!.fat.toString())
+                    findViewById<TextView>(R.id.textDate).text = DateUtils.formatDateTime(context, target!!.recTime.timeInMillis,
+                            DateUtils.FORMAT_SHOW_YEAR
+                                    .or(DateUtils.FORMAT_SHOW_DATE)
+                                    .or(DateUtils.FORMAT_NUMERIC_DATE)
+                                    .or(DateUtils.FORMAT_SHOW_TIME)
+                                    .or(DateUtils.FORMAT_ABBREV_ALL))
+
+                    findViewById<ImageButton>(R.id.showDumbbell).isSelected = target!!.showDumbbell
+                    findViewById<ImageButton>(R.id.showLiquor).isSelected = target!!.showLiquor
+                    findViewById<ImageButton>(R.id.showToilet).isSelected = target!!.showToilet
+                    findViewById<ImageButton>(R.id.showMoon).isSelected = target!!.showMoon
+                    findViewById<ImageButton>(R.id.showStar).isSelected = target!!.showStar
+                }
+            }
+        }
     }
 
 }

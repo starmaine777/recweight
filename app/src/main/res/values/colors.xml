@@ -20,5 +20,7 @@
 
     <color name="chart_weight">#00bfff</color>
     <color name="chart_fat">#fa8072</color>
+    <color name="chart_mark_bg">#DDf5f5f5</color>
+    <color name="chart_mark_line">#FF101030</color>
 
 </resources>
