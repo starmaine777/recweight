@@ -5,7 +5,7 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "${rootProject.buildToolsVersion}"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.starmaine777.recweight"
         minSdkVersion 21
