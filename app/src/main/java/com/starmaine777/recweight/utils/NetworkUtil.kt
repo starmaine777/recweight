@@ -55,7 +55,7 @@ fun existsChoseAccount(context: Context, credential: GoogleAccountCredential): B
     Timber.d("savedName = $savedName")
     if (!TextUtils.isEmpty(savedName)) {
         credential.selectedAccountName = savedName
-        return true
+        return !TextUtils.isEmpty(credential.selectedAccountName)
     } else {
         return false
     }
