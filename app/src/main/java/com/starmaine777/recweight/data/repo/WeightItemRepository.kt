@@ -1,6 +1,5 @@
 package com.starmaine777.recweight.data.repo
 
-import android.arch.persistence.room.Room
 import android.content.Context
 import com.starmaine777.recweight.data.AppDatabase
 import com.starmaine777.recweight.data.entity.WeightItemEntity
@@ -21,7 +20,7 @@ class WeightItemRepository {
 
         fun getDatabase(context: Context): AppDatabase {
             if (appDataBase == null) {
-                appDataBase = Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.DB_NAME).build()
+                appDataBase = AppDatabase.build(context)
             }
             return appDataBase!!
         }

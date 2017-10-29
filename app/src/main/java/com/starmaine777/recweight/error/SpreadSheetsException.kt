@@ -19,6 +19,7 @@ class SpreadSheetsException(val type: ERROR_TYPE, val errorCode: Int, val target
         DEVICE_OFFLINE,
         SHEETS_URL_ERROR,
         SHEETS_ILLEGAL_TEMPLATE_ERROR,
+        NO_DATA,
         FATAL_ERROR,
     }
 

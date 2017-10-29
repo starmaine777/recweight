@@ -44,7 +44,6 @@ data class WeightItemEntity(
         const val COL_SHOW_MOON = "showMoon"
         const val COL_SHOW_STAR = "showStar"
         const val COL_MEMO = "memo"
-
     }
 
 

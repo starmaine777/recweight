@@ -87,39 +87,38 @@ class ExportRepository(val context: Context) {
         values.add(row)
         val body = ValueRange().setValues(values)
 
-        WeightItemRepository.getWeightItemList(context).subscribe { t ->
-            if (t.isEmpty()) {
-                return@subscribe
-            }
+        val itemList = WeightItemRepository.getWeightItemListOnce(context)
+        if (itemList.isEmpty()) {
+            emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.NO_DATA))
+            return
+        }
 
-            t.map { (recTime, weight, fat, showDumbbell, showLiquor, showToilet, showMoon, showStar, memo) ->
-                val weightRow = mutableListOf(convertToExportDateString(recTime),
-                        weight,
-                        fat,
-                        showDumbbell,
-                        showLiquor,
-                        showToilet,
-                        showMoon,
-                        showStar,
-                        memo
-                )
-                values.add(weightRow)
-            }
+        itemList.map {
+            val weightRow = mutableListOf(convertToExportDateString(it.recTime),
+                    it.weight,
+                    it.fat,
+                    it.showDumbbell,
+                    it.showLiquor,
+                    it.showToilet,
+                    it.showMoon,
+                    it.showStar,
+                    it.memo
+            )
+            values.add(weightRow)
+        }
+        val range = "${context.getString(R.string.export_file_sheets_name)}!" +
+                "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
 
-            val range = "${context.getString(R.string.export_file_sheets_name)}!" +
-                    "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
+        // sheet作成
+        val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1, emitter)
+        if (spreadSheet != null) {
+            service.spreadsheets().values().update(spreadSheet.spreadsheetId, range, body).setValueInputOption("RAW").execute()
 
-            // sheet作成
-            val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1, emitter)
-            if (spreadSheet != null) {
-                service.spreadsheets().values().update(spreadSheet.spreadsheetId, range, body).setValueInputOption("RAW").execute()
+            exportedUrlStr = "https://docs.google.com/spreadsheets/d/${spreadSheet.spreadsheetId}"
 
-                exportedUrlStr = "https://docs.google.com/spreadsheets/d/${spreadSheet.spreadsheetId}"
-
-                emitter.onComplete()
-            } else {
-                throw SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.FATAL_ERROR)
-            }
+            emitter.onComplete()
+        } else {
+            throw SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.FATAL_ERROR)
         }
     }
 

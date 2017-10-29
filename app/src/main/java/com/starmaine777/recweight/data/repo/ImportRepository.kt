@@ -17,7 +17,6 @@ import com.starmaine777.recweight.utils.*
 import io.reactivex.Emitter
 import io.reactivex.Observable
 import org.json.JSONObject
-import timber.log.Timber
 import java.io.IOException
 import java.net.URL
 
@@ -157,7 +156,6 @@ class ImportRepository(val context: Context) {
         val weightItem = WeightItemEntity()
         for (i in row.indices) {
             val str = row[i] as String
-            Timber.d("str = $str")
             try {
                 when (SHEETS_COLUMNS.values()[i]) {
                     SHEETS_COLUMNS.DATE -> {
@@ -202,7 +200,7 @@ class ImportRepository(val context: Context) {
     }
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String
-            = SHEETS_COLUMNS.values()[columnNum].columnName + rowNum
+            = SHEETS_COLUMNS.values()[columnNum].columnName + (rowNum + 1)
 
     private fun updateAllItemDiff(context: Context, emitter: Emitter<Int>) {
         val allItem = WeightItemRepository.getWeightItemListOnce(context)

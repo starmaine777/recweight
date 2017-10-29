@@ -112,6 +112,9 @@ class ExportFragment : Fragment() {
                             SpreadSheetsException.ERROR_TYPE.FATAL_ERROR -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
+                            SpreadSheetsException.ERROR_TYPE.NO_DATA -> {
+                                showRetryDialog(R.string.err_no_data_title, R.string.err_no_data)
+                            }
                             else -> {
                                 showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
                             }
