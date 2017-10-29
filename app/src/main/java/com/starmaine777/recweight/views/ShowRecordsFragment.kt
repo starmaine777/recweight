@@ -34,8 +34,8 @@ class ShowRecordsFragment : Fragment() {
     }
 
     enum class SHOW_TYPE(var fragment: Fragment?, var listener: ShowRecordsEventListener?, var iconId: Int) {
-        LIST(null, null, R.drawable.icon_show_list),
-        CHART(null, null, R.drawable.icon_show_chart)
+        LIST(null, null, R.drawable.icon_show_chart),
+        CHART(null, null, R.drawable.icon_show_list)
     }
 
     private var showType: SHOW_TYPE = SHOW_TYPE.LIST
@@ -108,6 +108,7 @@ class ShowRecordsFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater?.inflate(R.menu.menu_main, menu)
+        menu?.findItem(R.id.action_change_show_type)?.setIcon(showType.iconId)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

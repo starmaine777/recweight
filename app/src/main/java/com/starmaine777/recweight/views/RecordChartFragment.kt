@@ -122,7 +122,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             weightDataSet.setDrawCircles(false)
             weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
             weightDataSet.setDrawIcons(true)
-            weightDataSet.iconsOffset = MPPointF(0F, -30F)
+            weightDataSet.iconsOffset = MPPointF(0F, -25F)
             weightDataSet.setDrawValues(false)
 
             val fatDataSet = LineDataSet(fats, getString(R.string.weight_input_fat_title))
