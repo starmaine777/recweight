@@ -8,9 +8,6 @@ import android.view.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
-import com.starmaine777.recweight.event.InputFragmentStartEvent
-import com.starmaine777.recweight.event.RxBus
-import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.views.settings.SettingsActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -26,19 +23,11 @@ class ShowRecordsFragment : Fragment() {
 
     companion object {
         val TAG = "ShowRecordsFragment"
-        val CHILD_FRAGMENT_TAG = "showWeightFragment"
     }
 
     interface ShowRecordsEventListener {
         fun updateListItem()
     }
-
-    enum class SHOW_TYPE(var fragment: Fragment?, var listener: ShowRecordsEventListener?, var iconId: Int) {
-        LIST(null, null, R.drawable.icon_show_chart),
-        CHART(null, null, R.drawable.icon_show_list)
-    }
-
-    private var showType: SHOW_TYPE = SHOW_TYPE.LIST
 
     private lateinit var viewModel: ShowRecordsViewModel
     private val disposable = CompositeDisposable()
@@ -55,11 +44,23 @@ class ShowRecordsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        changeRecordsFragment(SHOW_TYPE.LIST)
+        bottomMain.setOnNavigationItemSelectedListener { item ->
 
-        fab.setOnClickListener { _ ->
-            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
+            val fragment: Fragment
+            when (item.itemId) {
+                R.id.bottom_list -> {
+                    fragment = childFragmentManager.findFragmentByTag(RecordListFragment.TAG) ?: RecordListFragment()
+                    childFragmentManager.beginTransaction().replace(R.id.list_fragment, fragment, RecordListFragment.TAG).commit()
+                }
+                R.id.bottom_chart -> {
+                    fragment = childFragmentManager.findFragmentByTag(RecordChartFragment.TAG) ?: RecordChartFragment()
+                    childFragmentManager.beginTransaction().replace(R.id.list_fragment, fragment, RecordChartFragment.TAG).commit()
+                }
+            }
+            return@setOnNavigationItemSelectedListener true
         }
+
+        bottomMain.selectedItemId = R.id.bottom_list
     }
 
     override fun onStart() {
@@ -69,10 +70,20 @@ class ShowRecordsFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ t1: List<WeightItemEntity>? ->
                     viewModel.weightItemList = t1
-                    showType.listener?.let {
-                        showType.listener!!.updateListItem()
+                    val tag: String =
+                            when (bottomMain.selectedItemId) {
+                                R.id.bottom_list -> RecordListFragment.TAG
+                                R.id.bottom_chart -> RecordChartFragment.TAG
+                                else -> {
+                                    ""
+                                }
+                            }
+                    val fragment = childFragmentManager.findFragmentByTag(tag)
+                    fragment?.let {
+                        if (fragment is ShowRecordsEventListener) {
+                            fragment.updateListItem()
+                        }
                     }
-
                 }).let { disposable.add(it) }
     }
 
@@ -81,34 +92,9 @@ class ShowRecordsFragment : Fragment() {
         disposable.clear()
     }
 
-    private fun changeRecordsFragment(newShowType: SHOW_TYPE) {
-        showType = newShowType
-        if (showType.fragment == null) {
-            var fragment: Fragment? = null
-            var listener: ShowRecordsEventListener? = null
-            when (showType) {
-                SHOW_TYPE.LIST -> {
-                    fragment = RecordListFragment()
-                    listener = fragment
-                }
-                SHOW_TYPE.CHART -> {
-                    fragment = RecordChartFragment()
-                    listener = fragment
-                }
-            }
-            showType.fragment = fragment
-            showType.listener = listener
-        }
-        showType.fragment?.let {
-            childFragmentManager.beginTransaction().replace(R.id.list_fragment, showType.fragment, CHILD_FRAGMENT_TAG).commit()
-        }
-    }
-
-
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater?.inflate(R.menu.menu_main, menu)
-        menu?.findItem(R.id.action_change_show_type)?.setIcon(showType.iconId)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -116,10 +102,6 @@ class ShowRecordsFragment : Fragment() {
             R.id.action_settings -> {
                 val intent = Intent(activity, SettingsActivity::class.java)
                 startActivity(intent)
-            }
-            R.id.action_change_show_type -> {
-                changeRecordsFragment(if (showType == SHOW_TYPE.LIST) SHOW_TYPE.CHART else SHOW_TYPE.LIST)
-                item.setIcon(showType.iconId)
             }
         }
 

@@ -12,8 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
@@ -39,7 +39,7 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     }
 
     private lateinit var viewModel: ShowRecordsViewModel
-    val disposable = CompositeDisposable()
+    private val disposable = CompositeDisposable()
     var dialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +55,10 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerRecords.layoutManager = LinearLayoutManager(context)
+
+        fab.setOnClickListener { _ ->
+            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
+        }
     }
 
     override fun onStart() {

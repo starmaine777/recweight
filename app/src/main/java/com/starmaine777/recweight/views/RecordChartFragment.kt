@@ -33,6 +33,11 @@ import kotlin.collections.ArrayList
  */
 class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListener, AdapterView.OnItemSelectedListener {
 
+    companion object {
+        val TAG = "RecordChartFragment "
+    }
+
+
     private lateinit var viewModel: ShowRecordsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
