@@ -11,7 +11,9 @@ import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ImageButton
+import android.widget.TextView
 import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
@@ -85,9 +87,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
     }
 
     private fun showChart(refreshPosition: Boolean) {
-        if (viewModel.weightItemList == null) {
-
-        } else {
+        if (!viewModel.weightItemList!!.isEmpty()) {
             val weights = ArrayList<Entry>()
             val fats = ArrayList<Entry>()
 
