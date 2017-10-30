@@ -1,6 +1,8 @@
 package com.starmaine777.recweight
 
 import android.app.Application
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
 import timber.log.Timber
 
 /**
@@ -8,7 +10,7 @@ import timber.log.Timber
  * Created by 0025331458 on 2017/09/04.
  */
 
-class RecWeightApp:Application() {
+class RecWeightApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -17,5 +19,6 @@ class RecWeightApp:Application() {
             Timber.plant(Timber.DebugTree())
         }
 
+        Fabric.with(this, Crashlytics())
     }
 }
