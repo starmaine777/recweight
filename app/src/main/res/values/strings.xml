@@ -7,6 +7,8 @@
     <string name="toolbar_title_export">エクスポート</string>
     <string name="toolbar_title_license">ライセンス</string>
 
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+
     <string name="bottom_list">list</string>
     <string name="bottom_chart">chart</string>
 
