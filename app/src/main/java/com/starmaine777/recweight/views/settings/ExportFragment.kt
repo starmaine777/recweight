@@ -1,7 +1,11 @@
 package com.starmaine777.recweight.views.settings
 
 import android.Manifest
+import android.accounts.AccountManager
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
@@ -18,10 +22,12 @@ import com.starmaine777.recweight.data.repo.ExportRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.fragment_export.*
 import timber.log.Timber
 
@@ -72,10 +78,6 @@ class ExportFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         RxBus.publish(UpdateToolbarEvent(false, context.getString(R.string.toolbar_title_import)))
-    }
-
-    override fun onResume() {
-        super.onResume()
         exportData()
     }
 
@@ -85,8 +87,8 @@ class ExportFragment : Fragment() {
     }
 
     @Throws()
-    fun exportData() {
-        Timber.d("exportData repo=$exportRepo")
+    private fun exportData() {
+        Timber.d( Throwable(),"exportData repo=$exportRepo", null)
         exportRepo.exportData(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -133,11 +135,58 @@ class ExportFragment : Fragment() {
                 }).let { disposable.add(it) }
     }
 
-    fun showRetryDialog(titleId: Int, messageId: Int) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Timber.d("onActivityResult requestCode=$requestCode resultCode=$resultCode date=$data")
+        when (requestCode) {
+            REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+                        if (!TextUtils.isEmpty(accountName)) {
+                            val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
+                            editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
+                            editor.apply()
+                            exportRepo.credential.selectedAccountName = accountName!!
+                            exportData()
+                        }
+                        exportData()
+                    }
+                    Activity.RESULT_CANCELED -> {
+                        fragmentManager.popBackStack()
+                    }
+                }
+            }
+            REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> exportData()
+                    Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
+                }
+            }
+
+            else -> super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Timber.d("onRequestPermissionResult requestCode = $requestCode grantResults=$grantResults")
+        when (requestCode) {
+            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    exportData()
+                } else {
+                    showRetryDialog(getString(R.string.err_no_permission_title), getString(R.string.err_no_permission, getString(R.string.err_permission_account)))
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+
+    private fun showRetryDialog(titleId: Int, messageId: Int) {
         showRetryDialog(resources.getString(titleId), resources.getString(messageId))
     }
 
-    fun showRetryDialog(title: String, message: String) {
+    private fun showRetryDialog(title: String, message: String) {
         if (TextUtils.isEmpty(message)) {
             return
         }
@@ -147,7 +196,11 @@ class ExportFragment : Fragment() {
             builder.setTitle(title)
         }
         builder.setMessage(message)
-                .setOnDismissListener { fragmentManager.popBackStack() }
+                .setOnDismissListener {
+                    fragmentManager?.let {
+                        if (fragmentManager.backStackEntryCount > 0) fragmentManager.popBackStack()
+                    }
+                }
                 .setPositiveButton(android.R.string.ok
                         , { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()

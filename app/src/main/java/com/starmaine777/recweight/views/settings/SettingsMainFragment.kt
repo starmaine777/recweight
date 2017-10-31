@@ -1,9 +1,11 @@
 package com.starmaine777.recweight.views.settings
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
@@ -39,9 +41,9 @@ class SettingsMainFragment : Fragment() {
         val TAG = "SettingsMainFragment"
     }
 
-    var disposable = CompositeDisposable()
-    var dialog: Dialog? = null
-    val settingsItems: List<SettingItem> by lazy {
+    private var disposable = CompositeDisposable()
+    private var dialog: Dialog? = null
+    private val settingsItems: List<SettingItem> by lazy {
         listOf(
                 SettingItem(getString(R.string.settings_main_long_tap),
                         activity.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.LONG_TAP.name, getString(R.string.settings_lt_show_menu)),
@@ -67,16 +69,17 @@ class SettingsMainFragment : Fragment() {
                             .setOnDismissListener { onActivityResult(REQUESTS.DELETE_ALL_WEIGHT_ITEMS.ordinal, Activity.RESULT_CANCELED, null) }
                             .show()
                 }),
+                SettingItem(getString(R.string.settings_main_account),
+                        context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, getString(R.string.settings_account_no_data)),
+                        {
+                            showChooseAccountDialog()
+                        }),
                 SettingItem(getString(R.string.settings_main_license), {
                     activity.supportFragmentManager
                             .beginTransaction()
                             .replace(R.id.fragment, LicenseFragment(), null).addToBackStack(null).commit()
                 })
         )
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -91,7 +94,12 @@ class SettingsMainFragment : Fragment() {
         super.onStart()
         recyclerSettingsMain.adapter = SettingsMainAdapter(settingsItems)
         RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.activity_settings)))
+        updateAccountName()
     }
+
+    private fun updateAccountName() =
+            updateSettingsItemDescription(R.string.settings_main_account,
+                    context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.ACCOUNT_NAME.name, getString(R.string.settings_account_no_data)))
 
     override fun onStop() {
         super.onStop()
@@ -122,6 +130,15 @@ class SettingsMainFragment : Fragment() {
                                     .show()
                         }).let { disposable.add(it) }
             }
+            REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+                    if (!TextUtils.isEmpty(accountName)) {
+                        activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit().putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName).apply()
+                        updateSettingsItemDescription(R.string.settings_main_account, accountName!!)
+                    }
+                }
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data)
@@ -131,16 +148,29 @@ class SettingsMainFragment : Fragment() {
         dialog = MaterialDialog.Builder(context).items(R.array.setting_long_tap).itemsCallbackSingleChoice(-1,
                 { _, _, _, text ->
                     context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(PREFERENCE_KEY.LONG_TAP.name, text.toString()).apply()
-                    for (item in settingsItems) {
-                        if (TextUtils.equals(item.title, getString(R.string.settings_main_long_tap))) {
-                            item.description = text.toString()
-                            recyclerSettingsMain.adapter.notifyDataSetChanged()
-                            break
-                        }
-                    }
+                    updateSettingsItemDescription(R.string.settings_main_long_tap, text.toString())
                     return@itemsCallbackSingleChoice true
                 }).positiveText(android.R.string.ok).show()
+    }
 
+    private fun updateSettingsItemDescription(titleId: Int, description: String) {
+        for (item in settingsItems) {
+            if (TextUtils.equals(item.title, getString(titleId))) {
+                item.description = description
+                recyclerSettingsMain.adapter.notifyDataSetChanged()
+                break
+            }
+        }
+    }
+
+    private fun showChooseAccountDialog() {
+        val intent: Intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), null, null, null, null)
+        } else {
+            @Suppress("DEPRECATION")
+            AccountManager.newChooseAccountIntent(null, null, arrayOf("com.google"), false, null, null, null, null)
+        }
+        startActivityForResult(intent, REQUESTS.SHOW_ACCOUNT_PICKER.ordinal)
     }
 
 }

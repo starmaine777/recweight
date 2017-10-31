@@ -43,6 +43,7 @@
     <string name="settings_main_long_tap">体重データ長押し時の処理</string>
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
+    <string name="settings_main_account">アカウントの設定</string>
     <string name="settings_main_all_delete">体重データの全削除</string>
     <string name="settings_main_license">ライセンス</string>
 
@@ -51,6 +52,7 @@
     <string name="settings_lt_delete">削除</string>
     <string name="settings_lt_nothing">何もしない</string>
 
+    <string name="settings_account_no_data">未設定</string>
 
     <string name="d_settings_all_delete_title">体重データの全削除</string>
     <string name="d_settings_all_delete">体重のデータをすべて削除します。本当によろしいですか？</string>
@@ -89,6 +91,9 @@
     <string name="err_offline">ネットワークが利用できません。ネットワーク接続可能な状態にしてください。</string>
     <string name="err_no_data_title">データなし</string>
     <string name="err_no_data">データがないため、エクスポートできません。</string>
+    <string name="err_no_permission_title">パーミッションエラー</string>
+    <string name="err_no_permission">この機能に必要なパーミッション:%sが許可されていないため、処理が続行できません。</string>
+    <string name="err_permission_account">連絡先へのアクセス</string>
 
     <string name="export_file_name_header">RecWeight_export_</string>
     <string name="export_file_sheets_name">RecWeight</string>

@@ -77,7 +77,7 @@ class ImportUrlFragment : Fragment() {
         view?.isFocusableInTouchMode = true
     }
 
-    fun changeInputView(startProgress: Boolean) {
+    private fun changeInputView(startProgress: Boolean) {
         if (startProgress) {
             areaUrlInput.visibility = View.GONE
             areaProgress.visibility = View.VISIBLE
@@ -135,6 +135,10 @@ class ImportUrlFragment : Fragment() {
                                 showRetryDialog(getString(R.string.err_import_title_illegal_template),
                                         getString(R.string.err_import_illegal_template, t.target))
                             }
+                            else -> {
+                                // ないはず
+                                showRetryDialog(R.string.err_fatal_title, R.string.err_fatal)
+                            }
                         }
                     } else if (t is UserRecoverableAuthIOException) {
                         Timber.d("UserRecoverableAuthIOException startActivity")
@@ -182,19 +186,20 @@ class ImportUrlFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Timber.d("onActivityResult requestCode = $requestCode")
         when (requestCode) {
-            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
-                startToGetSpleadSheetsData()
-            }
-
             REQUESTS.SHOW_ACCOUNT_PICKER.ordinal -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-                    if (!TextUtils.isEmpty(accountName)) {
-                        val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
-                        editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
-                        editor.apply()
-                        importRepo.credential.selectedAccountName = accountName!!
-                        startToGetSpleadSheetsData()
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+                        if (!TextUtils.isEmpty(accountName)) {
+                            val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
+                            editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
+                            editor.apply()
+                            importRepo.credential.selectedAccountName = accountName!!
+                            startToGetSpleadSheetsData()
+                        }
+                    }
+                    Activity.RESULT_CANCELED -> {
+                        changeInputView(false)
                     }
                 }
             }
@@ -206,8 +211,9 @@ class ImportUrlFragment : Fragment() {
             }
 
             REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    startToGetSpleadSheetsData()
+                when (resultCode) {
+                    Activity.RESULT_OK -> startToGetSpleadSheetsData()
+                    Activity.RESULT_CANCELED -> changeInputView(false)
                 }
             }
 
@@ -215,7 +221,21 @@ class ImportUrlFragment : Fragment() {
         }
     }
 
-    fun hideKeyboard() {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Timber.d("onRequestPermissionResult requestCode = $requestCode")
+        when (requestCode) {
+            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startToGetSpleadSheetsData()
+                } else {
+                    showRetryDialog(getString(R.string.err_no_permission_title), getString(R.string.err_no_permission, getString(R.string.err_permission_account)))
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun hideKeyboard() {
         if (editImportUrl.hasFocus()) editImportUrl.clearFocus()
 
         val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -225,7 +245,7 @@ class ImportUrlFragment : Fragment() {
 
     }
 
-    fun startImport() {
+    private fun startImport() {
         if (TextUtils.isEmpty(editImportUrl.text)) {
             dialog = AlertDialog.Builder(context)
                     .setTitle(R.string.err_title_input)
@@ -239,23 +259,11 @@ class ImportUrlFragment : Fragment() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        Timber.d("onRequestPermissionResult requestCode = $requestCode")
-        when (requestCode) {
-            REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startToGetSpleadSheetsData()
-                }
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    fun showRetryDialog(titleId: Int, messageId: Int) {
+    private fun showRetryDialog(titleId: Int, messageId: Int) {
         showRetryDialog(resources.getString(titleId), resources.getString(messageId))
     }
 
-    fun showRetryDialog(title: String, message: String) {
+    private fun showRetryDialog(title: String, message: String) {
         if (TextUtils.isEmpty(message)) {
             return
         }
@@ -270,7 +278,4 @@ class ImportUrlFragment : Fragment() {
                         , { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()
     }
-
-    fun canFinishFragment(): Boolean = (disposable.size() <= 0)
-
 }
