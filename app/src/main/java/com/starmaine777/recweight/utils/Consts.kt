@@ -1,7 +1,5 @@
 package com.starmaine777.recweight.utils
 
-import com.starmaine777.recweight.R
-
 /**
  * Created by ai on 2017/07/01.
  * global consts
@@ -33,3 +31,5 @@ enum class PREFERENCE_KEY {
 
 val EXPORT_TITLE_DATE_STR = "yyyyMMdd_HHmm"
 val EXPORT_DATE_STR = "yyyy/MM/dd HH:mm:ss"
+
+val ADD_APP_ID = "ca-app-pub-3895429894123918~4574813374"

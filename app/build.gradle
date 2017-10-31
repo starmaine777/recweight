@@ -80,7 +80,7 @@ dependencies {
     compile 'com.afollestad.material-dialogs:core:0.9.4.7'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.10.19'
-    compile 'com.google.android.gms:play-services-auth:11.0.4'
+    compile 'com.google.android.gms:play-services-auth:11.4.2'
     compile 'pub.devrel:easypermissions:0.3.0'
     compile('com.google.api-client:google-api-client-android:1.22.0') {
         exclude group: 'org.apache.httpcomponents'
@@ -89,6 +89,7 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
 
+    implementation 'com.google.android.gms:play-services-ads:11.4.2'
     compile('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true
     }
