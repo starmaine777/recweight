@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1012418830087",
+    "firebase_url": "https://recweight-fc738.firebaseio.com",
+    "project_id": "recweight-fc738",
+    "storage_bucket": "recweight-fc738.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012418830087:android:88355089c0caa9b5",
+        "android_client_info": {
+          "package_name": "com.starmaine777.recweight"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1012418830087-m7i0u158mlo2mcpunafqte7td23hhfc8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgxMUAVnKtP4kyVp3MttHxdnymFpD6cew"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
