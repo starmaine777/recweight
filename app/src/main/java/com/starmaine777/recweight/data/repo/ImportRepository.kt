@@ -1,7 +1,9 @@
 package com.starmaine777.recweight.data.repo
 
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import android.text.TextUtils
+import android.text.format.DateUtils
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -33,10 +35,12 @@ class ImportRepository(val context: Context) {
     }
 
     val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
+    val errorDates: MutableList<String> = ArrayList()
 
     fun getResultFromApi(urlStr: String): Observable<Int> {
         return Observable.create { emitter ->
             var sheetsId: String?
+            errorDates.clear()
             try {
                 val url = URL(urlStr)
                 val path = url.path
@@ -118,7 +122,7 @@ class ImportRepository(val context: Context) {
 
 
     @Throws(SpreadSheetsException::class, IOException::class)
-    fun checkFileTemplate(response: JSONObject) {
+    private fun checkFileTemplate(response: JSONObject) {
 
         if (!isCollectFileName(response)) {
             throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, context.getString(R.string.err_import_illegal_file_name))
@@ -148,11 +152,11 @@ class ImportRepository(val context: Context) {
     private fun isCollectSheetsName(response: JSONObject): Boolean
             = TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
 
-    fun isCorrectFirstRow(row: List<Any>): Boolean
+    private fun isCorrectFirstRow(row: List<Any>): Boolean
             = row.indices.any { TextUtils.equals(context.getString(SHEETS_COLUMNS.values()[it].nameId), row[it] as String) }
 
     @Throws(SpreadSheetsException::class)
-    fun importRowData(row: List<Any>, rowNum: Int) {
+    private fun importRowData(row: List<Any>, rowNum: Int) {
         val weightItem = WeightItemEntity()
         for (i in row.indices) {
             val str = row[i] as String
@@ -196,7 +200,18 @@ class ImportRepository(val context: Context) {
                 throw SpreadSheetsException(ERROR_TYPE.SHEETS_ILLEGAL_TEMPLATE_ERROR, getErrorCell(i, rowNum))
             }
         }
-        WeightItemRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
+
+        try {
+            WeightItemRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
+        } catch (e: SQLiteConstraintException) {
+            // 同じ時刻のものが存在している場合はそのまま続ける
+            errorDates.add("${DateUtils.formatDateTime(context, weightItem.recTime.timeInMillis,
+                    DateUtils.FORMAT_SHOW_YEAR
+                            .or(DateUtils.FORMAT_SHOW_DATE)
+                            .or(DateUtils.FORMAT_NUMERIC_DATE)
+                            .or(DateUtils.FORMAT_SHOW_TIME)
+                            .or(DateUtils.FORMAT_ABBREV_ALL))}  ${weightItem.weight}kg")
+        }
     }
 
     private fun getErrorCell(columnNum: Int, rowNum: Int): String

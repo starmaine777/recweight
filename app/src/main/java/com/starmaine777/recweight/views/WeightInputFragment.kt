@@ -5,6 +5,7 @@ import android.app.ProgressDialog
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.database.sqlite.SQLiteConstraintException
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -187,7 +188,7 @@ class WeightInputFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    fun saveWeightData() {
+    private fun saveWeightData() {
         Timber.d("saveWeightData")
         if (TextUtils.isEmpty(editWeight.text)) {
             AlertDialog.Builder(context)
@@ -221,17 +222,23 @@ class WeightInputFragment : Fragment() {
                 }, {
                     e ->
                     e.printStackTrace()
+                    progressDialog.dismiss()
+                    if (e is SQLiteConstraintException) {
+                        AlertDialog.Builder(context)
+                                .setTitle(R.string.err_title_db)
+                                .setMessage(R.string.err_db_registered_same_time)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show()
+                    }
                 })
     }
 
-    fun deleteWeightData() {
+    private fun deleteWeightData() {
         if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
 
             val progressDialog = ProgressDialog(context)
             progressDialog.setCancelable(false)
             progressDialog.show()
-
-
 
             weightInputVm.deleteWeightItem(context)
                     .subscribeOn(Schedulers.io())
@@ -240,6 +247,9 @@ class WeightInputFragment : Fragment() {
                         progressDialog.dismiss()
                         fragmentManager.popBackStack()
                     }, {
+                        e ->
+                        e.printStackTrace()
+                        progressDialog.dismiss()
                         AlertDialog.Builder(context)
                                 .setTitle(R.string.err_title_db)
                                 .setMessage(R.string.err_db)
@@ -278,7 +288,7 @@ class WeightInputFragment : Fragment() {
         }
     }
 
-    fun setRecordDate(year: Int, month: Int, day: Int) {
+    private fun setRecordDate(year: Int, month: Int, day: Int) {
         if (weightInputVm.calendar.get(Calendar.YEAR) != year
                 || weightInputVm.calendar.get(Calendar.MONTH) != month
                 || weightInputVm.calendar.get(Calendar.DAY_OF_MONTH) != day) {
@@ -287,7 +297,7 @@ class WeightInputFragment : Fragment() {
         editDate.setText(DateFormat.getDateFormat(context).format(weightInputVm.calendar.time))
     }
 
-    fun setRecordTime(hour: Int, minute: Int) {
+    private fun setRecordTime(hour: Int, minute: Int) {
         if (weightInputVm.calendar.get(Calendar.HOUR_OF_DAY) != hour
                 || weightInputVm.calendar.get(Calendar.MINUTE) != minute) {
             weightInputVm.calendar.set(Calendar.HOUR_OF_DAY, hour)

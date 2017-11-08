@@ -17,8 +17,8 @@ class RecWeightApp : Application() {
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+        } else {
+            Fabric.with(this, Crashlytics())
         }
-
-        Fabric.with(this, Crashlytics())
     }
 }

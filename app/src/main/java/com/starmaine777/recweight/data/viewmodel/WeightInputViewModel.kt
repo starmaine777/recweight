@@ -2,6 +2,7 @@ package com.starmaine777.recweight.data.viewmodel
 
 import android.arch.lifecycle.ViewModel
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.reactivex.functions.Action
@@ -50,12 +51,13 @@ class WeightInputViewModel : ViewModel() {
 
             })
 
-    var isCreate = true
+    private var isCreate = true
     var inputEntity: WeightItemEntity = WeightItemEntity()
     private var originalEntity: WeightItemEntity? = inputEntity
 
     var calendar: Calendar = inputEntity.recTime.clone() as Calendar
 
+    @Throws(SQLiteConstraintException::class)
     /**
      * 現在表示しているEntityを追加/更新する.
      * @param context Context.
@@ -68,6 +70,7 @@ class WeightInputViewModel : ViewModel() {
      * @param showStar
      * @param memo
      * @return 追加/更新が完了したCompletableFromAction
+     * @throws SQLiteConstraintException 同時刻のものがあった場合にthrowされる
      */
     fun insertOrUpdateWeightItem(context: Context,
                                  weight: Double,
@@ -89,11 +92,13 @@ class WeightInputViewModel : ViewModel() {
                 showMoon = showMoon,
                 showStar = showStar,
                 memo = memo)
+        inputEntity.recTime.set(Calendar.SECOND, 0)
+        inputEntity.recTime.set(Calendar.MILLISECOND, 0)
 
-        if (isCreate) {
-            return insertWeightItem(context)
+        return if (isCreate) {
+            insertWeightItem(context)
         } else {
-            return updateWeightItem(context, originalEntity!!.recTime)
+            updateWeightItem(context, originalEntity!!.recTime)
         }
     }
 

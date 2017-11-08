@@ -147,9 +147,18 @@ class ImportUrlFragment : Fragment() {
                     }
                 }, {
                     Timber.d("Completed!!!")
+                    val messageSb = StringBuilder()
+                    messageSb.append(getString(R.string.d_import_complete))
+                    if (!importRepo.errorDates.isEmpty()) {
+                        messageSb.append("\n\n\n${getString(R.string.d_import_complete_skip)}\n\n")
+                        for (item in importRepo.errorDates) {
+                            messageSb.append("$item\n")
+                        }
+                    }
+
                     dialog = AlertDialog.Builder(context)
                             .setTitle(R.string.d_import_complete_title)
-                            .setMessage(R.string.d_import_complete)
+                            .setMessage(messageSb.toString())
                             .setOnDismissListener { fragmentManager.popBackStackImmediate() }
                             .setPositiveButton(android.R.string.ok
                                     , { dialog, _ -> dialog.dismiss() })

@@ -43,5 +43,7 @@ fun convertToCalendar(str: String, formatStr: String): Calendar? {
     val date = formatter.parse(str)
     val calendar = Calendar.getInstance()
     calendar.time = date
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
     return if (date == null) null else calendar
 }

@@ -69,6 +69,7 @@
     <string name="snack_settings_import_backpress">処理中によりバックキーは押せません。</string>
     <string name="d_import_complete_title">インポート完了</string>
     <string name="d_import_complete">インポートが成功しました。</string>
+    <string name="d_import_complete_skip">以下のデータは同時刻のデータがすでにあるため、スキップされました。</string>
 
     <string name="settings_export_description">下記URLにExportしました。</string>
     <string name="settings_export_share">共有する</string>
@@ -77,6 +78,7 @@
     <string name="err_weight_empty">体重を入力して下さい。</string>
     <string name="err_title_db">データベースエラー</string>
     <string name="err_db">データベースから情報が取得できませんでした。\n 再度読み込みなおしてください。</string>
+    <string name="err_db_registered_same_time">同じ時間の記録が存在します。記録時刻を変更してください。</string>
     <string name="err_import_title_illegal_template">インポートファイルエラー</string>
     <string name="err_import_illegal_template">インポートファイルの形式が違うため読み込めません。正しい形式のファイルを指定してください。\n エラー箇所:%s</string>
     <string name="err_import_illegal_file_name">ファイル名</string>
