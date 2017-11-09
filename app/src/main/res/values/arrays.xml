@@ -14,5 +14,8 @@
         <item>@string/chart_duration_year</item>
     </string-array>
 
-    <style name="array">array</style>
+    <string-array name="contact_type">
+        <item>@string/settings_contact_type_error</item>
+        <item>@string/settings_contact_type_others</item>
+    </string-array>
 </resources>

@@ -78,7 +78,13 @@ class SettingsMainFragment : Fragment() {
                     activity.supportFragmentManager
                             .beginTransaction()
                             .replace(R.id.fragment, LicenseFragment(), null).addToBackStack(null).commit()
+                }),
+                SettingItem(getString(R.string.settings_main_contact), {
+                    activity.supportFragmentManager
+                            .beginTransaction()
+                            .replace(R.id.fragment, ContactFragment(), null).addToBackStack(null).commit()
                 })
+
         )
     }
 

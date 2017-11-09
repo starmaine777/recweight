@@ -6,6 +6,7 @@
     <string name="toolbar_title_import">インポート</string>
     <string name="toolbar_title_export">エクスポート</string>
     <string name="toolbar_title_license">ライセンス</string>
+    <string name="toolbar_title_contact">お問い合わせ</string>
 
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 
@@ -48,6 +49,7 @@
     <string name="settings_main_account">アカウントの設定</string>
     <string name="settings_main_all_delete">体重データの全削除</string>
     <string name="settings_main_license">ライセンス</string>
+    <string name="settings_main_contact">お問い合わせ</string>
 
     <string name="settings_lt_show_menu">メニュー表示(編集、削除)</string>
     <string name="settings_lt_edit">編集</string>
@@ -73,6 +75,14 @@
 
     <string name="settings_export_description">下記URLにExportしました。</string>
     <string name="settings_export_share">共有する</string>
+
+    <string name="settings_contact_name_title">お名前</string>
+    <string name="settings_contact_email_title">メールアドレス</string>
+    <string name="settings_contact_description_title">詳細(必須)</string>
+    <string name="d_contact_complete">管理者にメッセージを送信いたしました。ご意見ありがとうございました。</string>
+    <string name="settings_contact_type_title">カテゴリー</string>
+    <string name="settings_contact_type_error">エラー報告</string>
+    <string name="settings_contact_type_others">その他お問い合わせ</string>
 
     <string name="err_title_input">入力値エラー</string>
     <string name="err_weight_empty">体重を入力して下さい。</string>
