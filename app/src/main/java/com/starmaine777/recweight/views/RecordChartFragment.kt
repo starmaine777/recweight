@@ -21,9 +21,11 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
+import com.google.api.client.util.StringUtils
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber
 import java.util.*
@@ -55,6 +57,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         super.onViewCreated(view, savedInstanceState)
         viewChart.isDragDecelerationEnabled = true
         viewChart.isDragEnabled = true
+        viewChart.setNoDataText(getString(R.string.show_records_no_data))
         val xAxis = viewChart.xAxis
         xAxis.setValueFormatter { value, _ ->
             return@setValueFormatter DateUtils.formatDateTime(context, value.toLong()
@@ -63,11 +66,11 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         }
         val weightAxis = viewChart.axisLeft
         weightAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter value.toString() + "kg"
+            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "kg"
         }
         val fatAxis = viewChart.axisRight
         fatAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter value.toString() + "%"
+            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "%"
         }
 
         spinnerDuration.onItemSelectedListener = this
@@ -87,31 +90,36 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
     }
 
     private fun showChart(refreshPosition: Boolean) {
-        if (!viewModel.weightItemList!!.isEmpty()) {
+        if (viewModel.weightItemList.isEmpty()) {
+            areaChart.visibility = View.GONE
+            textNoData.visibility = View.VISIBLE
+        } else {
+            areaChart.visibility = View.VISIBLE
+            textNoData.visibility = View.GONE
             val weights = ArrayList<Entry>()
             val fats = ArrayList<Entry>()
 
-            for (i in viewModel.weightItemList!!.indices) {
-                val item = viewModel.weightItemList!![i]
+            for (i in viewModel.weightItemList.indices) {
+                val item = viewModel.weightItemList[i]
                 val weightEntry = Entry(item.recTime.timeInMillis.toFloat(), item.weight.toFloat(), getIcon(item))
                 weights.add(weightEntry)
 
                 if (item.fat == 0.0) {
-                    if (viewModel.weightItemList!!.size <= 2) {
+                    if (viewModel.weightItemList.size == 2) {
                         val modelEntity = if (i == 0) {
-                            viewModel.weightItemList!![1]
+                            viewModel.weightItemList[1]
                         } else {
-                            viewModel.weightItemList!![0]
+                            viewModel.weightItemList[0]
                         }
                         fats.add(Entry(item.recTime.timeInMillis.toFloat(), modelEntity.fat.toFloat()))
-                    } else {
+                    } else if (viewModel.weightItemList.size > 1) {
 
                         // 前後の値から中間地点を計算(先頭は後ろ二つ、最後尾は前二つから予測)
-                        val firstIndex = if (i == 0) 1 else if (i == viewModel.weightItemList!!.size - 1) i - 3 else i - 1
-                        val secondIndex = if (i == 0) 2 else if (i == viewModel.weightItemList!!.size - 1) i - 2 else i + 1
+                        val firstIndex = if (i == 0) 1 else if (i == viewModel.weightItemList.size - 1) i - 3 else i - 1
+                        val secondIndex = if (i == 0) 2 else if (i == viewModel.weightItemList.size - 1) i - 2 else i + 1
 
                         fats.add(Entry(item.recTime.timeInMillis.toFloat()
-                                , getSlope(viewModel.weightItemList!![firstIndex], viewModel.weightItemList!![secondIndex]) * item.recTime.timeInMillis))
+                                , getSlope(viewModel.weightItemList[firstIndex], viewModel.weightItemList[secondIndex]) * item.recTime.timeInMillis))
                     }
                 } else {
                     fats.add(Entry(item.recTime.timeInMillis.toFloat(), item.fat.toFloat()))
@@ -121,6 +129,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             Collections.reverse(weights)
             Collections.reverse(fats)
 
+            val lineData: LineData
             val weightDataSet = LineDataSet(weights, getString(R.string.weight_input_weight_title))
             weightDataSet.color = ContextCompat.getColor(context, R.color.chart_weight)
             weightDataSet.lineWidth = 2.0f
@@ -130,15 +139,20 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             weightDataSet.iconsOffset = MPPointF(0F, -25F)
             weightDataSet.setDrawValues(false)
 
-            val fatDataSet = LineDataSet(fats, getString(R.string.weight_input_fat_title))
-            fatDataSet.color = ContextCompat.getColor(context, R.color.chart_fat)
-            fatDataSet.lineWidth = 1.5f
-            fatDataSet.setDrawCircles(false)
-            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-            fatDataSet.setDrawValues(false)
+            if (!fats.isEmpty()) {
+                val fatDataSet = LineDataSet(fats, getString(R.string.weight_input_fat_title))
+                fatDataSet.color = ContextCompat.getColor(context, R.color.chart_fat)
+                fatDataSet.lineWidth = 1.5f
+                fatDataSet.setDrawCircles(false)
+                fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+                fatDataSet.setDrawValues(false)
 
-            val lineData = LineData(fatDataSet, weightDataSet)
-            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+                fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+
+                lineData = LineData(fatDataSet, weightDataSet)
+            } else {
+                lineData = LineData(weightDataSet)
+            }
 
             viewChart.data = lineData
 
@@ -150,8 +164,10 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
             viewChart.setDrawMarkers(true)
 
-            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, viewModel.weightItemList!!)
+            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, viewModel.weightItemList)
 
+            spinnerDuration.visibility = View.VISIBLE
+            radioGroupStamps.visibility = View.VISIBLE
             viewChart.invalidate()
         }
     }

@@ -68,7 +68,7 @@ class ShowRecordsFragment : Fragment() {
         viewModel.getWeightItemList(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ t1: List<WeightItemEntity>? ->
+                .subscribe({ t1: List<WeightItemEntity> ->
                     viewModel.weightItemList = t1
                     val tag: String =
                             when (bottomMain.selectedItemId) {

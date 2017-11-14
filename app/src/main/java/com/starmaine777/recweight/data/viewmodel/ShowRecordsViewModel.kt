@@ -14,7 +14,7 @@ import io.reactivex.internal.operators.completable.CompletableFromAction
 
 class ShowRecordsViewModel : ViewModel() {
 
-    var weightItemList:List<WeightItemEntity>? = null
+    var weightItemList:List<WeightItemEntity> = ArrayList()
 
     fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = WeightItemRepository.getWeightItemList(context)
 

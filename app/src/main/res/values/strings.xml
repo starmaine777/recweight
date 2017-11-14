@@ -34,6 +34,8 @@
         <item>@string/settings_lt_delete</item>
     </string-array>
 
+    <string name="show_records_no_data">記録がありません。\nlist右下のペンボタンで記録をつけ始めましょう！</string>
+
     <string name="chart_duration_week">1週間</string>
     <string name="chart_duration_month">1か月</string>
     <string name="chart_duration_season">3か月</string>

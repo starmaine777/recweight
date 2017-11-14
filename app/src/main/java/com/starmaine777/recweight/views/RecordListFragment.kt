@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,8 +49,7 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater?.inflate(R.layout.fragment_record_list, container, false)
-        return view
+        return inflater?.inflate(R.layout.fragment_record_list, container, false)
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
@@ -91,8 +91,16 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     }
 
     override fun updateListItem() {
-        val adapter = RecordListAdapter(viewModel.weightItemList, context)
-        recyclerRecords.adapter = adapter
+        if (viewModel.weightItemList == null || viewModel.weightItemList!!.isEmpty()) {
+            recyclerRecords.visibility = View.GONE
+            areaNoData.visibility = View.VISIBLE
+        } else {
+            recyclerRecords.visibility = View.VISIBLE
+            areaNoData.visibility = View.GONE
+
+            val adapter = RecordListAdapter(viewModel.weightItemList, context)
+            recyclerRecords.adapter = adapter
+        }
     }
 
     private fun onItemLongTap(item: WeightItemEntity) {
