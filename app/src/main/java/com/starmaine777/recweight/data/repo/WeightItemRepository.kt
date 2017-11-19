@@ -53,21 +53,6 @@ class WeightItemRepository {
                 CompletableFromAction(Action { getDatabase(context).weightItemDao().deleteAllItem() })
 
         /**
-         * 現在表示しているEntityを削除する.
-         * @param context Context.
-         * @return 削除が完了したCompletableFromAction
-         */
-        fun deleteWeightItemWithDiffUpdate(context: Context, entity: WeightItemEntity): CompletableFromAction =
-                CompletableFromAction(Action {
-                    val nearTimeItems = getNearTimeItems(context, entity.recTime)
-                    nearTimeItems.second?.let {
-                        calculateDiffs(nearTimeItems.second, nearTimeItems.first)
-                        updateWeightItem(context, nearTimeItems.second!!)
-                    }
-                    deleteWeightItem(context, entity)
-                })
-
-        /**
          * recTimeの直前/直後のEntityを取得
          * @param context Context
          * @param recTime 基準となる時間
@@ -80,23 +65,6 @@ class WeightItemRepository {
             val afterItem = if (afterItemList.isEmpty()) null else afterItemList[0]
 
             return Pair(beforeItem, afterItem)
-        }
-
-        /**
-         * weightDiff,fatDiffの計算.
-         * @param after 更新されるEntity.
-         * @param before afterの直前のEntity
-         */
-        fun calculateDiffs(after: WeightItemEntity?, before: WeightItemEntity?) {
-            after?.let {
-                if (before == null) {
-                    after.weightDiff = 0.0
-                    after.fatDiff = 0.0
-                } else {
-                    after.weightDiff = after.weight - before.weight
-                    after.fatDiff = after.fat - before.fat
-                }
-            }
         }
     }
 }

@@ -58,20 +58,20 @@ class WeightInputViewModel : ViewModel() {
     var calendar: Calendar = inputEntity.recTime.clone() as Calendar
 
     @Throws(SQLiteConstraintException::class)
-    /**
-     * 現在表示しているEntityを追加/更新する.
-     * @param context Context.
-     * @param weight
-     * @param fat
-     * @param showDumbbell
-     * @param showLiquor
-     * @param showToilet
-     * @param showMoon
-     * @param showStar
-     * @param memo
-     * @return 追加/更新が完了したCompletableFromAction
-     * @throws SQLiteConstraintException 同時刻のものがあった場合にthrowされる
-     */
+            /**
+             * 現在表示しているEntityを追加/更新する.
+             * @param context Context.
+             * @param weight
+             * @param fat
+             * @param showDumbbell
+             * @param showLiquor
+             * @param showToilet
+             * @param showMoon
+             * @param showStar
+             * @param memo
+             * @return 追加/更新が完了したCompletableFromAction
+             * @throws SQLiteConstraintException 同時刻のものがあった場合にthrowされる
+             */
     fun insertOrUpdateWeightItem(context: Context,
                                  weight: Double,
                                  fat: Double,
@@ -95,49 +95,21 @@ class WeightInputViewModel : ViewModel() {
         inputEntity.recTime.set(Calendar.SECOND, 0)
         inputEntity.recTime.set(Calendar.MILLISECOND, 0)
 
-        return if (isCreate) {
-            insertWeightItem(context)
-        } else {
-            updateWeightItem(context, originalEntity!!.recTime)
-        }
-    }
-
-    private fun insertWeightItem(context: Context): CompletableFromAction =
-            CompletableFromAction(Action {
-                val nearTimeItems = WeightItemRepository.getNearTimeItems(context, inputEntity.recTime)
-                nearTimeItems.second?.let {
-                    WeightItemRepository.calculateDiffs(nearTimeItems.second, inputEntity)
-                    WeightItemRepository.updateWeightItem(context, nearTimeItems.second!!)
-                }
-
-                WeightItemRepository.calculateDiffs(inputEntity, nearTimeItems.first)
+        return CompletableFromAction(Action {
+            if (isCreate) {
                 WeightItemRepository.insertWeightItem(context, inputEntity)
-            })
-
-    private fun updateWeightItem(context: Context, orgRecTime: Calendar): CompletableFromAction =
-            CompletableFromAction(Action {
-                val nearTimeItems = WeightItemRepository.getNearTimeItems(context, inputEntity.recTime)
-
-                nearTimeItems.second?.let {
-                    WeightItemRepository.calculateDiffs(nearTimeItems.second, inputEntity)
-                    WeightItemRepository.updateWeightItem(context, nearTimeItems.second!!)
-                }
-
-                WeightItemRepository.calculateDiffs(inputEntity, nearTimeItems.first)
+            } else {
                 WeightItemRepository.updateWeightItem(context, inputEntity)
-
-                val orgNearTimeItems = WeightItemRepository.getNearTimeItems(context, orgRecTime)
-                orgNearTimeItems.second?.let {
-                    WeightItemRepository.calculateDiffs(orgNearTimeItems.second, orgNearTimeItems.first)
-                    WeightItemRepository.updateWeightItem(context, orgNearTimeItems.second!!)
-                }
-            })
+            }
+        })
+    }
 
     /**
      * 現在表示しているEntityを削除する.
      * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction = WeightItemRepository.deleteWeightItemWithDiffUpdate(context, inputEntity)
+    fun deleteWeightItem(context: Context): CompletableFromAction
+            = CompletableFromAction(Action { WeightItemRepository.deleteWeightItem(context, inputEntity) })
 
 }

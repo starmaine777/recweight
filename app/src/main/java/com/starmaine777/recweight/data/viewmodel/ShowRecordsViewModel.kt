@@ -5,6 +5,7 @@ import android.content.Context
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.reactivex.Flowable
+import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
 
 /**
@@ -14,7 +15,7 @@ import io.reactivex.internal.operators.completable.CompletableFromAction
 
 class ShowRecordsViewModel : ViewModel() {
 
-    var weightItemList:List<WeightItemEntity> = ArrayList()
+    var weightItemList: List<WeightItemEntity> = ArrayList()
 
     fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = WeightItemRepository.getWeightItemList(context)
 
@@ -24,5 +25,7 @@ class ShowRecordsViewModel : ViewModel() {
      * @return 削除が完了したCompletableFromAction
      */
     fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-            WeightItemRepository.deleteWeightItemWithDiffUpdate(context, weightItemEntity)
+            CompletableFromAction(Action {
+                WeightItemRepository.deleteWeightItem(context, weightItemEntity)
+            })
 }

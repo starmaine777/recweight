@@ -13,9 +13,7 @@ import java.util.*
 data class WeightItemEntity(
         @ColumnInfo(name = COL_REC_TIME) var recTime: Calendar,
         @ColumnInfo(name = COL_WEIGHT) var weight: Double,
-        @ColumnInfo(name = COL_WEIGHT_DIFF) var weightDiff: Double,
         @ColumnInfo(name = COL_FAT) var fat: Double,
-        @ColumnInfo(name = COL_FAT_DIFF) var fatDiff: Double,
         @ColumnInfo(name = COL_SHOW_DUMBBELL) var showDumbbell: Boolean,
         @ColumnInfo(name = COL_SHOW_LIQUOR) var showLiquor: Boolean,
         @ColumnInfo(name = COL_SHOW_TOILET) var showToilet: Boolean,
@@ -25,7 +23,7 @@ data class WeightItemEntity(
         @ColumnInfo(name = COL_ID) @PrimaryKey(autoGenerate = true) var id: Long = 0) {
 
     @Ignore
-    constructor() : this(Calendar.getInstance(), 0.0, 0.0, 0.0, 0.0, false, false, false, false, false, "")
+    constructor() : this(Calendar.getInstance(), 0.0, 0.0, false, false, false, false, false, "")
 
     companion object {
         const val TABLE_WEIGHT_ITEM = "weightItem"
@@ -33,9 +31,7 @@ data class WeightItemEntity(
         const val COL_ID = "id"
         const val COL_REC_TIME = "recTime"
         const val COL_WEIGHT = "weight"
-        const val COL_WEIGHT_DIFF = "weightDiff"
         const val COL_FAT = "fat"
-        const val COL_FAT_DIFF = "fatDiff"
         const val COL_SHOW_DUMBBELL = "showDumbbell"
         const val COL_SHOW_LIQUOR = "showLiquor"
         const val COL_SHOW_TOILET = "showToilet"

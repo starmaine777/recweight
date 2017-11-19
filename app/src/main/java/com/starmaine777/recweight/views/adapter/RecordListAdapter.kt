@@ -20,7 +20,7 @@ import timber.log.Timber
  * Created by ai on 2017/07/15.
  */
 
-class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: Context) : RecyclerView.Adapter<RecordListAdapter.RecordViewHolder>() {
+class RecordListAdapter(var recordItems: List<WeightItemEntity>, var context: Context) : RecyclerView.Adapter<RecordListAdapter.RecordViewHolder>() {
 
     init {
         if (context == Activity::class) {
@@ -28,9 +28,16 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
         }
     }
 
-    override fun onBindViewHolder(holder: RecordViewHolder?, position: Int) = holder!!.bind(recordItems?.get(position))
+    override fun onBindViewHolder(holder: RecordViewHolder?, position: Int) {
+        if (position + 1 == recordItems.size) {
+            holder!!.bind(recordItems.get(position), null)
+        } else {
+            holder!!.bind(recordItems.get(position), recordItems.get(position + 1))
+        }
+    }
 
-    override fun getItemCount(): Int = recordItems?.size ?: 0
+
+    override fun getItemCount(): Int = recordItems.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecordViewHolder? =
             RecordViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_weight, parent, false))
@@ -38,9 +45,9 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
 
     class RecordViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
 
-        fun bind(item: WeightItemEntity?): Unit = with(itemView) {
+        fun bind(item: WeightItemEntity, nextItem: WeightItemEntity?): Unit = with(itemView) {
 
-            Timber.d("ItemBind recTime = ${item?.recTime}, weight =${item?.weight}, weightDiff=${item?.weightDiff} fat= ${item?.fat}, fatDiff= ${item?.fatDiff}")
+            Timber.d("ItemBind recTime = ${item?.recTime}, weight =${item?.weight}, fat= ${item?.fat}")
             itemView.textDate.text = DateUtils.formatDateTime(context, item?.recTime!!.timeInMillis,
                     DateUtils.FORMAT_SHOW_YEAR
                             .or(DateUtils.FORMAT_SHOW_DATE)
@@ -55,9 +62,20 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>?, var context: C
                 itemView.textFat.visibility = View.VISIBLE
             }
 
-            if (item.weightDiff == 0.0) itemView.imageRatio.setImageResource(R.drawable.weight_keep)
-            else if (item.weightDiff > 0) itemView.imageRatio.setImageResource(R.drawable.weight_up)
-            else itemView.imageRatio.setImageResource(R.drawable.weight_down)
+            val diff: Double;
+            if (nextItem == null) {
+                diff = 0.0
+            } else {
+                diff = nextItem.weight - item.weight
+            }
+
+            itemView.imageRatio.setImageResource(
+                    when {
+                        diff < 0 -> R.drawable.weight_up
+                        diff > 0 -> R.drawable.weight_down
+                        else -> R.drawable.weight_keep
+                    }
+            )
 
             itemView.toggleDumbbell.isChecked = item.showDumbbell
             itemView.toggleLiquor.isChecked = item.showLiquor
