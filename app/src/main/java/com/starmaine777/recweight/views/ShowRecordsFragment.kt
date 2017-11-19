@@ -5,14 +5,24 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
+import android.view.animation.AlphaAnimation
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.event.InputFragmentStartEvent
+import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.utils.PREFERENCE_KEY
+import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
+import com.starmaine777.recweight.utils.getBoolean
+import com.starmaine777.recweight.utils.updateBoolean
 import com.starmaine777.recweight.views.settings.SettingsActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_show_records.*
+import tourguide.tourguide.Overlay
+import tourguide.tourguide.ToolTip
+import tourguide.tourguide.TourGuide
 
 /**
  * 記録表示用親Fragment
@@ -31,6 +41,7 @@ class ShowRecordsFragment : Fragment() {
 
     private lateinit var viewModel: ShowRecordsViewModel
     private val disposable = CompositeDisposable()
+    private var tutorial: TourGuide? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +72,14 @@ class ShowRecordsFragment : Fragment() {
         }
 
         bottomMain.selectedItemId = R.id.bottom_list
+        fab.setOnClickListener { _ ->
+            tutorial?.let {
+                tutorial!!.cleanUp()
+                updateBoolean(context, PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, false)
+            }
+
+            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
+        }
     }
 
     override fun onStart() {
@@ -85,6 +104,27 @@ class ShowRecordsFragment : Fragment() {
                         }
                     }
                 }).let { disposable.add(it) }
+
+        if (getBoolean(context, PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, true)) {
+            showTutorial()
+        }
+    }
+
+    private fun showTutorial() {
+        val enterAnimation = AlphaAnimation(0f, 1f)
+        enterAnimation.duration = 600
+        enterAnimation.fillAfter = true
+
+        val exitAnimation = AlphaAnimation(1f, 0f)
+        exitAnimation.duration = 600
+        exitAnimation.fillAfter = true
+
+        tutorial = TourGuide.init(activity).with(TourGuide.Technique.Click)
+                .setToolTip(ToolTip()
+                        .setTitle(getString(R.string.tutorial_input_title))
+                        .setDescription(getString(R.string.tutorial_input_description)))
+                .setOverlay(Overlay().disableClick(true))
+                .playOn(fab)
     }
 
     override fun onStop() {

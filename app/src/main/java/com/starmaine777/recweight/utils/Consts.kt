@@ -26,7 +26,9 @@ val PREFERENCES_NAME = "RecWeightSettings"
 
 enum class PREFERENCE_KEY {
     ACCOUNT_NAME,
-    LONG_TAP
+    LONG_TAP,
+    NEED_TUTORIAL_INPUT,
+    NEED_TUTORIAL_STAMP,
 }
 
 val EXPORT_TITLE_DATE_STR = "yyyyMMdd_HHmm"

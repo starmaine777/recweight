@@ -122,4 +122,10 @@
     <string name="export_file_sheets_column_liquor">Liquor</string>
     <string name="export_file_sheets_column_star">Star</string>
     <string name="export_file_sheets_column_memo">Memo</string>
+
+    <string name="tutorial_input_title">記録ボタン</string>
+    <string name="tutorial_input_description">体重等の記録をとってみましょう！</string>
+    <string name="tutorial_stamp_title">スタンプ</string>
+    <string name="tutorial_stamp_description">今日あったことをスタンプでメモをしましょう！</string>
+
 </resources>

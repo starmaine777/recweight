@@ -33,7 +33,8 @@ class LicenseFragment : Fragment() {
         dataSet.add(Licenses.fromGitHubApacheV2("JakeWharton/timber"))
         dataSet.add(Licenses.fromGitHubApacheV2("PhilJay/MPAndroidChart"))
         dataSet.add(Licenses.fromGitHubMIT("afollestad/material-dialogs"))
-        dataSet.add(Licenses.fromGitHubApacheV2("yshrsmz/LicenseAdapter"))
+        dataSet.add(Licenses.fromGitHubMIT("afollestad/material-dialogs"))
+        dataSet.add(Licenses.fromGitHubApacheV2("worker8/TourGuide"))
 
         val adapter = LicenseAdapter(dataSet)
         recyclerLicense.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)

@@ -64,7 +64,9 @@ dependencies {
 
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'net.yslibrary.licenseadapter:licenseadapter:1.4.0'
-
+    compile ('com.github.worker8:tourguide:1.0.16-SNAPSHOT@aar') {
+        transitive=true
+    }
     compile "android.arch.lifecycle:runtime:${rootProject.archLifecycleVersion}"
     compile "android.arch.lifecycle:extensions:${rootProject.archLifecycleVersion}"
 

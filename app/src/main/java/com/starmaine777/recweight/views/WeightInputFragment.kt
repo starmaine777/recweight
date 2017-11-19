@@ -14,19 +14,21 @@ import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.text.format.DateFormat
 import android.view.*
+import android.view.animation.AlphaAnimation
 import android.view.inputmethod.InputMethodManager
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.viewmodel.WeightInputViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
-import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
-import com.starmaine777.recweight.utils.REQUESTS
-import com.starmaine777.recweight.utils.formatInputNumber
+import com.starmaine777.recweight.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_weight_input.*
 import timber.log.Timber
+import tourguide.tourguide.Overlay
+import tourguide.tourguide.ToolTip
+import tourguide.tourguide.TourGuide
 import java.util.*
 
 /**
@@ -35,11 +37,12 @@ import java.util.*
  */
 class WeightInputFragment : Fragment() {
 
-    val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
-    var dialog: DialogFragment? = null
-    var alertDialog: AlertDialog? = null
-    val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(activity).get(WeightInputViewModel::class.java) }
-    var dataBinding: FragmentWeightInputBinding? = null
+    private val viewMode: WEIGHT_INPUT_MODE by lazy { arguments.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
+    private var dialog: DialogFragment? = null
+    private var alertDialog: AlertDialog? = null
+    private val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(activity).get(WeightInputViewModel::class.java) }
+    private var dataBinding: FragmentWeightInputBinding? = null
+    private var tutorial: TourGuide? = null
 
     companion object {
 
@@ -123,8 +126,6 @@ class WeightInputFragment : Fragment() {
                             })
                             .setOnDismissListener { fragmentManager.popBackStack() }
                             .show()
-
-
                 })
     }
 
@@ -142,11 +143,36 @@ class WeightInputFragment : Fragment() {
     }
 
 
-    override fun onResume() {
-        super.onResume()
-        if (viewMode == WEIGHT_INPUT_MODE.INPUT && editWeight.requestFocus()) {
+    override fun onStart() {
+        super.onStart()
+        if (viewMode == WEIGHT_INPUT_MODE.INPUT
+                && getBoolean(context, PREFERENCE_KEY.NEED_TUTORIAL_STAMP.name, true)) {
+            showTutorial()
+        } else if (viewMode == WEIGHT_INPUT_MODE.INPUT && editWeight.requestFocus()) {
             val imm: InputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(editWeight, InputMethodManager.SHOW_IMPLICIT)
+        }
+
+
+    }
+
+    private fun showTutorial() {
+        val enterAnimation = AlphaAnimation(0f, 1f)
+        enterAnimation.duration = 600
+        enterAnimation.fillAfter = true
+
+        val exitAnimation = AlphaAnimation(1f, 0f)
+        exitAnimation.duration = 600
+        exitAnimation.fillAfter = true
+
+        tutorial = TourGuide.init(activity).with(TourGuide.Technique.Click)
+                .setToolTip(ToolTip().setTitle(getString(R.string.tutorial_stamp_title)).setDescription(getString(R.string.tutorial_stamp_description)))
+                .setOverlay(Overlay().disableClick(true))
+                .playOn(toggleDumbbell)
+
+        toggleDumbbell.setOnClickListener {
+            tutorial!!.cleanUp()
+            updateBoolean(context, PREFERENCE_KEY.NEED_TUTORIAL_STAMP.name, false)
         }
     }
 
@@ -158,6 +184,11 @@ class WeightInputFragment : Fragment() {
             imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
             activity.currentFocus.clearFocus()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        tutorial?.cleanUp()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -219,8 +250,7 @@ class WeightInputFragment : Fragment() {
                     Timber.d(TAG, "insertOrUpdateWeightItem complete")
                     progressDialog.dismiss()
                     fragmentManager.popBackStack()
-                }, {
-                    e ->
+                }, { e ->
                     e.printStackTrace()
                     progressDialog.dismiss()
                     if (e is SQLiteConstraintException) {

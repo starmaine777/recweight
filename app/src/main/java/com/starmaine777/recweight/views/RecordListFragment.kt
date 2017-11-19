@@ -55,10 +55,6 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerRecords.layoutManager = LinearLayoutManager(context)
-
-        fab.setOnClickListener { _ ->
-            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
-        }
     }
 
     override fun onStart() {
@@ -91,7 +87,7 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     }
 
     override fun updateListItem() {
-        if (viewModel.weightItemList == null || viewModel.weightItemList!!.isEmpty()) {
+        if (viewModel.weightItemList.isEmpty()) {
             recyclerRecords.visibility = View.GONE
             areaNoData.visibility = View.VISIBLE
         } else {
