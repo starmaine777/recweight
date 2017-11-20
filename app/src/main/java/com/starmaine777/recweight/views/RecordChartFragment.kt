@@ -21,7 +21,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
-import com.google.api.client.util.StringUtils
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
@@ -115,11 +114,11 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
                     } else if (viewModel.weightItemList.size > 1) {
 
                         // 前後の値から中間地点を計算(先頭は後ろ二つ、最後尾は前二つから予測)
-                        val firstIndex = if (i == 0) 1 else if (i == viewModel.weightItemList.size - 1) i - 3 else i - 1
-                        val secondIndex = if (i == 0) 2 else if (i == viewModel.weightItemList.size - 1) i - 2 else i + 1
+                        val firstIndex = if (i == 0) 1 else if (i == viewModel.weightItemList.size - 1) i - 2 else i - 1
+                        val secondIndex = if (i == 0) 2 else if (i == viewModel.weightItemList.size - 1) i - 1 else i + 1
 
                         fats.add(Entry(item.recTime.timeInMillis.toFloat()
-                                , getSlope(viewModel.weightItemList[firstIndex], viewModel.weightItemList[secondIndex]) * item.recTime.timeInMillis))
+                                , calculateFat(item, viewModel.weightItemList[firstIndex], viewModel.weightItemList[secondIndex])))
                     }
                 } else {
                     fats.add(Entry(item.recTime.timeInMillis.toFloat(), item.fat.toFloat()))
@@ -189,7 +188,10 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         return if (id == 0) null else ContextCompat.getDrawable(context, id)
     }
 
-    private fun getSlope(after: WeightItemEntity, before: WeightItemEntity): Float = ((after.fat - before.fat) / (after.recTime.timeInMillis - before.recTime.timeInMillis)).toFloat()
+    private fun calculateFat(target: WeightItemEntity, first: WeightItemEntity, second: WeightItemEntity):Float {
+        val slope = ((second.fat - first.fat) / (second.recTime.timeInMillis - first.recTime.timeInMillis))
+        return (slope * (target.recTime.timeInMillis - first.recTime.timeInMillis) + first.fat).toFloat()
+    }
 
     private fun getStartCalendar(): Calendar {
         val result = Calendar.getInstance()
