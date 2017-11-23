@@ -27,7 +27,6 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.fragment_export.*
 import timber.log.Timber
 
@@ -77,7 +76,7 @@ class ExportFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        RxBus.publish(UpdateToolbarEvent(false, context.getString(R.string.toolbar_title_import)))
+        RxBus.publish(UpdateToolbarEvent(false, context.getString(R.string.toolbar_title_export)))
         exportData()
     }
 
@@ -88,7 +87,7 @@ class ExportFragment : Fragment() {
 
     @Throws()
     private fun exportData() {
-        Timber.d( Throwable(),"exportData repo=$exportRepo", null)
+        Timber.d(Throwable(), "exportData repo=$exportRepo", null)
         exportRepo.exportData(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -162,6 +161,13 @@ class ExportFragment : Fragment() {
                     Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
                 }
             }
+            REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> exportData()
+                    Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
+                }
+            }
+
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
