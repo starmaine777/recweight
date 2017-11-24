@@ -34,8 +34,8 @@ ext {
     buildToolsVersion = '26.0.2'
     supportLibVersion = '26.0.2'
     espressoVersion = '2.2.2'
-    archLifecycleVersion = '1.0.0-rc1'
-    archRoomVersion = '1.0.0-rc1'
+    archLifecycleVersion = '1.0.0'
+    archRoomVersion = '1.0.0'
 }
 
 task clean(type: Delete) {
