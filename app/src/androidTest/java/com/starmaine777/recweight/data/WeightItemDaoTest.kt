@@ -68,9 +68,7 @@ class WeightItemDaoTest {
         val item = database.weightItemDao().getWeightItemById(1)[0]
         val updatedItem = item.copy(
                 weight = 55.0,
-                weightDiff = 5.0,
                 fat = 25.0,
-                fatDiff = 0.5,
                 showDumbbell = false,
                 showLiquor = true,
                 showMoon = false,
@@ -243,9 +241,7 @@ class WeightItemDaoTest {
     fun equalItems(item1: WeightItemEntity, item2: WeightItemEntity): Boolean
             = item1.recTime == item2.recTime
             && item1.weight == item2.weight
-            && item1.weightDiff == item2.weightDiff
             && item1.fat == item2.fat
-            && item1.fatDiff == item2.fatDiff
             && item1.showDumbbell == item2.showDumbbell
             && item1.showLiquor == item2.showLiquor
             && item1.showMoon == item2.showMoon
@@ -253,14 +249,14 @@ class WeightItemDaoTest {
             && item1.showToilet == item2.showToilet
             && TextUtils.equals(item1.memo, item2.memo)
 
-    val ITEM1 = WeightItemEntity(Calendar.getInstance(), 50.0, 10.0, 20.0, -5.5, true, false, true, false, true, "memo1")
+    val ITEM1 = WeightItemEntity(Calendar.getInstance(), 50.0, 20.0, true, false, true, false, true, "memo1")
 
-    val ITEM2 = WeightItemEntity(Calendar.getInstance(), 52.0, 2.0, 22.2, 2.2, true, false, false, true, true, "memo2")
+    val ITEM2 = WeightItemEntity(Calendar.getInstance(), 52.0, 22.2, true, false, false, true, true, "memo2")
 
-    val ITEM3 = WeightItemEntity(Calendar.getInstance(), 55.0, 3.0, 25.0, 2.8, false, true, true, false, false, "memo3")
+    val ITEM3 = WeightItemEntity(Calendar.getInstance(), 55.0, 25.0, false, true, true, false, false, "memo3")
 
-    val ITEM4 = WeightItemEntity(Calendar.getInstance(), 54.5, -0.5, 24.0, -1.0, false, false, true, false, true, "memo4")
+    val ITEM4 = WeightItemEntity(Calendar.getInstance(), 54.5, 24.0, false, false, true, false, true, "memo4")
 
-    val ITEM5 = WeightItemEntity(Calendar.getInstance(), 58.0, 3.5, 25.5, 1.5, true, false, true, true, false, "memo5")
+    val ITEM5 = WeightItemEntity(Calendar.getInstance(), 58.0, 25.5, true, false, true, true, false, "memo5")
 
 }
