@@ -11,8 +11,8 @@ android {
         applicationId "com.starmaine777.recweight"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
@@ -64,8 +64,8 @@ dependencies {
 
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'net.yslibrary.licenseadapter:licenseadapter:1.4.0'
-    compile ('com.github.worker8:tourguide:1.0.16-SNAPSHOT@aar') {
-        transitive=true
+    compile('com.github.worker8:tourguide:1.0.16-SNAPSHOT@aar') {
+        transitive = true
     }
     compile "android.arch.lifecycle:runtime:${rootProject.archLifecycleVersion}"
     compile "android.arch.lifecycle:extensions:${rootProject.archLifecycleVersion}"
