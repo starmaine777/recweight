@@ -53,6 +53,7 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>, var context: Co
                             .or(DateUtils.FORMAT_SHOW_DATE)
                             .or(DateUtils.FORMAT_NUMERIC_DATE)
                             .or(DateUtils.FORMAT_SHOW_TIME)
+                            .or(DateUtils.FORMAT_SHOW_WEEKDAY)
                             .or(DateUtils.FORMAT_ABBREV_ALL))
             itemView.textWeight.text = context.getString(R.string.list_weight_pattern, formatInputNumber(item.weight.toString(), context.getString(R.string.weight_input_fat_default)))
             if (item.fat == 0.0) {
