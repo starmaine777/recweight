@@ -3,7 +3,6 @@ package com.starmaine777.recweight.views
 import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
@@ -28,7 +27,6 @@ import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 体重チャート
@@ -39,7 +37,6 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
     companion object {
         val TAG = "RecordChartFragment "
     }
-
 
     private lateinit var viewModel: ShowRecordsViewModel
 
@@ -95,41 +92,12 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         } else {
             areaChart.visibility = View.VISIBLE
             textNoData.visibility = View.GONE
-            val weights = ArrayList<Entry>()
-            val fats = ArrayList<Entry>()
 
-            for (i in viewModel.weightItemList.indices) {
-                val item = viewModel.weightItemList[i]
-                val weightEntry = Entry(item.recTime.timeInMillis.toFloat(), item.weight.toFloat(), getIcon(item))
-                weights.add(weightEntry)
-
-                if (item.fat == 0.0) {
-                    if (viewModel.weightItemList.size == 2) {
-                        val modelEntity = if (i == 0) {
-                            viewModel.weightItemList[1]
-                        } else {
-                            viewModel.weightItemList[0]
-                        }
-                        fats.add(Entry(item.recTime.timeInMillis.toFloat(), modelEntity.fat.toFloat()))
-                    } else if (viewModel.weightItemList.size > 1) {
-
-                        // 前後の値から中間地点を計算(先頭は後ろ二つ、最後尾は前二つから予測)
-                        val firstIndex = if (i == 0) 1 else if (i == viewModel.weightItemList.size - 1) i - 2 else i - 1
-                        val secondIndex = if (i == 0) 2 else if (i == viewModel.weightItemList.size - 1) i - 1 else i + 1
-
-                        fats.add(Entry(item.recTime.timeInMillis.toFloat()
-                                , calculateFat(item, viewModel.weightItemList[firstIndex], viewModel.weightItemList[secondIndex])))
-                    }
-                } else {
-                    fats.add(Entry(item.recTime.timeInMillis.toFloat(), item.fat.toFloat()))
-                }
-            }
-
-            Collections.reverse(weights)
-            Collections.reverse(fats)
+            val showStamp = getShowStamp()
+            val lines = viewModel.createLineSources(context, showStamp)
 
             val lineData: LineData
-            val weightDataSet = LineDataSet(weights, getString(R.string.weight_input_weight_title))
+            val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
             weightDataSet.color = ContextCompat.getColor(context, R.color.chart_weight)
             weightDataSet.lineWidth = 2.0f
             weightDataSet.setDrawCircles(false)
@@ -138,8 +106,8 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             weightDataSet.iconsOffset = MPPointF(0F, -25F)
             weightDataSet.setDrawValues(false)
 
-            if (!fats.isEmpty()) {
-                val fatDataSet = LineDataSet(fats, getString(R.string.weight_input_fat_title))
+            if (!lines.second.isEmpty()) {
+                val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
                 fatDataSet.color = ContextCompat.getColor(context, R.color.chart_fat)
                 fatDataSet.lineWidth = 1.5f
                 fatDataSet.setDrawCircles(false)
@@ -171,27 +139,15 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         }
     }
 
-    private fun getIcon(item: WeightItemEntity): Drawable? {
-        if (radioGroupStamps.checkedRadioButtonId == -1) {
-            return null
-        }
-
-        var id = 0
-        when (radioGroupStamps.checkedRadioButtonId) {
-            R.id.radioDumbbell -> if (item.showDumbbell) id = R.drawable.stamp_dumbbell_selected
-            R.id.radioLiquor -> if (item.showLiquor) id = R.drawable.stamp_liquor_selected
-            R.id.radioToilet -> if (item.showToilet) id = R.drawable.stamp_toilet_selected
-            R.id.radioMoon -> if (item.showMoon) id = R.drawable.stamp_moon_selected
-            R.id.radioStar -> if (item.showStar) id = R.drawable.stamp_star_selected
-        }
-
-        return if (id == 0) null else ContextCompat.getDrawable(context, id)
-    }
-
-    private fun calculateFat(target: WeightItemEntity, first: WeightItemEntity, second: WeightItemEntity):Float {
-        val slope = ((second.fat - first.fat) / (second.recTime.timeInMillis - first.recTime.timeInMillis))
-        return (slope * (target.recTime.timeInMillis - first.recTime.timeInMillis) + first.fat).toFloat()
-    }
+    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp
+            = when (radioGroupStamps.checkedRadioButtonId) {
+                R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
+                R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
+                R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
+                R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
+                R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
+                else -> ShowRecordsViewModel.ShowStamp.NONE
+            }
 
     private fun getStartCalendar(): Calendar {
         val result = Calendar.getInstance()

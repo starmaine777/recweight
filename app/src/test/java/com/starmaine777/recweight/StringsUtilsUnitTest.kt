@@ -9,7 +9,7 @@ import org.junit.Test
  * Created by ai on 2017/07/13.
  */
 
-class ExampleInstrumentedTest {
+class StringsUtilsUnitTest {
     @Test
     @Throws(Exception::class)
     fun formatInputNumberTest() {
