@@ -184,6 +184,8 @@ class WeightInputFragment : Fragment() {
             imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
             activity.currentFocus.clearFocus()
         }
+
+        tutorial?.cleanUp()
     }
 
     override fun onStop() {
@@ -276,8 +278,7 @@ class WeightInputFragment : Fragment() {
                     .subscribe({
                         progressDialog.dismiss()
                         fragmentManager.popBackStack()
-                    }, {
-                        e ->
+                    }, { e ->
                         e.printStackTrace()
                         progressDialog.dismiss()
                         AlertDialog.Builder(context)

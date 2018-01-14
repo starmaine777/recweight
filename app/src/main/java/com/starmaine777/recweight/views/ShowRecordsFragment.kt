@@ -127,6 +127,11 @@ class ShowRecordsFragment : Fragment() {
                 .playOn(fab)
     }
 
+    override fun onPause() {
+        super.onPause()
+        tutorial?.cleanUp()
+    }
+
     override fun onStop() {
         super.onStop()
         disposable.clear()
