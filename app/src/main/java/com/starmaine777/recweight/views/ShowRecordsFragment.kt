@@ -62,10 +62,12 @@ class ShowRecordsFragment : Fragment() {
                 R.id.bottom_list -> {
                     fragment = childFragmentManager.findFragmentByTag(RecordListFragment.TAG) ?: RecordListFragment()
                     childFragmentManager.beginTransaction().replace(R.id.list_fragment, fragment, RecordListFragment.TAG).commit()
+                    fab.visibility = View.VISIBLE
                 }
                 R.id.bottom_chart -> {
                     fragment = childFragmentManager.findFragmentByTag(RecordChartFragment.TAG) ?: RecordChartFragment()
                     childFragmentManager.beginTransaction().replace(R.id.list_fragment, fragment, RecordChartFragment.TAG).commit()
+                    fab.visibility = View.GONE
                 }
             }
             return@setOnNavigationItemSelectedListener true
