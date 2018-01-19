@@ -27,6 +27,7 @@ import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * 体重チャート
@@ -153,12 +154,11 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
     }
 
     private fun updateGranularity(spinnerSelectedItemPosition: Int) {
-        val dayMilSec = 1000 * 60 * 60 * 24
         viewChart.xAxis.granularity = when (spinnerSelectedItemPosition) {
-            0 -> dayMilSec * 1f
-            1 -> dayMilSec * 7f
-            2 -> dayMilSec * 30f
-            3 -> dayMilSec * 60f
+            0 -> TimeUnit.DAYS.toMillis(1).toFloat()
+            1 -> TimeUnit.DAYS.toMillis(7).toFloat()
+            2 -> TimeUnit.DAYS.toMillis(30).toFloat()
+            3 -> TimeUnit.DAYS.toMillis(60).toFloat()
             else -> 1f
         }
     }
