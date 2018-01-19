@@ -55,9 +55,12 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         viewChart.isDragEnabled = true
         viewChart.setNoDataText(getString(R.string.show_records_no_data))
         val xAxis = viewChart.xAxis
+        xAxis.isGranularityEnabled = true
+        updateGranularity(spinnerDuration.selectedItemPosition)
         xAxis.setValueFormatter { value, _ ->
             return@setValueFormatter DateUtils.formatDateTime(context, value.toLong()
                     , DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
+                    .or(DateUtils.FORMAT_NO_YEAR)
             )
         }
         val weightAxis = viewChart.axisLeft
@@ -141,13 +144,24 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
     private fun getShowStamp(): ShowRecordsViewModel.ShowStamp
             = when (radioGroupStamps.checkedRadioButtonId) {
-                R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
-                R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
-                R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
-                R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
-                R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
-                else -> ShowRecordsViewModel.ShowStamp.NONE
-            }
+        R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
+        R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
+        R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
+        R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
+        R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
+        else -> ShowRecordsViewModel.ShowStamp.NONE
+    }
+
+    private fun updateGranularity(spinnerSelectedItemPosition: Int) {
+        val dayMilSec = 1000 * 60 * 60 * 24
+        viewChart.xAxis.granularity = when (spinnerSelectedItemPosition) {
+            0 -> dayMilSec * 1f
+            1 -> dayMilSec * 7f
+            2 -> dayMilSec * 30f
+            3 -> dayMilSec * 60f
+            else -> 1f
+        }
+    }
 
     private fun getStartCalendar(): Calendar {
         val result = Calendar.getInstance()
@@ -162,7 +176,8 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         return result
     }
 
-    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, spinnerSelectedItemPosition: Int, p3: Long) {
+        updateGranularity(spinnerSelectedItemPosition)
         updateListItem()
     }
 
