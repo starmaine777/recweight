@@ -48,6 +48,7 @@
     <string name="settings_main_long_tap">体重データ長押し時の処理</string>
     <string name="settings_main_import">データをインポートする</string>
     <string name="settings_main_export">データをエクスポートする</string>
+    <string name="settings_main_export_description">最終エクスポート日時: %s</string>
     <string name="settings_main_account">アカウントの設定</string>
     <string name="settings_main_all_delete">体重データの全削除</string>
     <string name="settings_main_license">ライセンス</string>

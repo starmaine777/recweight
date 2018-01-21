@@ -69,6 +69,11 @@ class ExportRepository(val context: Context) {
                 Timber.d("startExportData service=$service")
                 try {
                     writeExportDate(service, emitter)
+                    context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+                            .edit()
+                            .putLong(PREFERENCE_KEY.LAST_EXPORT_DATE.name, System.currentTimeMillis())
+                            .apply()
+
                 } catch (e: Exception) {
                     if (!emitter.isDisposed) {
                         emitter.onError(e)
