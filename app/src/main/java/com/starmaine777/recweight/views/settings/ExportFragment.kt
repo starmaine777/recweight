@@ -40,9 +40,10 @@ class ExportFragment : Fragment() {
         val TAG = "ExportFragment"
     }
 
-    var disposable = CompositeDisposable()
-    var dialog: AlertDialog? = null
-    val exportRepo: ExportRepository by lazy { ExportRepository(context) }
+    private var disposable = CompositeDisposable()
+    private var dialog: AlertDialog? = null
+    private val exportRepo: ExportRepository by lazy { ExportRepository(context) }
+    private var isExporting = false
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater?.inflate(R.layout.fragment_export, container, false)
@@ -88,10 +89,20 @@ class ExportFragment : Fragment() {
     @Throws()
     private fun exportData() {
         Timber.d(Throwable(), "exportData repo=$exportRepo", null)
+        isExporting = false
+        progressExport.isIndeterminate = true
         exportRepo.exportData(context)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
+                .subscribe({ index ->
+                    if (isExporting) {
+                        progressExport.progress++
+                    } else {
+                        progressExport.isIndeterminate = false
+                        progressExport.max = index
+                        progressExport.progress = 0
+                        isExporting = true
+                    }
                 }, { t: Throwable ->
                     Timber.d("Error happened! $t")
                     if (t is SpreadSheetsException) {

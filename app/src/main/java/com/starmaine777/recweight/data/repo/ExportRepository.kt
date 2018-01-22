@@ -35,7 +35,7 @@ class ExportRepository(val context: Context) {
     val credential: GoogleAccountCredential by lazy { GoogleAccountCredential.usingOAuth2(context, WRITE_SCOPES).setBackOff(ExponentialBackOff()) }
     var exportedUrlStr: String? = null
 
-    fun exportData(context: Context): Observable<String> {
+    fun exportData(context: Context): Observable<Int> {
         return create { emitter ->
 
             if (!isGooglePlayServiceAvailable(context)) {
@@ -85,7 +85,7 @@ class ExportRepository(val context: Context) {
     }
 
     @Throws(UserRecoverableAuthIOException::class, IOException::class, SpreadSheetsException::class)
-    fun writeExportDate(service: Sheets, emitter: Emitter<String>) {
+    fun writeExportDate(service: Sheets, emitter: Emitter<Int>) {
         val values = ArrayList<MutableList<Any?>>()
         val row = ArrayList<Any?>()
         SHEETS_COLUMNS.values().mapTo(row) { context.getString(it.nameId) }
@@ -97,7 +97,9 @@ class ExportRepository(val context: Context) {
             emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.NO_DATA))
             return
         }
+        emitter.onNext(itemList.size + 2)
 
+        var count = 0
         itemList.map {
             val weightRow = mutableListOf(convertToExportDateString(it.recTime),
                     it.weight,
@@ -110,6 +112,7 @@ class ExportRepository(val context: Context) {
                     it.memo
             )
             values.add(weightRow)
+            emitter.onNext(++count)
         }
         val range = "${context.getString(R.string.export_file_sheets_name)}!" +
                 "${SHEETS_COLUMNS.values()[0].columnName}1:${SHEETS_COLUMNS.values()[SHEETS_COLUMNS.values().size - 1].columnName}${values.size}"
@@ -117,6 +120,7 @@ class ExportRepository(val context: Context) {
         // sheet作成
         val spreadSheet = createExportFile(service, values.size, SHEETS_COLUMNS.values().size - 1, emitter)
         if (spreadSheet != null) {
+            emitter.onNext(itemList.size + 2)
             service.spreadsheets().values().update(spreadSheet.spreadsheetId, range, body).setValueInputOption("RAW").execute()
 
             exportedUrlStr = "https://docs.google.com/spreadsheets/d/${spreadSheet.spreadsheetId}"
@@ -127,12 +131,12 @@ class ExportRepository(val context: Context) {
         }
     }
 
-    fun convertToExportDateString(calendar: Calendar): String? {
+    private fun convertToExportDateString(calendar: Calendar): String? {
         val formatter = SimpleDateFormat(EXPORT_DATE_STR, Locale.US)
         return formatter.format(calendar.time)
     }
 
-    fun createExportFile(service: Sheets, rowCount: Int, columnCount: Int, emitter: Emitter<String>): Spreadsheet? {
+    private fun createExportFile(service: Sheets, rowCount: Int, columnCount: Int, emitter: Emitter<Int>): Spreadsheet? {
         val request = Spreadsheet()
         val timeStamp = System.currentTimeMillis()
         val calendar = Calendar.getInstance()
