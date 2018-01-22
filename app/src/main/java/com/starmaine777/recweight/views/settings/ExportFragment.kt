@@ -134,6 +134,8 @@ class ExportFragment : Fragment() {
                     } else if (t is UserRecoverableAuthIOException) {
                         Timber.d("UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
+                    } else {
+                        Timber.e(t, "Export exception!")
                     }
                 }, {
                     Timber.d("complete exportData!! repo=$exportRepo url=${exportRepo.exportedUrlStr}")
@@ -178,8 +180,6 @@ class ExportFragment : Fragment() {
                     Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
                 }
             }
-
-
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }

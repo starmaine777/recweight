@@ -144,6 +144,8 @@ class ImportUrlFragment : Fragment() {
                         Timber.d("UserRecoverableAuthIOException startActivity")
                         startActivityForResult(t.intent, REQUESTS.REQUEST_AUTHORIZATION.ordinal)
                         RxBus.publish(UpdateToolbarEvent(true))
+                    } else {
+                        Timber.e(t, "Import exception!")
                     }
                 }, {
                     Timber.d("Completed!!!")

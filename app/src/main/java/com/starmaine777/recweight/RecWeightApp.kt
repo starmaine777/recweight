@@ -3,6 +3,7 @@ package com.starmaine777.recweight
 import android.app.Application
 import com.crashlytics.android.Crashlytics
 import com.google.android.gms.ads.MobileAds
+import com.starmaine777.recweight.analytics.CrashReportingTree
 import io.fabric.sdk.android.Fabric
 import timber.log.Timber
 
@@ -22,6 +23,7 @@ class RecWeightApp : Application() {
             Timber.plant(Timber.DebugTree())
         } else {
             Fabric.with(this, Crashlytics())
+            Timber.plant(CrashReportingTree())
         }
     }
 }
