@@ -155,12 +155,21 @@ class SettingsMainFragment : Fragment() {
     }
 
     private fun showLongTapDialog() {
-        dialog = MaterialDialog.Builder(context).items(R.array.setting_long_tap).itemsCallbackSingleChoice(-1,
-                { _, _, _, text ->
-                    context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(PREFERENCE_KEY.LONG_TAP.name, text.toString()).apply()
-                    recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
-                    return@itemsCallbackSingleChoice true
-                }).positiveText(android.R.string.ok).show()
+        dialog = MaterialDialog.Builder(context)
+                .items(R.array.setting_long_tap)
+                .itemsCallbackSingleChoice(-1,
+                        { _, _, _, text ->
+                            if (text.isBlank()) return@itemsCallbackSingleChoice true
+                            context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(PREFERENCE_KEY.LONG_TAP.name, text.toString()).apply()
+                            recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
+                            return@itemsCallbackSingleChoice true
+                        })
+                .positiveText(android.R.string.ok)
+                .negativeText(android.R.string.cancel)
+                .show()
+        val items = context.resources.getStringArray(R.array.setting_long_tap)
+        (dialog as MaterialDialog).selectedIndex = items.indexOf(context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getString(PREFERENCE_KEY.LONG_TAP.name, items[0]))
+
     }
 
     private fun showChooseAccountDialog() {
