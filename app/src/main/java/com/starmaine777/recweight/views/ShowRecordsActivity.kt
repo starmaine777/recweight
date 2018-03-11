@@ -30,7 +30,7 @@ class ShowRecordsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        disposable.add(RxBus.subscribe(InputFragmentStartEvent::class.java).subscribe(
+        RxBus.subscribe(InputFragmentStartEvent::class.java).subscribe(
                 { t: InputFragmentStartEvent ->
                     Timber.d("")
                     val inputFragment = WeightInputFragment.newInstance(t.viewMode, t.id)
@@ -39,7 +39,7 @@ class ShowRecordsActivity : AppCompatActivity() {
                             .replace(R.id.fragment, inputFragment, t.viewMode.name)
                             .addToBackStack(t.viewMode.name)
                             .commit()
-                }))
+                }).let { disposable.add(it) }
     }
 
     override fun onPause() {
@@ -48,7 +48,9 @@ class ShowRecordsActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
+        if (supportFragmentManager.backStackEntryCount == 0) {
+            finish()
+        } else {
             supportFragmentManager.popBackStackImmediate()
         }
     }
