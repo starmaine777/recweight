@@ -105,8 +105,8 @@ class WeightInputFragment : Fragment() {
                         dialog?.show(fragmentManager, TAG_DIALOGS)
                     }
 
-                    editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
-                    editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+                    editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editWeight.text.isEmpty()) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+                    editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editFat.text.isEmpty()) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
 
                     if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
                         showViewMode()
@@ -227,6 +227,15 @@ class WeightInputFragment : Fragment() {
             AlertDialog.Builder(context)
                     .setTitle(R.string.err_title_input)
                     .setMessage(R.string.err_weight_empty)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            return
+        }
+
+        if (!editFat.text.isEmpty() && editFat.text.toString().toDouble() >= 100.0) {
+            AlertDialog.Builder(context)
+                    .setTitle(R.string.err_title_input)
+                    .setMessage(R.string.err_fat_over_100)
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             return

@@ -89,6 +89,7 @@
 
     <string name="err_title_input">入力値エラー</string>
     <string name="err_weight_empty">体重を入力して下さい。</string>
+    <string name="err_fat_over_100">体脂肪率は100%以下の数字を入力してください。</string>
     <string name="err_title_db">データベースエラー</string>
     <string name="err_db">データベースから情報が取得できませんでした。\n 再度読み込みなおしてください。</string>
     <string name="err_db_registered_same_time">同じ時間の記録が存在します。記録時刻を変更してください。</string>
