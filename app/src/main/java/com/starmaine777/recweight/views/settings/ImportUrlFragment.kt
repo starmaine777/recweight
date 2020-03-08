@@ -64,7 +64,7 @@ class ImportUrlFragment : Fragment() {
             startImport()
         }
 
-        view?.setOnKeyListener { v, _, keyEvent ->
+        view.setOnKeyListener { v, _, keyEvent ->
             // import中はbackさせない
             Timber.d("setOnKeyListener keyEvent = $keyEvent")
             if (v != editImportUrl
@@ -78,7 +78,7 @@ class ImportUrlFragment : Fragment() {
             }
             return@setOnKeyListener false
         }
-        view?.isFocusableInTouchMode = true
+        view.isFocusableInTouchMode = true
     }
 
     private fun changeInputView(startProgress: Boolean) {
@@ -94,8 +94,8 @@ class ImportUrlFragment : Fragment() {
     }
 
 
-    private fun startToGetSpleadSheetsData() {
-        Timber.d("startToGetSpleadSheetsData!!!")
+    private fun startToGetSpreadSheetsData() {
+        Timber.d("startToGetSpreadSheetsData!!!")
         var isImporting = false
         RxBus.publish(UpdateToolbarEvent(false))
         importRepo.getResultFromApi(editImportUrl.text.toString())
@@ -210,7 +210,7 @@ class ImportUrlFragment : Fragment() {
                             editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                             editor.apply()
                             importRepo.credential.selectedAccountName = accountName!!
-                            startToGetSpleadSheetsData()
+                            startToGetSpreadSheetsData()
                         }
                     }
                     Activity.RESULT_CANCELED -> {
@@ -221,13 +221,13 @@ class ImportUrlFragment : Fragment() {
 
             REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    startToGetSpleadSheetsData()
+                    startToGetSpreadSheetsData()
                 }
             }
 
             REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
                 when (resultCode) {
-                    Activity.RESULT_OK -> startToGetSpleadSheetsData()
+                    Activity.RESULT_OK -> startToGetSpreadSheetsData()
                     Activity.RESULT_CANCELED -> changeInputView(false)
                 }
             }
@@ -241,7 +241,7 @@ class ImportUrlFragment : Fragment() {
         when (requestCode) {
             REQUESTS.SHOW_ACCOUNT_PERMISSION.ordinal -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startToGetSpleadSheetsData()
+                    startToGetSpreadSheetsData()
                 } else {
                     showRetryDialog(getString(R.string.err_no_permission_title), getString(R.string.err_no_permission, getString(R.string.err_permission_account)))
                 }
@@ -270,7 +270,7 @@ class ImportUrlFragment : Fragment() {
         } else {
             hideKeyboard()
             changeInputView(true)
-            startToGetSpleadSheetsData()
+            startToGetSpreadSheetsData()
         }
     }
 
