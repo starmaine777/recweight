@@ -1,25 +1,26 @@
 package com.starmaine777.recweight.viewmodel
 
-import android.support.test.InstrumentationRegistry
-import android.support.test.runner.AndroidJUnit4
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
+import org.robolectric.RobolectricTestRunner
+import java.util.Calendar
 
 
 /**
  * ShowRecordsViewModelのTest. 主にChartのデータ作成の処理をテストする
  * Created by Asami-san on 2018/01/15.
  */
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
 class ShowRecordsViewModelTest {
 
     private val viewModel = ShowRecordsViewModel()
-    private val context = InstrumentationRegistry.getTargetContext()
+    private val context = ApplicationProvider.getApplicationContext<Context>()
 
     @Test
     fun `createLineChartData_全てにfatあり_Stampなし`() {

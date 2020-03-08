@@ -1,6 +1,6 @@
 package com.starmaine777.recweight.data
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import java.util.*
 
 /**

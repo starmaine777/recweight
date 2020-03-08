@@ -12,7 +12,7 @@
             type="com.starmaine777.recweight.data.entity.WeightItemEntity"/>
     </data>
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorBase"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -23,7 +23,7 @@
         android:layout_height="match_parent">
 
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:layout_editor_absoluteX="0dp"
@@ -256,10 +256,10 @@
                     tools:layout_constraintLeft_creator="1"
                     tools:layout_constraintRight_creator="1"/>
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -272,5 +272,5 @@
             />
 
 
-    </android.support.design.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

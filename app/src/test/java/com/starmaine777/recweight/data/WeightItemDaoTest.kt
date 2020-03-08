@@ -1,31 +1,31 @@
 package com.starmaine777.recweight.data
 
-import android.arch.persistence.room.Room
-import android.support.test.InstrumentationRegistry
-import android.support.test.runner.AndroidJUnit4
 import android.text.TextUtils
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import timber.log.Timber
-import java.util.*
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 /**
  * WeightItemRepositoryのTest
  * Created by 0025331458 on 2017/10/05.
  */
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
 class WeightItemDaoTest {
 
     private lateinit var database: AppDatabase
 
     @Before
     fun initDb() {
-        database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(),
+        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(),
                 AppDatabase::class.java).allowMainThreadQueries().build()
     }
 
@@ -238,8 +238,7 @@ class WeightItemDaoTest {
         database.weightItemDao().getAllListDateSorted().test().assertNoValues()
     }
 
-    fun equalItems(item1: WeightItemEntity, item2: WeightItemEntity): Boolean
-            = item1.recTime == item2.recTime
+    fun equalItems(item1: WeightItemEntity, item2: WeightItemEntity): Boolean = item1.recTime == item2.recTime
             && item1.weight == item2.weight
             && item1.fat == item2.fat
             && item1.showDumbbell == item2.showDumbbell

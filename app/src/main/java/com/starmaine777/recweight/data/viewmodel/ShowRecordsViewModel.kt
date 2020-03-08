@@ -1,8 +1,8 @@
 package com.starmaine777.recweight.data.viewmodel
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import android.content.Context
-import android.support.v7.content.res.AppCompatResources
+import androidx.appcompat.content.res.AppCompatResources
 import android.util.Log
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R

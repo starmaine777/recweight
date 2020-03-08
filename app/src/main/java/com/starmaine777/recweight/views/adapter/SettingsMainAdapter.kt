@@ -1,6 +1,6 @@
 package com.starmaine777.recweight.views.adapter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -25,14 +25,14 @@ class SettingsMainAdapter(var itemList: List<SettingItem>?) : RecyclerView.Adapt
         return if (!TextUtils.isEmpty(item?.description)) SETTING_ITEM_VIEW_TYPE.TWO_LINE.ordinal else SETTING_ITEM_VIEW_TYPE.SINGLE_LINE.ordinal
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): SettingsMainViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SettingsMainViewHolder {
         val layoutId = if (viewType == SETTING_ITEM_VIEW_TYPE.TWO_LINE.ordinal) android.R.layout.simple_list_item_2 else android.R.layout.simple_list_item_1
 
-        return SettingsMainViewHolder(LayoutInflater.from(parent?.context).inflate(layoutId, parent, false))
+        return SettingsMainViewHolder(LayoutInflater.from(parent.context).inflate(layoutId, parent, false))
     }
 
-    override fun onBindViewHolder(holder: SettingsMainViewHolder?, position: Int) {
-        holder!!.bind(itemList?.get(position))
+    override fun onBindViewHolder(holder: SettingsMainViewHolder, position: Int) {
+        holder.bind(itemList?.get(position))
     }
 
 
