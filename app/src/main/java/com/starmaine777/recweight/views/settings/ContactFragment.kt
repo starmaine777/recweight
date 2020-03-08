@@ -1,7 +1,7 @@
 package com.starmaine777.recweight.views.settings
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.event.RxBus
@@ -13,8 +13,8 @@ import com.starmaine777.recweight.event.UpdateToolbarEvent
  */
 class ContactFragment : Fragment(){
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_contact, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_contact, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -24,14 +24,14 @@ class ContactFragment : Fragment(){
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item?.itemId == R.id.action_send) {
-            fragmentManager.popBackStack()
+            fragmentManager?.popBackStack()
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onStart() {
         super.onStart()
-        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_contact)))
+        RxBus.publish(UpdateToolbarEvent(true, requireContext().getString(R.string.toolbar_title_contact)))
     }
 
 

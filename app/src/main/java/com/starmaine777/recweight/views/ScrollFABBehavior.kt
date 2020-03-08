@@ -1,11 +1,11 @@
 package com.starmaine777.recweight.views
 
 import android.content.Context
-import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.view.ViewCompat
 import android.util.AttributeSet
 import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * FABスクロールBehavior
@@ -36,7 +36,7 @@ class ScrollFABBehavior(context: Context?, attrs: AttributeSet?) : FloatingActio
 
                 override fun onHidden(fab: FloatingActionButton?) {
                     super.onHidden(fab)
-                    fab?.visibility = View.INVISIBLE
+                    fab?.hide()
                 }
             })
         } else if (dyConsumed < 0 && child.visibility != View.VISIBLE) {

@@ -1,6 +1,6 @@
 package com.starmaine777.recweight.data.viewmodel
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import android.content.Context
 import android.database.sqlite.SQLiteConstraintException
 import com.starmaine777.recweight.data.entity.WeightItemEntity

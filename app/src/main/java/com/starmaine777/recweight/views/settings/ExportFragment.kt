@@ -7,15 +7,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.repo.ExportRepository
@@ -27,7 +27,11 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_export.*
+import kotlinx.android.synthetic.main.fragment_export.areaExportUrl
+import kotlinx.android.synthetic.main.fragment_export.areaProgress
+import kotlinx.android.synthetic.main.fragment_export.btnExportShare
+import kotlinx.android.synthetic.main.fragment_export.editExportUrl
+import kotlinx.android.synthetic.main.fragment_export.progressExport
 import timber.log.Timber
 
 /**
@@ -42,13 +46,13 @@ class ExportFragment : Fragment() {
 
     private var disposable = CompositeDisposable()
     private var dialog: AlertDialog? = null
-    private val exportRepo: ExportRepository by lazy { ExportRepository(context) }
+    private val exportRepo: ExportRepository by lazy { ExportRepository(requireContext()) }
     private var isExporting = false
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater?.inflate(R.layout.fragment_export, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fragment_export, container, false)
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         btnExportShare.setOnClickListener {
@@ -64,7 +68,7 @@ class ExportFragment : Fragment() {
             Timber.d("setOnKeyListener keyEvent = $keyEvent")
             if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK
                     && disposable.size() > 0
-                    ) {
+            ) {
                 if (keyEvent.action == KeyEvent.ACTION_UP) {
                     Snackbar.make(this@ExportFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
                 }
@@ -77,7 +81,7 @@ class ExportFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        RxBus.publish(UpdateToolbarEvent(false, context.getString(R.string.toolbar_title_export)))
+        RxBus.publish(UpdateToolbarEvent(false, getString(R.string.toolbar_title_export)))
         exportData()
     }
 
@@ -91,7 +95,7 @@ class ExportFragment : Fragment() {
         Timber.d(Throwable(), "exportData repo=$exportRepo", null)
         isExporting = false
         progressExport.isIndeterminate = true
-        exportRepo.exportData(context)
+        exportRepo.exportData(requireContext())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ index ->
@@ -155,7 +159,7 @@ class ExportFragment : Fragment() {
                     Activity.RESULT_OK -> {
                         val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
                         if (!TextUtils.isEmpty(accountName)) {
-                            val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
+                            val editor = requireActivity().getSharedPreferences(requireContext().packageName, Context.MODE_PRIVATE).edit()
                             editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                             editor.apply()
                             exportRepo.credential.selectedAccountName = accountName!!
@@ -164,20 +168,20 @@ class ExportFragment : Fragment() {
                         exportData()
                     }
                     Activity.RESULT_CANCELED -> {
-                        fragmentManager.popBackStack()
+                        requireFragmentManager().popBackStack()
                     }
                 }
             }
             REQUESTS.SHOW_GOOGLE_PLAY_SERVICE.ordinal -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> exportData()
-                    Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
+                    Activity.RESULT_CANCELED -> requireFragmentManager().popBackStack()
                 }
             }
             REQUESTS.REQUEST_AUTHORIZATION.ordinal -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> exportData()
-                    Activity.RESULT_CANCELED -> fragmentManager.popBackStack()
+                    Activity.RESULT_CANCELED -> requireFragmentManager().popBackStack()
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
@@ -208,14 +212,14 @@ class ExportFragment : Fragment() {
             return
         }
 
-        val builder = AlertDialog.Builder(context)
+        val builder = AlertDialog.Builder(requireContext())
         if (!TextUtils.isEmpty(title)) {
             builder.setTitle(title)
         }
         builder.setMessage(message)
                 .setOnDismissListener {
-                    fragmentManager?.let {
-                        if (fragmentManager.backStackEntryCount > 0) fragmentManager.popBackStack()
+                    requireFragmentManager().let {
+                        if (it.backStackEntryCount > 0) it.popBackStack()
                     }
                 }
                 .setPositiveButton(android.R.string.ok

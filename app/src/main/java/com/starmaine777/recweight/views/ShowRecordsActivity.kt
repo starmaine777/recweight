@@ -1,7 +1,7 @@
 package com.starmaine777.recweight.views
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdRequest
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.event.InputFragmentStartEvent

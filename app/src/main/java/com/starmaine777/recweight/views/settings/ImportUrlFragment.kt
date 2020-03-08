@@ -7,16 +7,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.repo.ImportRepository
@@ -29,7 +29,11 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_import_url.*
+import kotlinx.android.synthetic.main.fragment_import_url.areaProgress
+import kotlinx.android.synthetic.main.fragment_import_url.areaUrlInput
+import kotlinx.android.synthetic.main.fragment_import_url.buttonImportStart
+import kotlinx.android.synthetic.main.fragment_import_url.editImportUrl
+import kotlinx.android.synthetic.main.fragment_import_url.progressImport
 import timber.log.Timber
 
 /**
@@ -42,14 +46,14 @@ class ImportUrlFragment : Fragment() {
         val TAG = "ImportUrlFragment"
     }
 
-    val importRepo: ImportRepository by lazy { ImportRepository(context) }
+    val importRepo: ImportRepository by lazy { ImportRepository(requireContext()) }
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater?.inflate(R.layout.fragment_import_url, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fragment_import_url, container, false)
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         editImportUrl.setOnEditorActionListener { _, _, _ ->
             startImport()
@@ -66,7 +70,7 @@ class ImportUrlFragment : Fragment() {
             if (v != editImportUrl
                     && keyEvent.keyCode == KeyEvent.KEYCODE_BACK
                     && disposable.size() > 0
-                    ) {
+            ) {
                 if (keyEvent.action == KeyEvent.ACTION_UP) {
                     Snackbar.make(this@ImportUrlFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
                 }
@@ -158,10 +162,10 @@ class ImportUrlFragment : Fragment() {
                         }
                     }
 
-                    dialog = AlertDialog.Builder(context)
+                    dialog = AlertDialog.Builder(requireContext())
                             .setTitle(R.string.d_import_complete_title)
                             .setMessage(messageSb.toString())
-                            .setOnDismissListener { fragmentManager.popBackStackImmediate() }
+                            .setOnDismissListener { fragmentManager?.popBackStackImmediate() }
                             .setPositiveButton(android.R.string.ok
                                     , { dialog, _ -> dialog.dismiss() })
                             .show()
@@ -171,13 +175,13 @@ class ImportUrlFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_import)))
+        RxBus.publish(UpdateToolbarEvent(true, getString(R.string.toolbar_title_import)))
     }
 
     override fun onResume() {
         super.onResume()
 
-        val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.showSoftInput(editImportUrl, InputMethodManager.SHOW_IMPLICIT)
         editImportUrl.requestFocus()
     }
@@ -202,7 +206,7 @@ class ImportUrlFragment : Fragment() {
                     Activity.RESULT_OK -> {
                         val accountName = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
                         if (!TextUtils.isEmpty(accountName)) {
-                            val editor = activity.getSharedPreferences(context.packageName, Context.MODE_PRIVATE).edit()
+                            val editor = requireContext().getSharedPreferences(requireContext().packageName, Context.MODE_PRIVATE).edit()
                             editor.putString(PREFERENCE_KEY.ACCOUNT_NAME.name, accountName)
                             editor.apply()
                             importRepo.credential.selectedAccountName = accountName!!
@@ -249,16 +253,16 @@ class ImportUrlFragment : Fragment() {
     private fun hideKeyboard() {
         if (editImportUrl.hasFocus()) editImportUrl.clearFocus()
 
-        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        if (activity.currentFocus != null) {
-            inputMethodManager.hideSoftInputFromWindow(activity.currentFocus!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+        val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (requireActivity().currentFocus != null) {
+            inputMethodManager.hideSoftInputFromWindow(requireActivity().currentFocus!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         }
 
     }
 
     private fun startImport() {
         if (TextUtils.isEmpty(editImportUrl.text)) {
-            dialog = AlertDialog.Builder(context)
+            dialog = AlertDialog.Builder(requireContext())
                     .setTitle(R.string.err_title_input)
                     .setMessage(R.string.err_url_empty)
                     .setPositiveButton(android.R.string.ok, null)
@@ -279,7 +283,7 @@ class ImportUrlFragment : Fragment() {
             return
         }
 
-        val builder = AlertDialog.Builder(context)
+        val builder = AlertDialog.Builder(requireContext())
         if (!TextUtils.isEmpty(title)) {
             builder.setTitle(title)
         }

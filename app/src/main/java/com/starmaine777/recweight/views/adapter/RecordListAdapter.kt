@@ -2,7 +2,7 @@ package com.starmaine777.recweight.views.adapter
 
 import android.app.Activity
 import android.content.Context
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -28,27 +28,27 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>, var context: Co
         }
     }
 
-    override fun onBindViewHolder(holder: RecordViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: RecordViewHolder, position: Int) {
         if (position + 1 == recordItems.size) {
-            holder!!.bind(recordItems.get(position), null)
+            holder.bind(recordItems.get(position), null)
         } else {
-            holder!!.bind(recordItems.get(position), recordItems.get(position + 1))
+            holder.bind(recordItems.get(position), recordItems.get(position + 1))
         }
     }
 
 
     override fun getItemCount(): Int = recordItems.size ?: 0
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecordViewHolder? =
-            RecordViewHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_weight, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder =
+            RecordViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_weight, parent, false))
 
 
-    class RecordViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
+    class RecordViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(item: WeightItemEntity, nextItem: WeightItemEntity?): Unit = with(itemView) {
 
-            Timber.d("ItemBind recTime = ${item?.recTime}, weight =${item?.weight}, fat= ${item?.fat}")
-            itemView.textDate.text = DateUtils.formatDateTime(context, item?.recTime!!.timeInMillis,
+            Timber.d("ItemBind recTime = ${item.recTime}, weight =${item.weight}, fat= ${item.fat}")
+            itemView.textDate.text = DateUtils.formatDateTime(context, item.recTime.timeInMillis,
                     DateUtils.FORMAT_SHOW_YEAR
                             .or(DateUtils.FORMAT_SHOW_DATE)
                             .or(DateUtils.FORMAT_NUMERIC_DATE)
@@ -63,7 +63,7 @@ class RecordListAdapter(var recordItems: List<WeightItemEntity>, var context: Co
                 itemView.textFat.visibility = View.VISIBLE
             }
 
-            val diff: Double;
+            val diff: Double
             if (nextItem == null) {
                 diff = 0.0
             } else {
