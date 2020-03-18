@@ -9,6 +9,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * FABスクロールBehavior
+ * TODO : うまく動いてないから処遇を考える
  * Created by 0025331458 on 2017/07/25.
  */
 class ScrollFABBehavior(context: Context?, attrs: AttributeSet?) : FloatingActionButton.Behavior(context, attrs) {
@@ -36,7 +37,6 @@ class ScrollFABBehavior(context: Context?, attrs: AttributeSet?) : FloatingActio
 
                 override fun onHidden(fab: FloatingActionButton?) {
                     super.onHidden(fab)
-                    fab?.hide()
                 }
             })
         } else if (dyConsumed < 0 && child.visibility != View.VISIBLE) {
