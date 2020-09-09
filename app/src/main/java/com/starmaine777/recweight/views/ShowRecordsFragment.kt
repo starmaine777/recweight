@@ -26,9 +26,6 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_show_records.bottomMain
 import kotlinx.android.synthetic.main.fragment_show_records.fab
-import tourguide.tourguide.Overlay
-import tourguide.tourguide.ToolTip
-import tourguide.tourguide.TourGuide
 
 /**
  * 記録表示用親Fragment
@@ -47,7 +44,7 @@ class ShowRecordsFragment : Fragment() {
 
     private lateinit var viewModel: ShowRecordsViewModel
     private val disposable = CompositeDisposable()
-    private var tutorial: TourGuide? = null
+//    private var tutorial: TourGuide? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,11 +80,11 @@ class ShowRecordsFragment : Fragment() {
 
         bottomMain.selectedItemId = R.id.bottom_list
         fab.setOnClickListener { _ ->
-            tutorial?.let {
-                tutorial!!.cleanUp()
-                updateBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, false)
-            }
-
+//            tutorial?.let {
+//                tutorial!!.cleanUp()
+//                updateBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, false)
+//            }
+//
             RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
         }
     }
@@ -115,32 +112,33 @@ class ShowRecordsFragment : Fragment() {
                     }
                 }).let { disposable.add(it) }
 
-        if (getBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, true)) {
-            showTutorial()
-        }
+        // TODO : tutorial復活
+//        if (getBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, true)) {
+//            showTutorial()
+//        }
     }
 
-    private fun showTutorial() {
-        val enterAnimation = AlphaAnimation(0f, 1f)
-        enterAnimation.duration = 600
-        enterAnimation.fillAfter = true
-
-        val exitAnimation = AlphaAnimation(1f, 0f)
-        exitAnimation.duration = 600
-        exitAnimation.fillAfter = true
-
-        tutorial = TourGuide.init(activity).with(TourGuide.Technique.Click)
-                .setToolTip(ToolTip()
-                        .setTitle(getString(R.string.tutorial_input_title))
-                        .setDescription(getString(R.string.tutorial_input_description)))
-                .setOverlay(Overlay().disableClick(true))
-                .playOn(fab)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        tutorial?.cleanUp()
-    }
+//    private fun showTutorial() {
+//        val enterAnimation = AlphaAnimation(0f, 1f)
+//        enterAnimation.duration = 600
+//        enterAnimation.fillAfter = true
+//
+//        val exitAnimation = AlphaAnimation(1f, 0f)
+//        exitAnimation.duration = 600
+//        exitAnimation.fillAfter = true
+//
+//        tutorial = TourGuide.init(activity).with(TourGuide.Technique.Click)
+//                .setToolTip(ToolTip()
+//                        .setTitle(getString(R.string.tutorial_input_title))
+//                        .setDescription(getString(R.string.tutorial_input_description)))
+//                .setOverlay(Overlay().disableClick(true))
+//                .playOn(fab)
+//    }
+//
+//    override fun onPause() {
+//        super.onPause()
+//        tutorial?.cleanUp()
+//    }
 
     override fun onStop() {
         super.onStop()
