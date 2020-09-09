@@ -1,6 +1,6 @@
 package com.starmaine777.recweight.data.entity
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import com.starmaine777.recweight.data.entity.WeightItemEntity.Companion.COL_REC_TIME
 import java.util.*
 

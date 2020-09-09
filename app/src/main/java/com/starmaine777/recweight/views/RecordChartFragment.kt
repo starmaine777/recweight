@@ -1,11 +1,11 @@
 package com.starmaine777.recweight.views
 
 import android.annotation.SuppressLint
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -43,14 +43,14 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(activity).get(ShowRecordsViewModel::class.java)
+        viewModel = ViewModelProviders.of(requireActivity()).get(ShowRecordsViewModel::class.java)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater?.inflate(R.layout.fragment_record_chart, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_record_chart, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewChart.isDragDecelerationEnabled = true
         viewChart.isDragEnabled = true
@@ -98,11 +98,11 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             textNoData.visibility = View.GONE
 
             val showStamp = getShowStamp()
-            val lines = viewModel.createLineSources(context, showStamp)
+            val lines = viewModel.createLineSources(requireContext(), showStamp)
 
             val lineData: LineData
             val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
-            weightDataSet.color = ContextCompat.getColor(context, R.color.chart_weight)
+            weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
             weightDataSet.lineWidth = 2.0f
             weightDataSet.setDrawCircles(false)
             weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
@@ -112,7 +112,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
             if (!lines.second.isEmpty()) {
                 val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
-                fatDataSet.color = ContextCompat.getColor(context, R.color.chart_fat)
+                fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
                 fatDataSet.lineWidth = 1.5f
                 fatDataSet.setDrawCircles(false)
                 fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT

@@ -1,8 +1,8 @@
 package com.starmaine777.recweight.views.settings
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,10 +22,10 @@ import net.yslibrary.licenseadapter.Licenses
 
 class LicenseFragment : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater!!.inflate(R.layout.fragment_license, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fragment_license, container, false)
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val dataSet = ArrayList<LicenseEntry>()
 
@@ -33,8 +33,8 @@ class LicenseFragment : Fragment() {
         dataSet.add(Licenses.fromGitHubApacheV2("JakeWharton/timber"))
         dataSet.add(Licenses.fromGitHubApacheV2("PhilJay/MPAndroidChart"))
         dataSet.add(Licenses.fromGitHubMIT("afollestad/material-dialogs"))
-        dataSet.add(Licenses.fromGitHubMIT("afollestad/material-dialogs"))
         dataSet.add(Licenses.fromGitHubApacheV2("worker8/TourGuide"))
+        dataSet.add(Licenses.fromGitHubApacheV2("googlesamples/easypermissions"))
 
         val adapter = LicenseAdapter(dataSet)
         recyclerLicense.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -45,6 +45,6 @@ class LicenseFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        RxBus.publish(UpdateToolbarEvent(true, context.getString(R.string.toolbar_title_license)))
+        RxBus.publish(UpdateToolbarEvent(true, getString(R.string.toolbar_title_license)))
     }
 }

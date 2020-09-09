@@ -1,14 +1,15 @@
 package com.starmaine777.recweight.views
 
 import android.content.Context
-import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.view.ViewCompat
 import android.util.AttributeSet
 import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * FABスクロールBehavior
+ * TODO : うまく動いてないから処遇を考える
  * Created by 0025331458 on 2017/07/25.
  */
 class ScrollFABBehavior(context: Context?, attrs: AttributeSet?) : FloatingActionButton.Behavior(context, attrs) {
@@ -36,7 +37,6 @@ class ScrollFABBehavior(context: Context?, attrs: AttributeSet?) : FloatingActio
 
                 override fun onHidden(fab: FloatingActionButton?) {
                     super.onHidden(fab)
-                    fab?.visibility = View.INVISIBLE
                 }
             })
         } else if (dyConsumed < 0 && child.visibility != View.VISIBLE) {

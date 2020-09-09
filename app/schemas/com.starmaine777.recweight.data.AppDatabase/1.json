@@ -1,0 +1,96 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "b1d2c2002066129a1fb46b3a23734171",
+    "entities": [
+      {
+        "tableName": "weightItem",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recTime` INTEGER NOT NULL, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `showDumbbell` INTEGER NOT NULL, `showLiquor` INTEGER NOT NULL, `showToilet` INTEGER NOT NULL, `showMoon` INTEGER NOT NULL, `showStar` INTEGER NOT NULL, `memo` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "recTime",
+            "columnName": "recTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weight",
+            "columnName": "weight",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fat",
+            "columnName": "fat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showDumbbell",
+            "columnName": "showDumbbell",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showLiquor",
+            "columnName": "showLiquor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showToilet",
+            "columnName": "showToilet",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showMoon",
+            "columnName": "showMoon",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showStar",
+            "columnName": "showStar",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "memo",
+            "columnName": "memo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_weightItem_recTime",
+            "unique": true,
+            "columnNames": [
+              "recTime"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_weightItem_recTime` ON `${TABLE_NAME}` (`recTime`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"b1d2c2002066129a1fb46b3a23734171\")"
+    ]
+  }
+}

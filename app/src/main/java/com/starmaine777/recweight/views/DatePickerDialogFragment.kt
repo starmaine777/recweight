@@ -1,14 +1,12 @@
 package com.starmaine777.recweight.views
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.widget.DatePicker
+import androidx.fragment.app.DialogFragment
 
 /**
  * Created by ai on 2017/07/02.
@@ -46,7 +44,7 @@ class DatePickerDialogFragment : DialogFragment(), DatePickerDialog.OnDateSetLis
         val month = arguments?.getInt(ARGS_MONTH) ?: 0
         val day = arguments?.getInt(ARGS_DAY) ?: 0
 
-        val dialog = DatePickerDialog(context, this, year, month, day)
+        val dialog = DatePickerDialog(requireContext(), this, year, month, day)
         return dialog
     }
 
@@ -56,7 +54,7 @@ class DatePickerDialogFragment : DialogFragment(), DatePickerDialog.OnDateSetLis
             intent.putExtra(RESULT_YEAR, year)
             intent.putExtra(RESULT_MONTH, month)
             intent.putExtra(RESULT_DAY, dayOfMonth)
-            targetFragment.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+            targetFragment?.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
         }
         dismiss()
     }
