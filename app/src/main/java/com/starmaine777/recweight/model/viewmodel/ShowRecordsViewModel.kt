@@ -2,19 +2,15 @@ package com.starmaine777.recweight.model.viewmodel
 
 import android.content.Context
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 /**
@@ -43,16 +39,15 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
     private val compositeDisposable = CompositeDisposable()
 
     fun getWeightItemList(context: Context) {
-        weightRepository.getWeightItemList(context)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { list ->
-                    weightItemList = list
-                    _viewData.postValue(
-                            ViewData(state = State.Idle,
-                                    list)
-                    )
-                }.apply { compositeDisposable.add(this) }
+        viewModelScope.launch {
+            weightItemList = weightRepository.getWeightItemList(context)
+            _viewData.postValue(
+                ViewData(
+                    state = State.Idle,
+                    weightItemList
+                )
+            )
+        }
     }
 
 
@@ -62,9 +57,9 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
      * @return 削除が完了したCompletableFromAction
      */
     fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-            CompletableFromAction(Action {
-                weightRepository.deleteWeightItem(context, weightItemEntity)
-            })
+        CompletableFromAction(Action {
+            weightRepository.deleteWeightItem(context, weightItemEntity)
+        })
 
     /**
      * LineChart用のDataを作成する
@@ -75,18 +70,30 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
     fun createLineSources(context: Context, showStamp: ShowStamp): Pair<List<Entry>, List<Entry>> {
         val weights = ArrayList<Entry>()
         val fats = ArrayList<Entry>()
-        val icon = if (showStamp == ShowStamp.NONE) null else AppCompatResources.getDrawable(context, showStamp.drawableId)
+        val icon = if (showStamp == ShowStamp.NONE) null else AppCompatResources.getDrawable(
+            context,
+            showStamp.drawableId
+        )
         val reverseItemList = ArrayList(weightItemList).apply { this.reverse() }
 
         var fatAddedIndex = -1
         for (i in reverseItemList.indices) {
             val item = reverseItemList[i]
-            val weightEntry = Entry(item.recTime.timeInMillis.toFloat(), item.weight.toFloat(), if (needShowIcon(item, showStamp)) icon else null)
+            val weightEntry = Entry(
+                item.recTime.timeInMillis.toFloat(),
+                item.weight.toFloat(),
+                if (needShowIcon(item, showStamp)) icon else null
+            )
             weights.add(weightEntry)
 
             if (item.fat != 0.0) {
                 if (fatAddedIndex == -1) {
-                    (0..(i - 1)).mapTo(fats) { Entry(reverseItemList[it].recTime.timeInMillis.toFloat(), reverseItemList[i].fat.toFloat()) }
+                    (0..(i - 1)).mapTo(fats) {
+                        Entry(
+                            reverseItemList[it].recTime.timeInMillis.toFloat(),
+                            reverseItemList[i].fat.toFloat()
+                        )
+                    }
                 } else {
                     val start = reverseItemList[fatAddedIndex]
                     val end = reverseItemList[i]
@@ -94,8 +101,10 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
                     if (fatAddedIndex != i - 1) {
                         // それまでのものを計算
                         ((fatAddedIndex + 1)..(i - 1)).mapTo(fats) {
-                            Entry(reverseItemList[it].recTime.timeInMillis.toFloat(),
-                                    calculateFat(slope, start, reverseItemList[it]))
+                            Entry(
+                                reverseItemList[it].recTime.timeInMillis.toFloat(),
+                                calculateFat(slope, start, reverseItemList[it])
+                            )
                         }
                     }
                 }
@@ -115,7 +124,10 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
                 val end = fats[fatAddedIndex]
                 val slope = calculateFatSlopeByFatEntry(start, end)
                 ((fatAddedIndex + 1)..(reverseItemList.size - 1)).mapTo(fats) {
-                    Entry(reverseItemList[it].recTime.timeInMillis.toFloat(), calculateFat(slope, reverseItemList[fatAddedIndex], reverseItemList[it]))
+                    Entry(
+                        reverseItemList[it].recTime.timeInMillis.toFloat(),
+                        calculateFat(slope, reverseItemList[fatAddedIndex], reverseItemList[it])
+                    )
                 }
             }
         }
@@ -129,28 +141,35 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
      * @return true == 表示, false == 非表示
      */
     private fun needShowIcon(item: WeightItemEntity, showStampType: ShowStamp): Boolean =
-            when (showStampType) {
-                ShowStamp.NONE -> false
-                ShowStamp.DUMBBELL -> item.showDumbbell
-                ShowStamp.LIQUOR -> item.showLiquor
-                ShowStamp.TOILET -> item.showToilet
-                ShowStamp.MOON -> item.showMoon
-                ShowStamp.STAR -> item.showStar
-            }
+        when (showStampType) {
+            ShowStamp.NONE -> false
+            ShowStamp.DUMBBELL -> item.showDumbbell
+            ShowStamp.LIQUOR -> item.showLiquor
+            ShowStamp.TOILET -> item.showToilet
+            ShowStamp.MOON -> item.showMoon
+            ShowStamp.STAR -> item.showStar
+        }
 
-    private fun calculateFatSlopeByFatEntry(start: Entry, end: Entry): Double = ((end.y - start.y) / (end.x - start.x)).toDouble()
+    private fun calculateFatSlopeByFatEntry(start: Entry, end: Entry): Double =
+        ((end.y - start.y) / (end.x - start.x)).toDouble()
 
-    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double = ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
+    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double =
+        ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
 
-    private fun calculateFat(slope: Double, start: WeightItemEntity, target: WeightItemEntity): Float {
-        var bd = BigDecimal((start.fat + slope * (target.recTime.timeInMillis - start.recTime.timeInMillis)))
+    private fun calculateFat(
+        slope: Double,
+        start: WeightItemEntity,
+        target: WeightItemEntity
+    ): Float {
+        var bd =
+            BigDecimal((start.fat + slope * (target.recTime.timeInMillis - start.recTime.timeInMillis)))
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP)
         return bd.toFloat()
     }
 
     data class ViewData(
-            val state: State,
-            val list: List<WeightItemEntity>? = null
+        val state: State,
+        val list: List<WeightItemEntity>? = null
     )
 
     enum class State {

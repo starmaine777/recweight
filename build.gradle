@@ -26,10 +26,9 @@ allprojects {
 }
 
 ext {
-    supportLibVersion = '28.0.0'
     espressoVersion = '2.2.2'
     archLifecycleVersion = '1.1.0'
-    archRoomVersion = '1.0.0'
+    archRoomVersion = '2.3.0'
     androidxTestVersion = '1.4.0'
 }
 
