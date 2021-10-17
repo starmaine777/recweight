@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.databinding.FragmentSettingsMainBinding
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
 import com.starmaine777.recweight.utils.PREFERENCES_NAME
@@ -28,7 +29,6 @@ import com.starmaine777.recweight.views.adapter.SettingsMainAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_settings_main.recyclerSettingsMain
 import timber.log.Timber
 
 /**
@@ -41,6 +41,8 @@ class SettingsMainFragment() : Fragment() {
     companion object {
         val TAG = "SettingsMainFragment"
     }
+
+    private lateinit var binding: FragmentSettingsMainBinding
 
     private var disposable = CompositeDisposable()
     private var dialog: Dialog? = null
@@ -96,23 +98,23 @@ class SettingsMainFragment() : Fragment() {
 
     private fun getLastExportDateString(): String {
         val datetime = requireActivity().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).getLong(PREFERENCE_KEY.LAST_EXPORT_DATE.name, 0)
-        return getString(R.string.settings_main_export_description
-                , if (datetime == 0L) "-" else DateUtils.formatDateTime(context, datetime, DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_SHOW_TIME).or(DateUtils.FORMAT_NUMERIC_DATE)))
+        return getString(R.string.settings_main_export_description, if (datetime == 0L) "-" else DateUtils.formatDateTime(context, datetime, DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_SHOW_TIME).or(DateUtils.FORMAT_NUMERIC_DATE)))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_settings_main, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentSettingsMainBinding.inflate(inflater)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerSettingsMain.layoutManager = LinearLayoutManager(context)
+        binding.recyclerSettingsMain.layoutManager = LinearLayoutManager(context)
     }
 
     override fun onStart() {
         super.onStart()
-        recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
         RxBus.publish(UpdateToolbarEvent(true, getString(R.string.activity_settings)))
-        recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
+        binding.recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
     }
 
     override fun onStop() {
@@ -165,7 +167,7 @@ class SettingsMainFragment() : Fragment() {
                         { _, _, _, text ->
                             if (text.isBlank()) return@itemsCallbackSingleChoice true
                             requireContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit().putString(PREFERENCE_KEY.LONG_TAP.name, text.toString()).apply()
-                            recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
+                            binding.recyclerSettingsMain.adapter = SettingsMainAdapter(createSettingItems())
                             return@itemsCallbackSingleChoice true
                         })
                 .positiveText(android.R.string.ok)

@@ -4,17 +4,16 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.databinding.FragmentRecordListBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
@@ -26,7 +25,6 @@ import com.starmaine777.recweight.views.adapter.RecordListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_record_list.*
 import timber.log.Timber
 
 /**
@@ -42,6 +40,9 @@ class RecordListFragment : Fragment() {
 
     private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
+
+    private lateinit var binding: FragmentRecordListBinding
+
     private val disposable = CompositeDisposable()
     var dialog: Dialog? = null
 
@@ -49,32 +50,34 @@ class RecordListFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_record_list, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentRecordListBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerRecords.layoutManager = LinearLayoutManager(context)
         observeViewData()
         viewModel.getWeightItemList(requireContext())
     }
 
     private fun observeViewData() {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
-            when {
-                data.list == null -> {
-                    recyclerRecords.visibility = View.GONE
-                    areaNoData.visibility = View.GONE
-                }
-                data.list.isEmpty() -> {
-                    recyclerRecords.visibility = View.GONE
-                    areaNoData.visibility = View.VISIBLE
-                }
-                else -> {
-                    recyclerRecords.visibility = View.VISIBLE
-                    areaNoData.visibility = View.GONE
-                    showListItem(data.list)
+            binding.apply {
+                when {
+                    data.list == null -> {
+                        recyclerRecords.visibility = View.GONE
+                        areaNoData.visibility = View.GONE
+                    }
+                    data.list.isEmpty() -> {
+                        recyclerRecords.visibility = View.GONE
+                        areaNoData.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        recyclerRecords.visibility = View.VISIBLE
+                        areaNoData.visibility = View.GONE
+                        showListItem(data.list)
+                    }
                 }
             }
         }
@@ -105,7 +108,7 @@ class RecordListFragment : Fragment() {
 
     private fun showListItem(item: List<WeightItemEntity> ) {
             val adapter = RecordListAdapter(item, requireContext())
-            recyclerRecords.adapter = adapter
+        binding.recyclerRecords.adapter = adapter
 
     }
 

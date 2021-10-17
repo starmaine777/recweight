@@ -1,45 +1,49 @@
 package com.starmaine777.recweight.views.settings
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
-
+import androidx.appcompat.app.AppCompatActivity
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.databinding.ActivitySettingsBinding
 import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.event.UpdateToolbarEvent
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.activity_settings.*
 import timber.log.Timber
 
 class SettingsActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivitySettingsBinding
     val disposal: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportFragmentManager.beginTransaction().replace(R.id.fragment, SettingsMainFragment(), SettingsMainFragment.TAG).commit()
         Timber.d("oncreate backStackEntryCount = ${supportFragmentManager.backStackEntryCount}")
 
-        toolbar_setting.setNavigationIcon(R.drawable.icon_arrow_back)
-        toolbar_setting.setNavigationOnClickListener {
-            onBackPressed()
+        binding.toolbarSetting.apply {
+            setNavigationIcon(R.drawable.icon_arrow_back)
+            setNavigationOnClickListener {
+                onBackPressed()
+            }
+            setTitle(R.string.activity_settings)
         }
-        toolbar_setting.setTitle(R.string.activity_settings)
     }
 
     override fun onStart() {
         super.onStart()
-        disposal.add(RxBus.subscribe(UpdateToolbarEvent::class.java).subscribe {
-            t ->
-            if (t.show) {
-                toolbar_setting.setNavigationIcon(R.drawable.icon_arrow_back)
-            } else {
-                toolbar_setting.navigationIcon = null
-            }
+        disposal.add(RxBus.subscribe(UpdateToolbarEvent::class.java).subscribe { t ->
+            binding.toolbarSetting.apply {
+                if (t.show) {
+                    setNavigationIcon(R.drawable.icon_arrow_back)
+                } else {
+                    navigationIcon = null
+                }
 
-            if (!TextUtils.isEmpty(t.title)) {
-                toolbar_setting.title = t.title
+                if (!TextUtils.isEmpty(t.title)) {
+                    title = t.title
+                }
             }
         })
 

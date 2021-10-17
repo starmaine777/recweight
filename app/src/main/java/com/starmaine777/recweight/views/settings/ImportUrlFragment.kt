@@ -20,17 +20,17 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.repo.WeightItemRepository
-import com.starmaine777.recweight.model.usecase.ImportUseCase
+import com.starmaine777.recweight.databinding.FragmentImportUrlBinding
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.model.usecase.ImportUseCase
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_import_url.*
 import timber.log.Timber
 
 /**
@@ -43,28 +43,32 @@ class ImportUrlFragment : Fragment() {
         val TAG = "ImportUrlFragment"
     }
 
+    private lateinit var binding: FragmentImportUrlBinding
+
     val importRepo: ImportUseCase by lazy { ImportUseCase(requireContext(), WeightItemRepository()) }
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_import_url, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentImportUrlBinding.inflate(inflater)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        editImportUrl.setOnEditorActionListener { _, _, _ ->
+        binding.editImportUrl.setOnEditorActionListener { _, _, _ ->
             startImport()
             return@setOnEditorActionListener true
         }
 
-        buttonImportStart.setOnClickListener {
+        binding.buttonImportStart.setOnClickListener {
             startImport()
         }
 
         view.setOnKeyListener { v, _, keyEvent ->
             // import中はbackさせない
             Timber.d("setOnKeyListener keyEvent = $keyEvent")
-            if (v != editImportUrl
+            if (v != binding.editImportUrl
                     && keyEvent.keyCode == KeyEvent.KEYCODE_BACK
                     && disposable.size() > 0
             ) {
@@ -79,14 +83,16 @@ class ImportUrlFragment : Fragment() {
     }
 
     private fun changeInputView(startProgress: Boolean) {
-        if (startProgress) {
-            areaUrlInput.visibility = View.GONE
-            areaProgress.visibility = View.VISIBLE
-            progressImport.isIndeterminate = true
-        } else {
-            areaUrlInput.visibility = View.VISIBLE
-            areaProgress.visibility = View.GONE
-            progressImport.isIndeterminate = false
+        binding.apply {
+            if (startProgress) {
+                areaUrlInput.visibility = View.GONE
+                areaProgress.visibility = View.VISIBLE
+                progressImport.isIndeterminate = true
+            } else {
+                areaUrlInput.visibility = View.VISIBLE
+                areaProgress.visibility = View.GONE
+                progressImport.isIndeterminate = false
+            }
         }
     }
 
@@ -95,17 +101,17 @@ class ImportUrlFragment : Fragment() {
         Timber.d("startToGetSpreadSheetsData!!!")
         var isImporting = false
         RxBus.publish(UpdateToolbarEvent(false))
-        importRepo.getResultFromApi(editImportUrl.text.toString())
+        importRepo.getResultFromApi(binding.editImportUrl.text.toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ index ->
                     if (isImporting) {
-                        progressImport.progress++
+                        binding.progressImport.progress++
                     } else {
                         // 各行import開始時.ProgressBarの設定変更
-                        progressImport.isIndeterminate = false
-                        progressImport.max = index
-                        progressImport.progress = 0
+                        binding.progressImport.isIndeterminate = false
+                        binding.progressImport.max = index
+                        binding.progressImport.progress = 0
                         isImporting = true
                     }
                 }, { t: Throwable ->
@@ -178,8 +184,8 @@ class ImportUrlFragment : Fragment() {
         super.onResume()
 
         val inputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(editImportUrl, InputMethodManager.SHOW_IMPLICIT)
-        editImportUrl.requestFocus()
+        inputMethodManager.showSoftInput(binding.editImportUrl, InputMethodManager.SHOW_IMPLICIT)
+        binding.editImportUrl.requestFocus()
     }
 
     override fun onPause() {
@@ -247,7 +253,7 @@ class ImportUrlFragment : Fragment() {
     }
 
     private fun hideKeyboard() {
-        if (editImportUrl.hasFocus()) editImportUrl.clearFocus()
+        if (binding.editImportUrl.hasFocus()) binding.editImportUrl.clearFocus()
 
         val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         if (requireActivity().currentFocus != null) {
@@ -257,7 +263,7 @@ class ImportUrlFragment : Fragment() {
     }
 
     private fun startImport() {
-        if (TextUtils.isEmpty(editImportUrl.text)) {
+        if (TextUtils.isEmpty(binding.editImportUrl.text)) {
             dialog = AlertDialog.Builder(requireContext())
                     .setTitle(R.string.err_title_input)
                     .setMessage(R.string.err_url_empty)

@@ -5,30 +5,32 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.databinding.ActivityShowRecordsBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.activity_show_records.*
 import timber.log.Timber
 
 
 class ShowRecordsActivity : AppCompatActivity() {
 
     var disposable = CompositeDisposable()
+    private lateinit var binding: ActivityShowRecordsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_show_records)
+        binding = ActivityShowRecordsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportFragmentManager.beginTransaction().replace(R.id.fragment, ShowRecordsFragment(), ShowRecordsFragment.TAG).commit()
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         MobileAds.initialize(this)
     }
 
     override fun onStart() {
         super.onStart()
-        viewAds.loadAd(AdRequest.Builder().build())
+        binding.viewAds.loadAd(AdRequest.Builder().build())
     }
 
     override fun onResume() {

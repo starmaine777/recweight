@@ -23,9 +23,9 @@ import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.databinding.FragmentRecordChartBinding
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.formatInputNumber
-import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -43,61 +43,70 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_record_chart, container, false)
+    private lateinit var binding: FragmentRecordChartBinding
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentRecordChartBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initChart()
 
-        spinnerDuration.onItemSelectedListener = this
-        radioGroupStamps.setOnCheckedChangeListener { _, _ ->
-            Timber.d("radioGroup onCheckedChangeListener ")
-            showChart(false)
+        binding.apply {
+            spinnerDuration.onItemSelectedListener = this@RecordChartFragment
+            radioGroupStamps.setOnCheckedChangeListener { _, _ ->
+                Timber.d("radioGroup onCheckedChangeListener ")
+                showChart(false)
+            }
         }
         observeViewData()
     }
 
     private fun observeViewData() {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
-            when {
-                data.list == null -> {
-                    areaChart.visibility = View.GONE
-                    textNoData.visibility = View.GONE
-                }
-                data.list.isEmpty() -> {
-                    areaChart.visibility = View.GONE
-                    textNoData.visibility = View.VISIBLE
-                }
-                else -> {
-                    areaChart.visibility = View.VISIBLE
-                    textNoData.visibility = View.GONE
-                    showChart(false)
+            binding.apply {
+                when {
+                    data.list == null -> {
+                        areaChart.visibility = View.GONE
+                        textNoData.visibility = View.GONE
+                    }
+                    data.list.isEmpty() -> {
+                        areaChart.visibility = View.GONE
+                        textNoData.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        areaChart.visibility = View.VISIBLE
+                        textNoData.visibility = View.GONE
+                        showChart(false)
+                    }
                 }
             }
         }
     }
 
     private fun initChart() {
-        viewChart.isDragDecelerationEnabled = true
-        viewChart.isDragEnabled = true
-        viewChart.setNoDataText(getString(R.string.show_records_no_data))
-        val xAxis = viewChart.xAxis
-        xAxis.isGranularityEnabled = true
-        updateGranularity(spinnerDuration.selectedItemPosition)
-        xAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
-                    .or(DateUtils.FORMAT_NO_YEAR)
-            )
-        }
-        val weightAxis = viewChart.axisLeft
-        weightAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "kg"
-        }
-        val fatAxis = viewChart.axisRight
-        fatAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "%"
+        binding.viewChart.apply {
+            isDragDecelerationEnabled = true
+            isDragEnabled = true
+            setNoDataText(getString(R.string.show_records_no_data))
+            val xAxis = xAxis
+            xAxis.isGranularityEnabled = true
+            updateGranularity(binding.spinnerDuration.selectedItemPosition)
+            xAxis.setValueFormatter { value, _ ->
+                return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
+                        .or(DateUtils.FORMAT_NO_YEAR)
+                )
+            }
+            val weightAxis = axisLeft
+            weightAxis.setValueFormatter { value, _ ->
+                return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "kg"
+            }
+            val fatAxis = axisRight
+            fatAxis.setValueFormatter { value, _ ->
+                return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "%"
+            }
         }
     }
 
@@ -130,47 +139,51 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
             lineData = LineData(weightDataSet)
         }
 
-        viewChart.data = lineData
+        binding.apply {
+            viewChart.data = lineData
 
-        val nowDate = Calendar.getInstance().timeInMillis.toFloat()
-        viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
-        viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
+            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
+            viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
+            viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
 
-        if (refreshPosition) viewChart.moveViewToX(nowDate)
+            if (refreshPosition) viewChart.moveViewToX(nowDate)
 
-        viewChart.setDrawMarkers(true)
-        // TODO : listを渡せるようにして修正
-        viewModel.viewData.value?.list?.let {
-            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
+            viewChart.setDrawMarkers(true)
+            // TODO : listを渡せるようにして修正
+            viewModel.viewData.value?.list?.let {
+                viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
+            }
+
+            spinnerDuration.visibility = View.VISIBLE
+            radioGroupStamps.visibility = View.VISIBLE
+            viewChart.invalidate()
         }
-
-        spinnerDuration.visibility = View.VISIBLE
-        radioGroupStamps.visibility = View.VISIBLE
-        viewChart.invalidate()
     }
 
-    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp = when (radioGroupStamps.checkedRadioButtonId) {
-        R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
-        R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
-        R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
-        R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
-        R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
-        else -> ShowRecordsViewModel.ShowStamp.NONE
-    }
+    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp =
+            when (binding.radioGroupStamps.checkedRadioButtonId) {
+                R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
+                R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
+                R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
+                R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
+                R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
+                else -> ShowRecordsViewModel.ShowStamp.NONE
+            }
 
     private fun updateGranularity(spinnerSelectedItemPosition: Int) {
-        viewChart.xAxis.granularity = when (spinnerSelectedItemPosition) {
-            0 -> TimeUnit.DAYS.toMillis(1).toFloat()
-            1 -> TimeUnit.DAYS.toMillis(7).toFloat()
-            2 -> TimeUnit.DAYS.toMillis(30).toFloat()
-            3 -> TimeUnit.DAYS.toMillis(60).toFloat()
-            else -> 1f
-        }
+        binding.viewChart.xAxis.granularity =
+                when (spinnerSelectedItemPosition) {
+                    0 -> TimeUnit.DAYS.toMillis(1).toFloat()
+                    1 -> TimeUnit.DAYS.toMillis(7).toFloat()
+                    2 -> TimeUnit.DAYS.toMillis(30).toFloat()
+                    3 -> TimeUnit.DAYS.toMillis(60).toFloat()
+                    else -> 1f
+                }
     }
 
     private fun getStartCalendar(): Calendar {
         val result = Calendar.getInstance()
-        val spinnerSelectedIndex = spinnerDuration.selectedItemPosition
+        val spinnerSelectedIndex = binding.spinnerDuration.selectedItemPosition
         when (spinnerSelectedIndex) {
             0 -> result.add(Calendar.WEEK_OF_YEAR, -1)
             1 -> result.add(Calendar.MONTH, -1)

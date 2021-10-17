@@ -19,20 +19,16 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.repo.WeightItemRepository
-import com.starmaine777.recweight.model.usecase.ExportUseCase
+import com.starmaine777.recweight.databinding.FragmentExportBinding
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
+import com.starmaine777.recweight.model.usecase.ExportUseCase
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_export.areaExportUrl
-import kotlinx.android.synthetic.main.fragment_export.areaProgress
-import kotlinx.android.synthetic.main.fragment_export.btnExportShare
-import kotlinx.android.synthetic.main.fragment_export.editExportUrl
-import kotlinx.android.synthetic.main.fragment_export.progressExport
 import timber.log.Timber
 
 /**
@@ -45,18 +41,22 @@ class ExportFragment : Fragment() {
         val TAG = "ExportFragment"
     }
 
+    private lateinit var binding: FragmentExportBinding
+
     private var disposable = CompositeDisposable()
     private var dialog: AlertDialog? = null
     private val exportRepo: ExportUseCase by lazy { ExportUseCase(requireContext(), WeightItemRepository()) }
     private var isExporting = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_export, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentExportBinding.inflate(inflater)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        btnExportShare.setOnClickListener {
+        binding.btnExportShare.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
             intent.type = "text/plain"
             intent.putExtra(Intent.EXTRA_TEXT, exportRepo.exportedUrlStr)
@@ -64,20 +64,22 @@ class ExportFragment : Fragment() {
             startActivity(intent)
         }
 
-        view?.setOnKeyListener { _, _, keyEvent ->
-            // import中はbackさせない
-            Timber.d("setOnKeyListener keyEvent = $keyEvent")
-            if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK
-                    && disposable.size() > 0
-            ) {
-                if (keyEvent.action == KeyEvent.ACTION_UP) {
-                    Snackbar.make(this@ExportFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
+        binding.root.apply {
+            setOnKeyListener { _, _, keyEvent ->
+                // import中はbackさせない
+                Timber.d("setOnKeyListener keyEvent = $keyEvent")
+                if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK
+                        && disposable.size() > 0
+                ) {
+                    if (keyEvent.action == KeyEvent.ACTION_UP) {
+                        Snackbar.make(this, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
+                    }
+                    return@setOnKeyListener true
                 }
-                return@setOnKeyListener true
+                return@setOnKeyListener false
             }
-            return@setOnKeyListener false
+            isFocusableInTouchMode = true
         }
-        view?.isFocusableInTouchMode = true
     }
 
     override fun onStart() {
@@ -95,17 +97,17 @@ class ExportFragment : Fragment() {
     private fun exportData() {
         Timber.d(Throwable(), "exportData repo=$exportRepo", null)
         isExporting = false
-        progressExport.isIndeterminate = true
+        binding.progressExport.isIndeterminate = true
         exportRepo.exportData(requireContext())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ index ->
                     if (isExporting) {
-                        progressExport.progress++
+                        binding.progressExport.progress++
                     } else {
-                        progressExport.isIndeterminate = false
-                        progressExport.max = index
-                        progressExport.progress = 0
+                        binding.progressExport.isIndeterminate = false
+                        binding.progressExport.max = index
+                        binding.progressExport.progress = 0
                         isExporting = true
                     }
                 }, { t: Throwable ->
@@ -144,9 +146,9 @@ class ExportFragment : Fragment() {
                     }
                 }, {
                     Timber.d("complete exportData!! repo=$exportRepo url=${exportRepo.exportedUrlStr}")
-                    editExportUrl.setText(exportRepo.exportedUrlStr)
-                    areaProgress.visibility = View.GONE
-                    areaExportUrl.visibility = View.VISIBLE
+                    binding.editExportUrl.setText(exportRepo.exportedUrlStr)
+                    binding.areaProgress.visibility = View.GONE
+                    binding.areaExportUrl.visibility = View.VISIBLE
                     RxBus.publish(UpdateToolbarEvent(true))
 
                 }).let { disposable.add(it) }

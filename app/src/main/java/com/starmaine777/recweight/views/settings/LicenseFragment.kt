@@ -1,15 +1,15 @@
 package com.starmaine777.recweight.views.settings
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.databinding.FragmentLicenseBinding
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
-import kotlinx.android.synthetic.main.fragment_license.*
 import net.yslibrary.licenseadapter.GitHubLicenseEntry
 import net.yslibrary.licenseadapter.LicenseAdapter
 import net.yslibrary.licenseadapter.LicenseEntry
@@ -22,8 +22,12 @@ import net.yslibrary.licenseadapter.Licenses
 
 class LicenseFragment : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_license, container, false)
+    private lateinit var binding: FragmentLicenseBinding
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentLicenseBinding.inflate(inflater)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -37,8 +41,10 @@ class LicenseFragment : Fragment() {
         dataSet.add(Licenses.fromGitHubApacheV2("googlesamples/easypermissions"))
 
         val adapter = LicenseAdapter(dataSet)
-        recyclerLicense.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        recyclerLicense.adapter = adapter
+        binding.recyclerLicense.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            this.adapter = adapter
+        }
 
         Licenses.load(dataSet)
     }

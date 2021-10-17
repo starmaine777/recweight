@@ -11,7 +11,6 @@ import android.text.format.DateFormat
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -26,7 +25,6 @@ import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_weight_input.*
 import timber.log.Timber
 import java.util.*
 
@@ -41,7 +39,7 @@ class WeightInputFragment : Fragment() {
     private var alertDialog: AlertDialog? = null
     private val viewModelFactory: WeightInputViewModel.Factory = WeightInputViewModel.Factory(WeightItemRepository())
     private val viewModel: WeightInputViewModel by activityViewModels { viewModelFactory }
-    private var dataBinding: FragmentWeightInputBinding? = null
+    private lateinit var binding: FragmentWeightInputBinding
 
     companion object {
 
@@ -67,11 +65,11 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        dataBinding = DataBindingUtil.inflate<FragmentWeightInputBinding>(inflater, R.layout.fragment_weight_input, container, false)
+        binding = FragmentWeightInputBinding.inflate(inflater)
 
         requireActivity().title = getString(if (viewMode == WEIGHT_INPUT_MODE.INPUT) R.string.toolbar_title_weight_input else R.string.toolbar_title_weight_view)
         setHasOptionsMenu(true)
-        return dataBinding!!.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -80,34 +78,45 @@ class WeightInputFragment : Fragment() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    dataBinding?.weightItem = viewModel.inputEntity
+                    val weightItem = viewModel.inputEntity
+                    binding.apply {
+                        editWeight.setText(weightItem.weightString())
+                        editFat.setText(weightItem.fatString())
+                        toggleDumbbell.isChecked = weightItem.showDumbbell
+                        toggleLiquor.isChecked = weightItem.showLiquor
+                        toggleToilet.isChecked = weightItem.showToilet
+                        toggleMoon.isChecked = weightItem.showMoon
+                        toggleStar.isChecked = weightItem.showStar
+                        editMemo.setText(weightItem.memo)
 
-                    setRecordDate(viewModel.calendar.get(Calendar.YEAR), viewModel.calendar.get(Calendar.MONTH), viewModel.calendar.get(Calendar.DAY_OF_MONTH))
-                    editDate.setOnClickListener { _ ->
-                        dialog = DatePickerDialogFragment.newInstance(viewModel.calendar.get(Calendar.YEAR), viewModel.calendar.get(Calendar.MONTH), viewModel.calendar.get(Calendar.DAY_OF_MONTH))
-                        dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_DATE.ordinal)
-                        dialog?.show(requireFragmentManager(), TAG_DIALOGS)
-                    }
-
-                    setRecordTime(viewModel.calendar.get(Calendar.HOUR_OF_DAY), viewModel.calendar.get(Calendar.MINUTE))
-                    editTime.setOnClickListener { _ ->
-                        dialog = TimePickerDialogFragment.newInstance(viewModel.calendar.get(Calendar.HOUR_OF_DAY), viewModel.calendar.get(Calendar.MINUTE))
-                        dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_TIME.ordinal)
-                        dialog?.show(requireFragmentManager(), TAG_DIALOGS)
-                    }
-
-                    editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editWeight.text.isEmpty()) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
-                    editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editFat.text.isEmpty()) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
-
-                    if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
-                        showViewMode()
-                        fab.setOnClickListener {
-                            RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments?.getLong(ARGS_ID)))
+                        setRecordDate(viewModel.calendar.get(Calendar.YEAR), viewModel.calendar.get(Calendar.MONTH), viewModel.calendar.get(Calendar.DAY_OF_MONTH))
+                        editDate.setOnClickListener { _ ->
+                            dialog = DatePickerDialogFragment.newInstance(viewModel.calendar.get(Calendar.YEAR), viewModel.calendar.get(Calendar.MONTH), viewModel.calendar.get(Calendar.DAY_OF_MONTH))
+                            dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_DATE.ordinal)
+                            dialog?.show(requireFragmentManager(), TAG_DIALOGS)
                         }
-                    } else {
-                        fab.hide()
-                        editMemo.maxLines = 5
+
+                        setRecordTime(viewModel.calendar.get(Calendar.HOUR_OF_DAY), viewModel.calendar.get(Calendar.MINUTE))
+                        editTime.setOnClickListener { _ ->
+                            dialog = TimePickerDialogFragment.newInstance(viewModel.calendar.get(Calendar.HOUR_OF_DAY), viewModel.calendar.get(Calendar.MINUTE))
+                            dialog?.setTargetFragment(this@WeightInputFragment, REQUESTS.INPUT_TIME.ordinal)
+                            dialog?.show(requireFragmentManager(), TAG_DIALOGS)
+                        }
+
+                        editWeight.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editWeight.text.isEmpty()) editWeight.setText(formatInputNumber(editWeight.text.toString(), getString(R.string.weight_input_weight_default))) }
+                        editFat.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus && !editFat.text.isEmpty()) editFat.setText(formatInputNumber(editFat.text.toString(), getString(R.string.weight_input_fat_default))) }
+
+                        if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+                            showViewMode()
+                            fab.setOnClickListener {
+                                RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, arguments?.getLong(ARGS_ID)))
+                            }
+                        } else {
+                            fab.hide()
+                            editMemo.maxLines = 5
+                        }
                     }
+
                 }, {
                     alertDialog = AlertDialog.Builder(requireContext())
                             .setTitle(R.string.err_title_db)
@@ -120,25 +129,27 @@ class WeightInputFragment : Fragment() {
                 })
     }
 
-    fun showViewMode() {
-        editDate.isEnabled = false
-        editTime.isEnabled = false
-        editWeight.isEnabled = false
-        editFat.isEnabled = false
-        toggleDumbbell.isEnabled = false
-        toggleLiquor.isEnabled = false
-        toggleToilet.isEnabled = false
-        toggleMoon.isEnabled = false
-        toggleStar.isEnabled = false
-        editMemo.isEnabled = false
+    private fun showViewMode() {
+        binding.apply {
+            editDate.isEnabled = false
+            editTime.isEnabled = false
+            editWeight.isEnabled = false
+            editFat.isEnabled = false
+            toggleDumbbell.isEnabled = false
+            toggleLiquor.isEnabled = false
+            toggleToilet.isEnabled = false
+            toggleMoon.isEnabled = false
+            toggleStar.isEnabled = false
+            editMemo.isEnabled = false
+        }
     }
 
 
     override fun onStart() {
         super.onStart()
-        if (viewMode == WEIGHT_INPUT_MODE.INPUT && editWeight.requestFocus()) {
+        if (viewMode == WEIGHT_INPUT_MODE.INPUT && binding.editWeight.requestFocus()) {
             val imm: InputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(editWeight, InputMethodManager.SHOW_IMPLICIT)
+            imm.showSoftInput(binding.editWeight, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 
@@ -183,7 +194,7 @@ class WeightInputFragment : Fragment() {
 
     private fun saveWeightData() {
         Timber.d("saveWeightData")
-        if (TextUtils.isEmpty(editWeight.text)) {
+        if (TextUtils.isEmpty(binding.editWeight.text)) {
             AlertDialog.Builder(requireContext())
                     .setTitle(R.string.err_title_input)
                     .setMessage(R.string.err_weight_empty)
@@ -192,7 +203,8 @@ class WeightInputFragment : Fragment() {
             return
         }
 
-        if (!editFat.text.isEmpty() && editFat.text.toString().toDouble() >= 100.0) {
+        val fatText = binding.editFat.text
+        if (!fatText.isEmpty() && fatText.toString().toDouble() >= 100.0) {
             AlertDialog.Builder(requireContext())
                     .setTitle(R.string.err_title_input)
                     .setMessage(R.string.err_fat_over_100)
@@ -205,33 +217,35 @@ class WeightInputFragment : Fragment() {
         progressDialog.setCancelable(false)
         progressDialog.show()
 
-        viewModel.insertOrUpdateWeightItem(
-                requireContext(),
-                editWeight.text.toString().toDouble(),
-                if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
-                toggleDumbbell.isChecked,
-                toggleLiquor.isChecked,
-                toggleToilet.isChecked,
-                toggleMoon.isChecked,
-                toggleStar.isChecked,
-                editMemo.text.toString())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    Timber.d(TAG, "insertOrUpdateWeightItem complete")
-                    progressDialog.dismiss()
-                    requireFragmentManager().popBackStack()
-                }, { e ->
-                    e.printStackTrace()
-                    progressDialog.dismiss()
-                    if (e is SQLiteConstraintException) {
-                        AlertDialog.Builder(requireContext())
-                                .setTitle(R.string.err_title_db)
-                                .setMessage(R.string.err_db_registered_same_time)
-                                .setPositiveButton(android.R.string.ok, null)
-                                .show()
-                    }
-                })
+        binding.apply {
+            viewModel.insertOrUpdateWeightItem(
+                    requireContext(),
+                    editWeight.text.toString().toDouble(),
+                    if (TextUtils.isEmpty(editFat.text)) 0.0 else editFat.text.toString().toDouble(),
+                    toggleDumbbell.isChecked,
+                    toggleLiquor.isChecked,
+                    toggleToilet.isChecked,
+                    toggleMoon.isChecked,
+                    toggleStar.isChecked,
+                    editMemo.text.toString())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({
+                        Timber.d(TAG, "insertOrUpdateWeightItem complete")
+                        progressDialog.dismiss()
+                        requireFragmentManager().popBackStack()
+                    }, { e ->
+                        e.printStackTrace()
+                        progressDialog.dismiss()
+                        if (e is SQLiteConstraintException) {
+                            AlertDialog.Builder(requireContext())
+                                    .setTitle(R.string.err_title_db)
+                                    .setMessage(R.string.err_db_registered_same_time)
+                                    .setPositiveButton(android.R.string.ok, null)
+                                    .show()
+                        }
+                    })
+        }
     }
 
     private fun deleteWeightData() {
@@ -294,8 +308,8 @@ class WeightInputFragment : Fragment() {
                 || viewModel.calendar.get(Calendar.DAY_OF_MONTH) != day) {
             viewModel.calendar.set(year, month, day)
         }
-        requireContext()?.let {
-            editDate?.setText(
+        requireContext().let {
+            binding.editDate.setText(
                     DateFormat.getDateFormat(requireContext()).format(viewModel.calendar.time))
         }
     }
@@ -307,7 +321,7 @@ class WeightInputFragment : Fragment() {
             viewModel.calendar.set(Calendar.MINUTE, minute)
         }
         requireContext().let {
-            editTime?.setText(
+            binding.editTime.setText(
                     DateFormat.getTimeFormat(requireActivity()).format(viewModel.calendar.time))
         }
     }
