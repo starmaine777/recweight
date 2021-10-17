@@ -40,7 +40,6 @@ class WeightInputFragment : Fragment() {
     private var alertDialog: AlertDialog? = null
     private val weightInputVm: WeightInputViewModel by lazy { ViewModelProviders.of(requireActivity()).get(WeightInputViewModel::class.java) }
     private var dataBinding: FragmentWeightInputBinding? = null
-//    private var tutorial: TourGuide? = null
 
     companion object {
 
@@ -135,36 +134,12 @@ class WeightInputFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-//        if (viewMode == WEIGHT_INPUT_MODE.INPUT
-//                && getBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_STAMP.name, true)) {
-////            showTutorial()
-//        } else
         if (viewMode == WEIGHT_INPUT_MODE.INPUT && editWeight.requestFocus()) {
             val imm: InputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(editWeight, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 
-    //    private fun showTutorial() {
-//        val enterAnimation = AlphaAnimation(0f, 1f)
-//        enterAnimation.duration = 600
-//        enterAnimation.fillAfter = true
-//
-//        val exitAnimation = AlphaAnimation(1f, 0f)
-//        exitAnimation.duration = 600
-//        exitAnimation.fillAfter = true
-//
-//        tutorial = TourGuide.init(requireActivity()).with(TourGuide.Technique.Click)
-//                .setToolTip(ToolTip().setTitle(getString(R.string.tutorial_stamp_title)).setDescription(getString(R.string.tutorial_stamp_description)))
-//                .setOverlay(Overlay().disableClick(true))
-//                .playOn(toggleDumbbell)
-//
-//        toggleDumbbell.setOnClickListener {
-//            tutorial!!.cleanUp()
-//            updateBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_STAMP.name, false)
-//        }
-//    }
-//
     override fun onPause() {
         super.onPause()
         if (requireActivity().currentFocus != null) {
@@ -174,12 +149,6 @@ class WeightInputFragment : Fragment() {
             requireActivity().currentFocus?.clearFocus()
         }
 
-//        tutorial?.cleanUp()
-    }
-
-    override fun onStop() {
-        super.onStop()
-//        tutorial?.cleanUp()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

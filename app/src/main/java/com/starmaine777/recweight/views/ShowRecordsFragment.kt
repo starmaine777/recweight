@@ -34,7 +34,6 @@ class ShowRecordsFragment : Fragment() {
 
     private lateinit var viewModel: ShowRecordsViewModel
     private val disposable = CompositeDisposable()
-//    private var tutorial: TourGuide? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,34 +95,7 @@ class ShowRecordsFragment : Fragment() {
                         }
                     }
                 }).let { disposable.add(it) }
-
-        // TODO : tutorial復活
-//        if (getBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, true)) {
-//            showTutorial()
-//        }
     }
-
-//    private fun showTutorial() {
-//        val enterAnimation = AlphaAnimation(0f, 1f)
-//        enterAnimation.duration = 600
-//        enterAnimation.fillAfter = true
-//
-//        val exitAnimation = AlphaAnimation(1f, 0f)
-//        exitAnimation.duration = 600
-//        exitAnimation.fillAfter = true
-//
-//        tutorial = TourGuide.init(activity).with(TourGuide.Technique.Click)
-//                .setToolTip(ToolTip()
-//                        .setTitle(getString(R.string.tutorial_input_title))
-//                        .setDescription(getString(R.string.tutorial_input_description)))
-//                .setOverlay(Overlay().disableClick(true))
-//                .playOn(fab)
-//    }
-//
-//    override fun onPause() {
-//        super.onPause()
-//        tutorial?.cleanUp()
-//    }
 
     override fun onStop() {
         super.onStop()
