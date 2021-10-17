@@ -37,14 +37,15 @@ class ShowRecordsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            bottomMain.setOnNavigationItemSelectedListener { item ->
+            bottomMain.setOnItemSelectedListener { item ->
 
                 val fragment: Fragment
                 when (item.itemId) {
                     R.id.bottom_list -> {
                         fragment = childFragmentManager.findFragmentByTag(RecordListFragment.TAG)
-                                ?: RecordListFragment()
-                        childFragmentManager.beginTransaction().replace(R.id.list_fragment, fragment, RecordListFragment.TAG).commit()
+                            ?: RecordListFragment()
+                        childFragmentManager.beginTransaction()
+                            .replace(R.id.list_fragment, fragment, RecordListFragment.TAG).commit()
                         fab.show()
                     }
                     R.id.bottom_chart -> {
@@ -54,7 +55,7 @@ class ShowRecordsFragment : Fragment() {
                         fab.hide()
                     }
                 }
-                return@setOnNavigationItemSelectedListener true
+                return@setOnItemSelectedListener true
             }
 
             bottomMain.selectedItemId = R.id.bottom_list
