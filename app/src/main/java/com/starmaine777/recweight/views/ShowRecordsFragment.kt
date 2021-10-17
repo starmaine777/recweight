@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
@@ -33,7 +34,7 @@ class ShowRecordsFragment : Fragment() {
         fun updateListItem()
     }
 
-    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory()
+    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     private val disposable = CompositeDisposable()
@@ -73,12 +74,10 @@ class ShowRecordsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.d("bbbbbbbbbbbbb", "start $viewModel")
         viewModel.getWeightItemList(requireContext())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ t1: List<WeightItemEntity> ->
-                    Log.d("bbbbbbbbbbbbb", "subscribed!!!")
                     viewModel.weightItemList = t1
                     val tag: String =
                             when (bottomMain.selectedItemId) {

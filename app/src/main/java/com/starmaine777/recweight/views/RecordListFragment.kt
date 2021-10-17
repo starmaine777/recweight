@@ -8,11 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
@@ -39,13 +41,13 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
         val TAG = "RecordListFragment"
     }
 
-    private lateinit var viewModel: ShowRecordsViewModel
+    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
+    private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
     private val disposable = CompositeDisposable()
     var dialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(requireActivity()).get(ShowRecordsViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

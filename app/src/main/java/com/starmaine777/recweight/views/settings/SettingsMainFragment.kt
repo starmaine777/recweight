@@ -36,7 +36,7 @@ import timber.log.Timber
  * Created by 0025331458 on 2017/08/10.
  */
 
-class SettingsMainFragment : Fragment() {
+class SettingsMainFragment() : Fragment() {
 
     companion object {
         val TAG = "SettingsMainFragment"
@@ -44,6 +44,8 @@ class SettingsMainFragment : Fragment() {
 
     private var disposable = CompositeDisposable()
     private var dialog: Dialog? = null
+    private var weightRepository = WeightItemRepository()
+
     private fun createSettingItems(): List<SettingItem> =
             listOf(
                     SettingItem(getString(R.string.settings_main_long_tap),
@@ -129,7 +131,7 @@ class SettingsMainFragment : Fragment() {
                 }
 
                 Timber.d("startDeleteAllItems!")
-                WeightItemRepository
+                weightRepository
                         .deleteAllItemCompletable(requireContext())
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data.repo
+package com.starmaine777.recweight.model.usecase
 
 import android.content.Context
 import android.database.sqlite.SQLiteConstraintException
@@ -13,6 +13,7 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.utils.*
@@ -25,7 +26,7 @@ import java.net.URL
  * Import用Api取得クラス
  * Created by 0025331458 on 2017/08/16.
  */
-class ImportRepository(val context: Context) {
+class ImportUseCase(val context: Context, private val weightRepository: WeightItemRepository) {
 
     companion object {
         private val READONLY_SCOPES = mutableListOf(SheetsScopes.SPREADSHEETS_READONLY)
@@ -191,7 +192,7 @@ class ImportRepository(val context: Context) {
         }
 
         try {
-            WeightItemRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
+            weightRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
         } catch (e: SQLiteConstraintException) {
             // 同じ時刻のものが存在している場合はそのまま続ける
             errorDates.add("${

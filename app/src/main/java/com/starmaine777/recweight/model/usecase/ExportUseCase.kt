@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data.repo
+package com.starmaine777.recweight.model.usecase
 
 import android.content.Context
 import com.google.android.gms.common.GoogleApiAvailability
@@ -11,6 +11,7 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.sheets.v4.model.*
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.utils.*
 import io.reactivex.Emitter
@@ -26,7 +27,7 @@ import kotlin.collections.ArrayList
  * ExportのSpreadSheets操作用
  * Created by 0025331458 on 2017/09/08.
  */
-class ExportRepository(val context: Context) {
+class ExportUseCase(val context: Context, private val weightRepository: WeightItemRepository) {
 
     companion object {
         private val WRITE_SCOPES = mutableListOf(SheetsScopes.DRIVE_FILE, SheetsScopes.SPREADSHEETS)
@@ -88,7 +89,7 @@ class ExportRepository(val context: Context) {
         values.add(row)
         val body = ValueRange().setValues(values)
 
-        val itemList = WeightItemRepository.getWeightItemListOnce(context)
+        val itemList = weightRepository.getWeightItemListOnce(context)
         if (itemList.isEmpty()) {
             emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.NO_DATA))
             return

@@ -16,7 +16,7 @@ import java.util.*
  * Created by ai on 2017/07/02.
  */
 
-class WeightInputViewModel : ViewModel() {
+class WeightInputViewModel(private val weightRepository: WeightItemRepository) : ViewModel() {
 
     companion object {
         val TAG = "WeightInputViewModel"
@@ -37,7 +37,7 @@ class WeightInputViewModel : ViewModel() {
                     isCreate = true
                 } else {
 
-                    val idList = WeightItemRepository.getWeightItemById(context, id)
+                    val idList = weightRepository.getWeightItemById(context, id)
                     if (idList.isEmpty()) {
                         inputEntity = WeightItemEntity()
                         isCreate = true
@@ -98,9 +98,9 @@ class WeightInputViewModel : ViewModel() {
 
         return CompletableFromAction(Action {
             if (isCreate) {
-                WeightItemRepository.insertWeightItem(context, inputEntity)
+                weightRepository.insertWeightItem(context, inputEntity)
             } else {
-                WeightItemRepository.updateWeightItem(context, inputEntity)
+                weightRepository.updateWeightItem(context, inputEntity)
             }
         })
     }
@@ -110,12 +110,12 @@ class WeightInputViewModel : ViewModel() {
      * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction = CompletableFromAction(Action { WeightItemRepository.deleteWeightItem(context, inputEntity) })
+    fun deleteWeightItem(context: Context): CompletableFromAction = CompletableFromAction(Action { weightRepository.deleteWeightItem(context, inputEntity) })
 
-    class Factory : ViewModelProvider.Factory {
+    class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(WeightInputViewModel::class.java)) {
-                return WeightInputViewModel() as T
+                return WeightInputViewModel(weightRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

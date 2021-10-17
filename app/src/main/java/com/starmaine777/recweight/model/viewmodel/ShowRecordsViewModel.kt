@@ -18,7 +18,7 @@ import java.math.BigDecimal
  * Created by ai on 2017/07/02.
  */
 
-class ShowRecordsViewModel : ViewModel() {
+class ShowRecordsViewModel(private val weightRepository: WeightItemRepository): ViewModel() {
 
     enum class ShowStamp(val drawableId: Int) {
         NONE(-1),
@@ -31,7 +31,7 @@ class ShowRecordsViewModel : ViewModel() {
 
     var weightItemList: List<WeightItemEntity> = ArrayList()
 
-    fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = WeightItemRepository.getWeightItemList(context)
+    fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = weightRepository.getWeightItemList(context)
 
     /**
      * 現在表示しているEntityを削除する.
@@ -40,7 +40,7 @@ class ShowRecordsViewModel : ViewModel() {
      */
     fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
             CompletableFromAction(Action {
-                WeightItemRepository.deleteWeightItem(context, weightItemEntity)
+                weightRepository.deleteWeightItem(context, weightItemEntity)
             })
 
     /**
@@ -125,10 +125,10 @@ class ShowRecordsViewModel : ViewModel() {
         return bd.toFloat()
     }
 
-    class Factory : ViewModelProvider.Factory {
+    class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ShowRecordsViewModel::class.java)) {
-                return ShowRecordsViewModel() as T
+                return ShowRecordsViewModel(weightRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

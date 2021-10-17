@@ -19,7 +19,8 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.repo.ImportRepository
+import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.model.usecase.ImportUseCase
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.error.SpreadSheetsException.ERROR_TYPE
 import com.starmaine777.recweight.event.RxBus
@@ -42,7 +43,7 @@ class ImportUrlFragment : Fragment() {
         val TAG = "ImportUrlFragment"
     }
 
-    val importRepo: ImportRepository by lazy { ImportRepository(requireContext()) }
+    val importRepo: ImportUseCase by lazy { ImportUseCase(requireContext(), WeightItemRepository()) }
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 

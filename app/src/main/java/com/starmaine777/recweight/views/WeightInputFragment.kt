@@ -16,6 +16,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
@@ -38,7 +39,7 @@ class WeightInputFragment : Fragment() {
     private val viewMode: WEIGHT_INPUT_MODE by lazy { arguments?.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     private var dialog: DialogFragment? = null
     private var alertDialog: AlertDialog? = null
-    private val viewModelFactory: WeightInputViewModel.Factory = WeightInputViewModel.Factory()
+    private val viewModelFactory: WeightInputViewModel.Factory = WeightInputViewModel.Factory(WeightItemRepository())
     private val viewModel: WeightInputViewModel by activityViewModels { viewModelFactory }
     private var dataBinding: FragmentWeightInputBinding? = null
 

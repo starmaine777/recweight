@@ -22,6 +22,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_record_chart.*
@@ -39,7 +40,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         val TAG = "RecordChartFragment "
     }
 
-    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory()
+    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

@@ -18,7 +18,8 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.repo.ExportRepository
+import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.model.usecase.ExportUseCase
 import com.starmaine777.recweight.error.SpreadSheetsException
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.UpdateToolbarEvent
@@ -46,7 +47,7 @@ class ExportFragment : Fragment() {
 
     private var disposable = CompositeDisposable()
     private var dialog: AlertDialog? = null
-    private val exportRepo: ExportRepository by lazy { ExportRepository(requireContext()) }
+    private val exportRepo: ExportUseCase by lazy { ExportUseCase(requireContext(), WeightItemRepository()) }
     private var isExporting = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
