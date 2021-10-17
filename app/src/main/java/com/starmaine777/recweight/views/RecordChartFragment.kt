@@ -22,7 +22,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.formatInputNumber
 import kotlinx.android.synthetic.main.fragment_record_chart.*
 import timber.log.Timber

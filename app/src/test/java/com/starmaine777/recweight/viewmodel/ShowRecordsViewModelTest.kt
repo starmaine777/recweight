@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith

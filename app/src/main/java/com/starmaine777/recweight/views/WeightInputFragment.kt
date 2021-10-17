@@ -16,7 +16,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.viewmodel.WeightInputViewModel
+import com.starmaine777.recweight.model.viewmodel.WeightInputViewModel
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus

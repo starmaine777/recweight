@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent

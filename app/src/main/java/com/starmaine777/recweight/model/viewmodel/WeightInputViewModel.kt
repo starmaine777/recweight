@@ -1,4 +1,4 @@
-package com.starmaine777.recweight.data.viewmodel
+package com.starmaine777.recweight.model.viewmodel
 
 import androidx.lifecycle.ViewModel
 import android.content.Context

@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
@@ -70,12 +70,6 @@ class ShowRecordsFragment : Fragment() {
 
         bottomMain.selectedItemId = R.id.bottom_list
         fab.setOnClickListener { _ ->
-            throw RuntimeException("Test Crash")
-//            tutorial?.let {
-//                tutorial!!.cleanUp()
-//                updateBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, false)
-//            }
-//
             RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
         }
     }
