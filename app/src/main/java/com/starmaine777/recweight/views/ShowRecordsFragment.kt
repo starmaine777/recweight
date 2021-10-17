@@ -2,13 +2,7 @@ package com.starmaine777.recweight.views
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.starmaine777.recweight.R
@@ -16,16 +10,12 @@ import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
-import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
-import com.starmaine777.recweight.utils.getBoolean
-import com.starmaine777.recweight.utils.updateBoolean
 import com.starmaine777.recweight.views.settings.SettingsActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_show_records.bottomMain
-import kotlinx.android.synthetic.main.fragment_show_records.fab
+import kotlinx.android.synthetic.main.fragment_show_records.*
 
 /**
  * 記録表示用親Fragment
@@ -80,6 +70,7 @@ class ShowRecordsFragment : Fragment() {
 
         bottomMain.selectedItemId = R.id.bottom_list
         fab.setOnClickListener { _ ->
+            throw RuntimeException("Test Crash")
 //            tutorial?.let {
 //                tutorial!!.cleanUp()
 //                updateBoolean(requireContext(), PREFERENCE_KEY.NEED_TUTORIAL_INPUT.name, false)
@@ -145,9 +136,8 @@ class ShowRecordsFragment : Fragment() {
         disposable.clear()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater?.inflate(R.menu.menu_main, menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_main, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

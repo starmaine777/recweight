@@ -11,8 +11,6 @@
     <string name="bottom_list">list</string>
     <string name="bottom_chart">chart</string>
 
-    <string name="ad_app_id">ca-app-pub-3895429894123918~4574813374</string>
-
     <string name="action_settings">Settings</string>
     <string name="action_change_show_type">changeShowType</string>
     <string name="action_done">done</string>

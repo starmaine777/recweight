@@ -3,12 +3,14 @@ package com.starmaine777.recweight.views
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_show_records.*
 import timber.log.Timber
+
 
 class ShowRecordsActivity : AppCompatActivity() {
 
@@ -21,6 +23,7 @@ class ShowRecordsActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.fragment, ShowRecordsFragment(), ShowRecordsFragment.TAG).commit()
 
         setSupportActionBar(toolbar)
+        MobileAds.initialize(this)
     }
 
     override fun onStart() {

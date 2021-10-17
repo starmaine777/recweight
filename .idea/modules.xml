@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="recweight/app" />
-      <module fileurl="file://$PROJECT_DIR$/recweight.iml" filepath="$PROJECT_DIR$/recweight.iml" group="recweight" />
+      <module fileurl="file://$PROJECT_DIR$/recweight.iml" filepath="$PROJECT_DIR$/recweight.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/recweight.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/recweight.app.iml" />
     </modules>
   </component>
 </project>

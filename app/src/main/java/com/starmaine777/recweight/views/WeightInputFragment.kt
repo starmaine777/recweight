@@ -8,12 +8,7 @@ import android.database.sqlite.SQLiteConstraintException
 import android.os.Bundle
 import android.text.TextUtils
 import android.text.format.DateFormat
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
@@ -30,19 +25,9 @@ import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.utils.formatInputNumber
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_weight_input.editDate
-import kotlinx.android.synthetic.main.fragment_weight_input.editFat
-import kotlinx.android.synthetic.main.fragment_weight_input.editMemo
-import kotlinx.android.synthetic.main.fragment_weight_input.editTime
-import kotlinx.android.synthetic.main.fragment_weight_input.editWeight
-import kotlinx.android.synthetic.main.fragment_weight_input.fab
-import kotlinx.android.synthetic.main.fragment_weight_input.toggleDumbbell
-import kotlinx.android.synthetic.main.fragment_weight_input.toggleLiquor
-import kotlinx.android.synthetic.main.fragment_weight_input.toggleMoon
-import kotlinx.android.synthetic.main.fragment_weight_input.toggleStar
-import kotlinx.android.synthetic.main.fragment_weight_input.toggleToilet
+import kotlinx.android.synthetic.main.fragment_weight_input.*
 import timber.log.Timber
-import java.util.Calendar
+import java.util.*
 
 /**
  * Created by 0025331458 on 2017/06/29.
@@ -197,28 +182,28 @@ class WeightInputFragment : Fragment() {
 //        tutorial?.cleanUp()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater?.inflate(R.menu.menu_weight_input, menu)
+        inflater.inflate(R.menu.menu_weight_input, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?) {
+    override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         when (viewMode) {
             WEIGHT_INPUT_MODE.INPUT -> {
-                menu?.findItem(R.id.action_delete)?.isVisible = false
-                menu?.findItem(R.id.action_done)?.isVisible = true
+                menu.findItem(R.id.action_delete)?.isVisible = false
+                menu.findItem(R.id.action_done)?.isVisible = true
             }
             WEIGHT_INPUT_MODE.VIEW -> {
-                menu?.findItem(R.id.action_delete)?.isVisible = true
-                menu?.findItem(R.id.action_done)?.isVisible = false
+                menu.findItem(R.id.action_delete)?.isVisible = true
+                menu.findItem(R.id.action_done)?.isVisible = false
             }
         }
 
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_done -> saveWeightData()
             R.id.action_delete -> deleteWeightData()
         }

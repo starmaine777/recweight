@@ -29,11 +29,7 @@ import com.starmaine777.recweight.utils.REQUESTS
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_import_url.areaProgress
-import kotlinx.android.synthetic.main.fragment_import_url.areaUrlInput
-import kotlinx.android.synthetic.main.fragment_import_url.buttonImportStart
-import kotlinx.android.synthetic.main.fragment_import_url.editImportUrl
-import kotlinx.android.synthetic.main.fragment_import_url.progressImport
+import kotlinx.android.synthetic.main.fragment_import_url.*
 import timber.log.Timber
 
 /**
@@ -72,7 +68,7 @@ class ImportUrlFragment : Fragment() {
                     && disposable.size() > 0
             ) {
                 if (keyEvent.action == KeyEvent.ACTION_UP) {
-                    Snackbar.make(this@ImportUrlFragment.view!!, R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(this@ImportUrlFragment.requireView(), R.string.snack_settings_import_backpress, Snackbar.LENGTH_SHORT).show()
                 }
                 return@setOnKeyListener true
             }
@@ -166,8 +162,7 @@ class ImportUrlFragment : Fragment() {
                             .setTitle(R.string.d_import_complete_title)
                             .setMessage(messageSb.toString())
                             .setOnDismissListener { fragmentManager?.popBackStackImmediate() }
-                            .setPositiveButton(android.R.string.ok
-                                    , { dialog, _ -> dialog.dismiss() })
+                            .setPositiveButton(android.R.string.ok, { dialog, _ -> dialog.dismiss() })
                             .show()
 
                 }).let { disposable.add(it) }
@@ -289,8 +284,7 @@ class ImportUrlFragment : Fragment() {
         }
         builder.setMessage(message)
                 .setOnDismissListener { changeInputView(false) }
-                .setPositiveButton(android.R.string.ok
-                        , { dialog, _ -> dialog.dismiss() })
+                .setPositiveButton(android.R.string.ok, { dialog, _ -> dialog.dismiss() })
         dialog = builder.show()
     }
 }

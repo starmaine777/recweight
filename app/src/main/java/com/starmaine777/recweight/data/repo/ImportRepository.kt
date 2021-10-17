@@ -33,7 +33,7 @@ class ImportRepository(val context: Context) {
         val PATH_SUFFIX = "/edit"
     }
 
-    val credential: GoogleAccountCredential  by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
+    val credential: GoogleAccountCredential by lazy { GoogleAccountCredential.usingOAuth2(context, READONLY_SCOPES).setBackOff(ExponentialBackOff()) }
     val errorDates: MutableList<String> = ArrayList()
 
     fun getResultFromApi(urlStr: String): Observable<Int> {
@@ -70,10 +70,6 @@ class ImportRepository(val context: Context) {
             } else if (!existsChoseAccount(context, credential)) {
                 if (!emitter.isDisposed) {
                     emitter.onError(SpreadSheetsException(ERROR_TYPE.ACCOUNT_NOT_SELECTED))
-                }
-            } else if (!isDeviceOnline(context)) {
-                if (!emitter.isDisposed) {
-                    emitter.onError(SpreadSheetsException(ERROR_TYPE.DEVICE_OFFLINE))
                 }
             } else {
                 val transport = AndroidHttp.newCompatibleTransport()
@@ -140,17 +136,13 @@ class ImportRepository(val context: Context) {
         }
     }
 
-    private fun isCollectFileName(response: JSONObject): Boolean
-            = response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
+    private fun isCollectFileName(response: JSONObject): Boolean = response.getJSONObject("properties").getString("title").startsWith(context.getString(R.string.export_file_name_header))
 
-    private fun isCollectSheetsSize(response: JSONObject): Boolean
-            = response.getJSONArray("sheets").length() == 1
+    private fun isCollectSheetsSize(response: JSONObject): Boolean = response.getJSONArray("sheets").length() == 1
 
-    private fun isCollectSheetsName(response: JSONObject): Boolean
-            = TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
+    private fun isCollectSheetsName(response: JSONObject): Boolean = TextUtils.equals(response.getJSONArray("sheets").getJSONObject(0).getJSONObject("properties").getString("title"), context.getString(R.string.export_file_sheets_name))
 
-    private fun isCorrectFirstRow(row: List<Any>): Boolean
-            = row.indices.any { TextUtils.equals(context.getString(SHEETS_COLUMNS.values()[it].nameId), row[it] as String) }
+    private fun isCorrectFirstRow(row: List<Any>): Boolean = row.indices.any { TextUtils.equals(context.getString(SHEETS_COLUMNS.values()[it].nameId), row[it] as String) }
 
     @Throws(SpreadSheetsException::class)
     private fun importRowData(row: List<Any>, rowNum: Int) {
@@ -202,16 +194,17 @@ class ImportRepository(val context: Context) {
             WeightItemRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
         } catch (e: SQLiteConstraintException) {
             // 同じ時刻のものが存在している場合はそのまま続ける
-            errorDates.add("${DateUtils.formatDateTime(context, weightItem.recTime.timeInMillis,
-                    DateUtils.FORMAT_SHOW_YEAR
-                            .or(DateUtils.FORMAT_SHOW_DATE)
-                            .or(DateUtils.FORMAT_NUMERIC_DATE)
-                            .or(DateUtils.FORMAT_SHOW_TIME)
-                            .or(DateUtils.FORMAT_ABBREV_ALL))}  ${weightItem.weight}kg")
+            errorDates.add("${
+                DateUtils.formatDateTime(context, weightItem.recTime.timeInMillis,
+                        DateUtils.FORMAT_SHOW_YEAR
+                                .or(DateUtils.FORMAT_SHOW_DATE)
+                                .or(DateUtils.FORMAT_NUMERIC_DATE)
+                                .or(DateUtils.FORMAT_SHOW_TIME)
+                                .or(DateUtils.FORMAT_ABBREV_ALL))
+            }  ${weightItem.weight}kg")
         }
     }
 
-    private fun getErrorCell(columnNum: Int, rowNum: Int): String
-            = SHEETS_COLUMNS.values()[columnNum].columnName + (rowNum + 1)
+    private fun getErrorCell(columnNum: Int, rowNum: Int): String = SHEETS_COLUMNS.values()[columnNum].columnName + (rowNum + 1)
 
 }

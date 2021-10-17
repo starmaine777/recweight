@@ -53,10 +53,6 @@ class ExportRepository(val context: Context) {
                 if (!emitter.isDisposed) {
                     emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.ACCOUNT_NOT_SELECTED))
                 }
-            } else if (!isDeviceOnline(context)) {
-                if (!emitter.isDisposed) {
-                    emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.DEVICE_OFFLINE))
-                }
             } else {
                 Timber.d("startExportData")
                 val transport = AndroidHttp.newCompatibleTransport()
@@ -111,7 +107,7 @@ class ExportRepository(val context: Context) {
                     it.showStar,
                     it.memo
             )
-            values.add(weightRow)
+            values.add(weightRow.toMutableList())
             emitter.onNext(++count)
         }
         val range = "${context.getString(R.string.export_file_sheets_name)}!" +
