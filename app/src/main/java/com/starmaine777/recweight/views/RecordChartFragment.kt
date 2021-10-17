@@ -49,25 +49,7 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewChart.isDragDecelerationEnabled = true
-        viewChart.isDragEnabled = true
-        viewChart.setNoDataText(getString(R.string.show_records_no_data))
-        val xAxis = viewChart.xAxis
-        xAxis.isGranularityEnabled = true
-        updateGranularity(spinnerDuration.selectedItemPosition)
-        xAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
-                    .or(DateUtils.FORMAT_NO_YEAR)
-            )
-        }
-        val weightAxis = viewChart.axisLeft
-        weightAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "kg"
-        }
-        val fatAxis = viewChart.axisRight
-        fatAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "%"
-        }
+        initChart()
 
         spinnerDuration.onItemSelectedListener = this
         radioGroupStamps.setOnCheckedChangeListener { _, _ ->
@@ -94,6 +76,28 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
                     showChart(false)
                 }
             }
+        }
+    }
+
+    private fun initChart() {
+        viewChart.isDragDecelerationEnabled = true
+        viewChart.isDragEnabled = true
+        viewChart.setNoDataText(getString(R.string.show_records_no_data))
+        val xAxis = viewChart.xAxis
+        xAxis.isGranularityEnabled = true
+        updateGranularity(spinnerDuration.selectedItemPosition)
+        xAxis.setValueFormatter { value, _ ->
+            return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
+                    .or(DateUtils.FORMAT_NO_YEAR)
+            )
+        }
+        val weightAxis = viewChart.axisLeft
+        weightAxis.setValueFormatter { value, _ ->
+            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "kg"
+        }
+        val fatAxis = viewChart.axisRight
+        fatAxis.setValueFormatter { value, _ ->
+            return@setValueFormatter formatInputNumber(value.toString(), "0.0") + "%"
         }
     }
 
