@@ -1,8 +1,9 @@
 package com.starmaine777.recweight.model.viewmodel
 
-import androidx.lifecycle.ViewModel
 import android.content.Context
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
@@ -57,8 +58,7 @@ class ShowRecordsViewModel : ViewModel() {
         var fatAddedIndex = -1
         for (i in reverseItemList.indices) {
             val item = reverseItemList[i]
-            val weightEntry = Entry(item.recTime.timeInMillis.toFloat(), item.weight.toFloat()
-                    , if (needShowIcon(item, showStamp)) icon else null)
+            val weightEntry = Entry(item.recTime.timeInMillis.toFloat(), item.weight.toFloat(), if (needShowIcon(item, showStamp)) icon else null)
             weights.add(weightEntry)
 
             if (item.fat != 0.0) {
@@ -115,15 +115,22 @@ class ShowRecordsViewModel : ViewModel() {
                 ShowStamp.STAR -> item.showStar
             }
 
-    private fun calculateFatSlopeByFatEntry(start: Entry, end: Entry): Double
-            = ((end.y - start.y) / (end.x - start.x)).toDouble()
+    private fun calculateFatSlopeByFatEntry(start: Entry, end: Entry): Double = ((end.y - start.y) / (end.x - start.x)).toDouble()
 
-    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double
-            = ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
+    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double = ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
 
     private fun calculateFat(slope: Double, start: WeightItemEntity, target: WeightItemEntity): Float {
         var bd = BigDecimal((start.fat + slope * (target.recTime.timeInMillis - start.recTime.timeInMillis)))
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP)
         return bd.toFloat()
+    }
+
+    class Factory : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ShowRecordsViewModel::class.java)) {
+                return ShowRecordsViewModel() as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

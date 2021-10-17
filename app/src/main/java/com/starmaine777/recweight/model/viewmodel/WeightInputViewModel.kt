@@ -1,8 +1,9 @@
 package com.starmaine777.recweight.model.viewmodel
 
-import androidx.lifecycle.ViewModel
 import android.content.Context
 import android.database.sqlite.SQLiteConstraintException
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.reactivex.functions.Action
@@ -109,7 +110,16 @@ class WeightInputViewModel : ViewModel() {
      * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction
-            = CompletableFromAction(Action { WeightItemRepository.deleteWeightItem(context, inputEntity) })
+    fun deleteWeightItem(context: Context): CompletableFromAction = CompletableFromAction(Action { WeightItemRepository.deleteWeightItem(context, inputEntity) })
+
+    class Factory : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(WeightInputViewModel::class.java)) {
+                return WeightInputViewModel() as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
+    }
+
 
 }

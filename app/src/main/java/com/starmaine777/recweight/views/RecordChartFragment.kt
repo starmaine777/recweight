@@ -1,11 +1,8 @@
 package com.starmaine777.recweight.views
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +10,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
@@ -39,12 +39,8 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         val TAG = "RecordChartFragment "
     }
 
-    private lateinit var viewModel: ShowRecordsViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(requireActivity()).get(ShowRecordsViewModel::class.java)
-    }
+    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory()
+    private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_record_chart, container, false)
@@ -59,8 +55,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         xAxis.isGranularityEnabled = true
         updateGranularity(spinnerDuration.selectedItemPosition)
         xAxis.setValueFormatter { value, _ ->
-            return@setValueFormatter DateUtils.formatDateTime(context, value.toLong()
-                    , DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
+            return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
                     .or(DateUtils.FORMAT_NO_YEAR)
             )
         }
@@ -143,8 +138,7 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
         }
     }
 
-    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp
-            = when (radioGroupStamps.checkedRadioButtonId) {
+    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp = when (radioGroupStamps.checkedRadioButtonId) {
         R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
         R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
         R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET

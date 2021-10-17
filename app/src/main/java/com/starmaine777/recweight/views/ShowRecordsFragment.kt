@@ -2,14 +2,15 @@ package com.starmaine777.recweight.views
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.activityViewModels
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
 import com.starmaine777.recweight.views.settings.SettingsActivity
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -32,13 +33,10 @@ class ShowRecordsFragment : Fragment() {
         fun updateListItem()
     }
 
-    private lateinit var viewModel: ShowRecordsViewModel
-    private val disposable = CompositeDisposable()
+    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory()
+    private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(requireActivity()).get(ShowRecordsViewModel::class.java)
-    }
+    private val disposable = CompositeDisposable()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         requireActivity().title = getString(R.string.app_name)
@@ -75,10 +73,12 @@ class ShowRecordsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        Log.d("bbbbbbbbbbbbb", "start $viewModel")
         viewModel.getWeightItemList(requireContext())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ t1: List<WeightItemEntity> ->
+                    Log.d("bbbbbbbbbbbbb", "subscribed!!!")
                     viewModel.weightItemList = t1
                     val tag: String =
                             when (bottomMain.selectedItemId) {
