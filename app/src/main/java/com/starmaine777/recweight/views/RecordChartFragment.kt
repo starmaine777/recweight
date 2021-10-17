@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
  * 体重チャート
  * Created by 0025331458 on 2017/10/18.
  */
-class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListener, AdapterView.OnItemSelectedListener {
+class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
     companion object {
         val TAG = "RecordChartFragment "
@@ -74,69 +74,75 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
             Timber.d("radioGroup onCheckedChangeListener ")
             showChart(false)
         }
+        observeViewData()
     }
 
-    override fun onResume() {
-        super.onResume()
-        showChart(true)
-    }
-
-    override fun updateListItem() {
-        showChart(false)
+    private fun observeViewData() {
+        viewModel.viewData.observe(viewLifecycleOwner) { data ->
+            when {
+                data.list == null -> {
+                    areaChart.visibility = View.GONE
+                    textNoData.visibility = View.GONE
+                }
+                data.list.isEmpty() -> {
+                    areaChart.visibility = View.GONE
+                    textNoData.visibility = View.VISIBLE
+                }
+                else -> {
+                    areaChart.visibility = View.VISIBLE
+                    textNoData.visibility = View.GONE
+                    showChart(false)
+                }
+            }
+        }
     }
 
     private fun showChart(refreshPosition: Boolean) {
-        if (viewModel.weightItemList.isEmpty()) {
-            areaChart.visibility = View.GONE
-            textNoData.visibility = View.VISIBLE
+        val showStamp = getShowStamp()
+        val lines = viewModel.createLineSources(requireContext(), showStamp)
+
+        val lineData: LineData
+        val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
+        weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
+        weightDataSet.lineWidth = 2.0f
+        weightDataSet.setDrawCircles(false)
+        weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
+        weightDataSet.setDrawIcons(true)
+        weightDataSet.iconsOffset = MPPointF(0F, -25F)
+        weightDataSet.setDrawValues(false)
+
+        if (!lines.second.isEmpty()) {
+            val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
+            fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
+            fatDataSet.lineWidth = 1.5f
+            fatDataSet.setDrawCircles(false)
+            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+            fatDataSet.setDrawValues(false)
+
+            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+
+            lineData = LineData(fatDataSet, weightDataSet)
         } else {
-            areaChart.visibility = View.VISIBLE
-            textNoData.visibility = View.GONE
-
-            val showStamp = getShowStamp()
-            val lines = viewModel.createLineSources(requireContext(), showStamp)
-
-            val lineData: LineData
-            val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
-            weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
-            weightDataSet.lineWidth = 2.0f
-            weightDataSet.setDrawCircles(false)
-            weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
-            weightDataSet.setDrawIcons(true)
-            weightDataSet.iconsOffset = MPPointF(0F, -25F)
-            weightDataSet.setDrawValues(false)
-
-            if (!lines.second.isEmpty()) {
-                val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
-                fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
-                fatDataSet.lineWidth = 1.5f
-                fatDataSet.setDrawCircles(false)
-                fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-                fatDataSet.setDrawValues(false)
-
-                fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-
-                lineData = LineData(fatDataSet, weightDataSet)
-            } else {
-                lineData = LineData(weightDataSet)
-            }
-
-            viewChart.data = lineData
-
-            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
-            viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
-            viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
-
-            if (refreshPosition) viewChart.moveViewToX(nowDate)
-
-            viewChart.setDrawMarkers(true)
-
-            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, viewModel.weightItemList)
-
-            spinnerDuration.visibility = View.VISIBLE
-            radioGroupStamps.visibility = View.VISIBLE
-            viewChart.invalidate()
+            lineData = LineData(weightDataSet)
         }
+
+        viewChart.data = lineData
+
+        val nowDate = Calendar.getInstance().timeInMillis.toFloat()
+        viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
+        viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
+
+        if (refreshPosition) viewChart.moveViewToX(nowDate)
+
+        viewChart.setDrawMarkers(true)
+        // TODO : listを渡せるようにして修正
+        viewModel.viewData.value?.list?.let {
+            viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
+        }
+
+        spinnerDuration.visibility = View.VISIBLE
+        radioGroupStamps.visibility = View.VISIBLE
+        viewChart.invalidate()
     }
 
     private fun getShowStamp(): ShowRecordsViewModel.ShowStamp = when (radioGroupStamps.checkedRadioButtonId) {
@@ -173,7 +179,6 @@ class RecordChartFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventList
 
     override fun onItemSelected(p0: AdapterView<*>?, p1: View?, spinnerSelectedItemPosition: Int, p3: Long) {
         updateGranularity(spinnerSelectedItemPosition)
-        updateListItem()
     }
 
     override fun onNothingSelected(p0: AdapterView<*>?) {

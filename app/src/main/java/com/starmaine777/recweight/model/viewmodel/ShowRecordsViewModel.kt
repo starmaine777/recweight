@@ -2,15 +2,19 @@ package com.starmaine777.recweight.model.viewmodel
 
 import android.content.Context
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
-import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
+import io.reactivex.schedulers.Schedulers
 import java.math.BigDecimal
 
 /**
@@ -18,7 +22,11 @@ import java.math.BigDecimal
  * Created by ai on 2017/07/02.
  */
 
-class ShowRecordsViewModel(private val weightRepository: WeightItemRepository): ViewModel() {
+class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) : ViewModel() {
+
+    private val _viewData = MutableLiveData<ViewData>(ViewData(state = State.InitialLoading))
+    val viewData: LiveData<ViewData>
+        get() = _viewData
 
     enum class ShowStamp(val drawableId: Int) {
         NONE(-1),
@@ -29,9 +37,24 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository): 
         STAR(R.drawable.stamp_star_selected)
     }
 
-    var weightItemList: List<WeightItemEntity> = ArrayList()
+    // TODO : 消す
+    private var weightItemList: List<WeightItemEntity> = ArrayList()
 
-    fun getWeightItemList(context: Context): Flowable<List<WeightItemEntity>> = weightRepository.getWeightItemList(context)
+    private val compositeDisposable = CompositeDisposable()
+
+    fun getWeightItemList(context: Context) {
+        weightRepository.getWeightItemList(context)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { list ->
+                    weightItemList = list
+                    _viewData.postValue(
+                            ViewData(state = State.Idle,
+                                    list)
+                    )
+                }.apply { compositeDisposable.add(this) }
+    }
+
 
     /**
      * 現在表示しているEntityを削除する.
@@ -123,6 +146,16 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository): 
         var bd = BigDecimal((start.fat + slope * (target.recTime.timeInMillis - start.recTime.timeInMillis)))
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP)
         return bd.toFloat()
+    }
+
+    data class ViewData(
+            val state: State,
+            val list: List<WeightItemEntity>? = null
+    )
+
+    enum class State {
+        InitialLoading,
+        Idle,
     }
 
     class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {

@@ -2,7 +2,6 @@ package com.starmaine777.recweight.views
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,13 +28,6 @@ class ShowRecordsFragment : Fragment() {
     companion object {
         val TAG = "ShowRecordsFragment"
     }
-
-    interface ShowRecordsEventListener {
-        fun updateListItem()
-    }
-
-    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
-    private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     private val disposable = CompositeDisposable()
 
@@ -70,30 +62,6 @@ class ShowRecordsFragment : Fragment() {
         fab.setOnClickListener { _ ->
             RxBus.publish(InputFragmentStartEvent(WEIGHT_INPUT_MODE.INPUT, null))
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        viewModel.getWeightItemList(requireContext())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ t1: List<WeightItemEntity> ->
-                    viewModel.weightItemList = t1
-                    val tag: String =
-                            when (bottomMain.selectedItemId) {
-                                R.id.bottom_list -> RecordListFragment.TAG
-                                R.id.bottom_chart -> RecordChartFragment.TAG
-                                else -> {
-                                    ""
-                                }
-                            }
-                    val fragment = childFragmentManager.findFragmentByTag(tag)
-                    fragment?.let {
-                        if (fragment is ShowRecordsEventListener) {
-                            fragment.updateListItem()
-                        }
-                    }
-                }).let { disposable.add(it) }
     }
 
     override fun onStop() {

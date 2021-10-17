@@ -4,21 +4,21 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
-import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
+import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.PREFERENCES_NAME
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
 import com.starmaine777.recweight.utils.WEIGHT_INPUT_MODE
@@ -26,8 +26,7 @@ import com.starmaine777.recweight.views.adapter.RecordListAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_record_list.areaNoData
-import kotlinx.android.synthetic.main.fragment_record_list.recyclerRecords
+import kotlinx.android.synthetic.main.fragment_record_list.*
 import timber.log.Timber
 
 /**
@@ -35,7 +34,7 @@ import timber.log.Timber
  * Created by ai on 2017/07/15.
  */
 
-class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListener {
+class RecordListFragment : Fragment() {
 
     companion object {
         val TAG = "RecordListFragment"
@@ -57,8 +56,29 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerRecords.layoutManager = LinearLayoutManager(context)
+        observeViewData()
+        viewModel.getWeightItemList(requireContext())
     }
 
+    private fun observeViewData() {
+        viewModel.viewData.observe(viewLifecycleOwner) { data ->
+            when {
+                data.list == null -> {
+                    recyclerRecords.visibility = View.GONE
+                    areaNoData.visibility = View.GONE
+                }
+                data.list.isEmpty() -> {
+                    recyclerRecords.visibility = View.GONE
+                    areaNoData.visibility = View.VISIBLE
+                }
+                else -> {
+                    recyclerRecords.visibility = View.VISIBLE
+                    areaNoData.visibility = View.GONE
+                    showListItem(data.list)
+                }
+            }
+        }
+    }
     override fun onStart() {
         super.onStart()
 
@@ -76,11 +96,6 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
                 }).let { disposable.add(it) }
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateListItem()
-    }
-
     override fun onStop() {
         super.onStop()
         disposable.clear()
@@ -88,17 +103,10 @@ class RecordListFragment : Fragment(), ShowRecordsFragment.ShowRecordsEventListe
         dialog = null
     }
 
-    override fun updateListItem() {
-        if (viewModel.weightItemList.isEmpty()) {
-            recyclerRecords.visibility = View.GONE
-            areaNoData.visibility = View.VISIBLE
-        } else {
-            recyclerRecords.visibility = View.VISIBLE
-            areaNoData.visibility = View.GONE
-
-            val adapter = RecordListAdapter(viewModel.weightItemList, requireContext())
+    private fun showListItem(item: List<WeightItemEntity> ) {
+            val adapter = RecordListAdapter(item, requireContext())
             recyclerRecords.adapter = adapter
-        }
+
     }
 
     private fun onItemLongTap(item: WeightItemEntity) {
