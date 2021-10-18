@@ -7,9 +7,9 @@ import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
+import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Action
-import io.reactivex.internal.operators.completable.CompletableFromAction
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
@@ -18,7 +18,11 @@ import java.math.BigDecimal
  * Created by ai on 2017/07/02.
  */
 
-class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) : ViewModel() {
+class ShowRecordsViewModel(
+    private val weightRepository: WeightItemRepository,
+    private val getItemsUseCase: GetWeightItemsUseCase,
+    private val deleteItemUseCase: DeleteWeightItemUseCase
+) : ViewModel() {
 
     private val _viewData = MutableLiveData<ViewData>(ViewData(state = State.InitialLoading))
     val viewData: LiveData<ViewData>
@@ -38,9 +42,9 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
 
     private val compositeDisposable = CompositeDisposable()
 
-    fun getWeightItemList(context: Context) {
+    fun getWeightItemList() {
         viewModelScope.launch {
-            weightItemList = weightRepository.getWeightItemList()
+            weightItemList = getItemsUseCase.getItems()
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
@@ -53,13 +57,15 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
 
     /**
      * 現在表示しているEntityを削除する.
-     * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
-        CompletableFromAction(Action {
-            weightRepository.deleteWeightItem(weightItemEntity)
-        })
+    fun deleteItem(weightItemEntity: WeightItemEntity) {
+        viewModelScope.launch {
+            deleteItemUseCase.deleteItem(weightItemEntity)
+
+            getWeightItemList()
+        }
+    }
 
     /**
      * LineChart用のDataを作成する
@@ -177,10 +183,18 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
         Idle,
     }
 
-    class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val weightRepository: WeightItemRepository,
+        private val getItemsUseCase: GetWeightItemsUseCase,
+        private val deleteItemUseCase: DeleteWeightItemUseCase
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ShowRecordsViewModel::class.java)) {
-                return ShowRecordsViewModel(weightRepository) as T
+                return ShowRecordsViewModel(
+                    weightRepository,
+                    getItemsUseCase,
+                    deleteItemUseCase
+                ) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

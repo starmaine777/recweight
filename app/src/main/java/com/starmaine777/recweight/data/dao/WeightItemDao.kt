@@ -34,7 +34,7 @@ interface WeightItemDao {
     fun updateItem(weightItemEntity: WeightItemEntity)
 
     @Delete
-    fun deleteItem(weightItemEntity: WeightItemEntity)
+    suspend fun deleteItem(weightItemEntity: WeightItemEntity)
 
     @Query("DELETE FROM ${WeightItemEntity.TABLE_WEIGHT_ITEM}")
     fun deleteAllItem()

@@ -2,12 +2,13 @@ package com.starmaine777.recweight.model.viewmodel
 
 import android.content.Context
 import android.database.sqlite.SQLiteConstraintException
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
+import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
 
@@ -16,7 +17,21 @@ import java.util.*
  * Created by ai on 2017/07/02.
  */
 
-class WeightInputViewModel(private val weightRepository: WeightItemRepository) : ViewModel() {
+class WeightInputViewModel(
+    private val weightRepository: WeightItemRepository,
+    private val deleteItemUseCase: DeleteWeightItemUseCase
+) : ViewModel() {
+
+    private val _viewData = MutableLiveData(ViewData(State.NotInitialized))
+    val viewData: LiveData<ViewData>
+        get() = _viewData
+
+    data class ViewData(val state: State)
+
+    enum class State {
+        NotInitialized,
+        Deleted,
+    }
 
     companion object {
         val TAG = "WeightInputViewModel"
@@ -107,16 +122,22 @@ class WeightInputViewModel(private val weightRepository: WeightItemRepository) :
 
     /**
      * 現在表示しているEntityを削除する.
-     * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction =
-        CompletableFromAction(Action { weightRepository.deleteWeightItem(inputEntity) })
+    fun deleteWeightItem() {
+        viewModelScope.launch {
+            deleteItemUseCase.deleteItem(inputEntity)
+            _viewData.value = _viewData.value!!.copy(State.Deleted)
+        }
+    }
 
-    class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val weightRepository: WeightItemRepository,
+        private val deleteItemUseCase: DeleteWeightItemUseCase
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(WeightInputViewModel::class.java)) {
-                return WeightInputViewModel(weightRepository) as T
+                return WeightInputViewModel(weightRepository, deleteItemUseCase) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

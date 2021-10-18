@@ -24,6 +24,8 @@ import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentRecordChartBinding
+import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
+import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.formatInputNumber
 import timber.log.Timber
@@ -40,13 +42,28 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         val TAG = "RecordChartFragment "
     }
 
-    private val viewModelFactory: ShowRecordsViewModel.Factory =
-        ShowRecordsViewModel.Factory(WeightItemRepository(requireContext()))
+    private val weightItemRepository by lazy {
+        WeightItemRepository(requireContext())
+    }
+    lateinit var viewModelFactory: ShowRecordsViewModel.Factory
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     private lateinit var binding: FragmentRecordChartBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModelFactory = ShowRecordsViewModel.Factory(
+            weightItemRepository,
+            GetWeightItemsUseCase(weightItemRepository),
+            DeleteWeightItemUseCase(weightItemRepository)
+        )
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentRecordChartBinding.inflate(inflater)
         return binding.root
     }

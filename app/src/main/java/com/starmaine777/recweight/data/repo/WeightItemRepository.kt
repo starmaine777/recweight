@@ -38,7 +38,7 @@ class WeightItemRepository(context: Context) {
     fun updateWeightItem(weightItemEntity: WeightItemEntity) =
         appDataBase.weightItemDao().updateItem(weightItemEntity)
 
-    fun deleteWeightItem(weightItemEntity: WeightItemEntity) =
+    suspend fun deleteWeightItem(weightItemEntity: WeightItemEntity) =
         appDataBase.weightItemDao().deleteItem(weightItemEntity)
 
     fun deleteAllItemCompletable(): CompletableFromAction =
