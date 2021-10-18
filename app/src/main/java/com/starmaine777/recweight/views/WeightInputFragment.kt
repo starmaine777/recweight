@@ -37,7 +37,8 @@ class WeightInputFragment : Fragment() {
     private val viewMode: WEIGHT_INPUT_MODE by lazy { arguments?.getSerializable(ARGS_MODE) as WEIGHT_INPUT_MODE }
     private var dialog: DialogFragment? = null
     private var alertDialog: AlertDialog? = null
-    private val viewModelFactory: WeightInputViewModel.Factory = WeightInputViewModel.Factory(WeightItemRepository())
+    private val viewModelFactory: WeightInputViewModel.Factory =
+        WeightInputViewModel.Factory(WeightItemRepository(requireContext()))
     private val viewModel: WeightInputViewModel by activityViewModels { viewModelFactory }
     private lateinit var binding: FragmentWeightInputBinding
 

@@ -37,7 +37,7 @@ class WeightInputViewModel(private val weightRepository: WeightItemRepository) :
                     isCreate = true
                 } else {
 
-                    val idList = weightRepository.getWeightItemById(context, id)
+                    val idList = weightRepository.getWeightItemById(id)
                     if (idList.isEmpty()) {
                         inputEntity = WeightItemEntity()
                         isCreate = true
@@ -98,9 +98,9 @@ class WeightInputViewModel(private val weightRepository: WeightItemRepository) :
 
         return CompletableFromAction(Action {
             if (isCreate) {
-                weightRepository.insertWeightItem(context, inputEntity)
+                weightRepository.insertWeightItem(inputEntity)
             } else {
-                weightRepository.updateWeightItem(context, inputEntity)
+                weightRepository.updateWeightItem(inputEntity)
             }
         })
     }
@@ -110,7 +110,8 @@ class WeightInputViewModel(private val weightRepository: WeightItemRepository) :
      * @param context Context.
      * @return 削除が完了したCompletableFromAction
      */
-    fun deleteWeightItem(context: Context): CompletableFromAction = CompletableFromAction(Action { weightRepository.deleteWeightItem(context, inputEntity) })
+    fun deleteWeightItem(context: Context): CompletableFromAction =
+        CompletableFromAction(Action { weightRepository.deleteWeightItem(inputEntity) })
 
     class Factory(private val weightRepository: WeightItemRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {

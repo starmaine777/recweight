@@ -38,7 +38,8 @@ class RecordListFragment : Fragment() {
         val TAG = "RecordListFragment"
     }
 
-    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
+    private val viewModelFactory: ShowRecordsViewModel.Factory =
+        ShowRecordsViewModel.Factory(WeightItemRepository(requireContext()))
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     private lateinit var binding: FragmentRecordListBinding

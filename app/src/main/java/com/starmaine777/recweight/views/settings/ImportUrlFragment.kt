@@ -45,7 +45,12 @@ class ImportUrlFragment : Fragment() {
 
     private lateinit var binding: FragmentImportUrlBinding
 
-    val importRepo: ImportUseCase by lazy { ImportUseCase(requireContext(), WeightItemRepository()) }
+    val importRepo: ImportUseCase by lazy {
+        ImportUseCase(
+            requireContext(),
+            WeightItemRepository(requireContext())
+        )
+    }
     var disposable = CompositeDisposable()
     var dialog: AlertDialog? = null
 

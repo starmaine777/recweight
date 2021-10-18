@@ -40,7 +40,8 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         val TAG = "RecordChartFragment "
     }
 
-    private val viewModelFactory: ShowRecordsViewModel.Factory = ShowRecordsViewModel.Factory(WeightItemRepository())
+    private val viewModelFactory: ShowRecordsViewModel.Factory =
+        ShowRecordsViewModel.Factory(WeightItemRepository(requireContext()))
     private val viewModel: ShowRecordsViewModel by activityViewModels { viewModelFactory }
 
     private lateinit var binding: FragmentRecordChartBinding

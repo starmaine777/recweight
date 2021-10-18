@@ -192,7 +192,7 @@ class ImportUseCase(val context: Context, private val weightRepository: WeightIt
         }
 
         try {
-            weightRepository.getDatabase(context).weightItemDao().insertItem(weightItem)
+            weightRepository.insertWeightItem(weightItem)
         } catch (e: SQLiteConstraintException) {
             // 同じ時刻のものが存在している場合はそのまま続ける
             errorDates.add("${

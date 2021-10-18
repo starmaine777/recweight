@@ -40,7 +40,7 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
 
     fun getWeightItemList(context: Context) {
         viewModelScope.launch {
-            weightItemList = weightRepository.getWeightItemList(context)
+            weightItemList = weightRepository.getWeightItemList()
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
@@ -58,7 +58,7 @@ class ShowRecordsViewModel(private val weightRepository: WeightItemRepository) :
      */
     fun deleteItem(context: Context, weightItemEntity: WeightItemEntity): CompletableFromAction =
         CompletableFromAction(Action {
-            weightRepository.deleteWeightItem(context, weightItemEntity)
+            weightRepository.deleteWeightItem(weightItemEntity)
         })
 
     /**

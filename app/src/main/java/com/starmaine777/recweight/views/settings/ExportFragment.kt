@@ -45,10 +45,19 @@ class ExportFragment : Fragment() {
 
     private var disposable = CompositeDisposable()
     private var dialog: AlertDialog? = null
-    private val exportRepo: ExportUseCase by lazy { ExportUseCase(requireContext(), WeightItemRepository()) }
+    private val exportRepo: ExportUseCase by lazy {
+        ExportUseCase(
+            requireContext(),
+            WeightItemRepository(requireContext())
+        )
+    }
     private var isExporting = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentExportBinding.inflate(inflater)
         return binding.root
     }

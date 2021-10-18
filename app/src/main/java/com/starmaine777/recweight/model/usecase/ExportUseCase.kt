@@ -89,7 +89,7 @@ class ExportUseCase(val context: Context, private val weightRepository: WeightIt
         values.add(row)
         val body = ValueRange().setValues(values)
 
-        val itemList = weightRepository.getWeightItemListOnce(context)
+        val itemList = weightRepository.getWeightItemListOnce()
         if (itemList.isEmpty()) {
             emitter.onError(SpreadSheetsException(SpreadSheetsException.ERROR_TYPE.NO_DATA))
             return

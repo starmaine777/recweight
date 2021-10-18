@@ -46,7 +46,7 @@ class SettingsMainFragment() : Fragment() {
 
     private var disposable = CompositeDisposable()
     private var dialog: Dialog? = null
-    private var weightRepository = WeightItemRepository()
+    private var weightRepository = WeightItemRepository(requireContext())
 
     private fun createSettingItems(): List<SettingItem> =
             listOf(
@@ -134,7 +134,7 @@ class SettingsMainFragment() : Fragment() {
 
                 Timber.d("startDeleteAllItems!")
                 weightRepository
-                        .deleteAllItemCompletable(requireContext())
+                    .deleteAllItemCompletable()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe({
