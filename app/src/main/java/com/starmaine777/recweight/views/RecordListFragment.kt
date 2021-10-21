@@ -52,7 +52,6 @@ class RecordListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModelFactory = ShowRecordsViewModel.Factory(
-            weightItemRepository,
             GetWeightItemsUseCase(weightItemRepository),
             DeleteWeightItemUseCase(weightItemRepository)
         )

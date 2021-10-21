@@ -10,14 +10,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.github.mikephil.charting.components.MarkerView
-import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
@@ -53,7 +49,6 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModelFactory = ShowRecordsViewModel.Factory(
-            weightItemRepository,
             GetWeightItemsUseCase(weightItemRepository),
             DeleteWeightItemUseCase(weightItemRepository)
         )
@@ -129,53 +124,53 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     }
 
     private fun showChart(refreshPosition: Boolean) {
-        val showStamp = getShowStamp()
-        val lines = viewModel.createLineSources(requireContext(), showStamp)
-
-        val lineData: LineData
-        val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
-        weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
-        weightDataSet.lineWidth = 2.0f
-        weightDataSet.setDrawCircles(false)
-        weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
-        weightDataSet.setDrawIcons(true)
-        weightDataSet.iconsOffset = MPPointF(0F, -25F)
-        weightDataSet.setDrawValues(false)
-
-        if (!lines.second.isEmpty()) {
-            val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
-            fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
-            fatDataSet.lineWidth = 1.5f
-            fatDataSet.setDrawCircles(false)
-            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-            fatDataSet.setDrawValues(false)
-
-            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-
-            lineData = LineData(fatDataSet, weightDataSet)
-        } else {
-            lineData = LineData(weightDataSet)
-        }
-
-        binding.apply {
-            viewChart.data = lineData
-
-            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
-            viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
-            viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
-
-            if (refreshPosition) viewChart.moveViewToX(nowDate)
-
-            viewChart.setDrawMarkers(true)
-            // TODO : listを渡せるようにして修正
-            viewModel.viewData.value?.list?.let {
-                viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
-            }
-
-            spinnerDuration.visibility = View.VISIBLE
-            radioGroupStamps.visibility = View.VISIBLE
-            viewChart.invalidate()
-        }
+//        val showStamp = getShowStamp()
+//        val lines = viewModel.createLineSources(requireContext(), showStamp)
+//
+//        val lineData: LineData
+//        val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
+//        weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
+//        weightDataSet.lineWidth = 2.0f
+//        weightDataSet.setDrawCircles(false)
+//        weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
+//        weightDataSet.setDrawIcons(true)
+//        weightDataSet.iconsOffset = MPPointF(0F, -25F)
+//        weightDataSet.setDrawValues(false)
+//
+//        if (!lines.second.isEmpty()) {
+//            val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
+//            fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
+//            fatDataSet.lineWidth = 1.5f
+//            fatDataSet.setDrawCircles(false)
+//            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+//            fatDataSet.setDrawValues(false)
+//
+//            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
+//
+//            lineData = LineData(fatDataSet, weightDataSet)
+//        } else {
+//            lineData = LineData(weightDataSet)
+//        }
+//
+//        binding.apply {
+//            viewChart.data = lineData
+//
+//            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
+//            viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
+//            viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
+//
+//            if (refreshPosition) viewChart.moveViewToX(nowDate)
+//
+//            viewChart.setDrawMarkers(true)
+//            // TODO : listを渡せるようにして修正
+//            viewModel.viewData.value?.list?.let {
+//                viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
+//            }
+//
+//            spinnerDuration.visibility = View.VISIBLE
+//            radioGroupStamps.visibility = View.VISIBLE
+//            viewChart.invalidate()
+//        }
     }
 
     private fun getShowStamp(): ShowRecordsViewModel.ShowStamp =

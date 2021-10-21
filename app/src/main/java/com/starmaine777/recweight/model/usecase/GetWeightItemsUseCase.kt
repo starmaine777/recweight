@@ -7,8 +7,5 @@ import com.starmaine777.recweight.data.repo.WeightItemRepository
  */
 class GetWeightItemsUseCase(private val weightItemRepository: WeightItemRepository) {
 
-    suspend fun getWeightRecords() {
-        val rowData = weightItemRepository.getWeightItemList()
-        
-    }
+    suspend fun getItems() = weightItemRepository.getWeightItemList()
 }

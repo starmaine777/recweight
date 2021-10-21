@@ -1,12 +1,10 @@
 package com.starmaine777.recweight.model.viewmodel
 
-import android.content.Context
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.*
 import com.github.mikephil.charting.data.Entry
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.entity.ChartSource
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
 import io.reactivex.disposables.CompositeDisposable
@@ -19,7 +17,6 @@ import java.math.BigDecimal
  */
 
 class ShowRecordsViewModel(
-    private val weightRepository: WeightItemRepository,
     private val getItemsUseCase: GetWeightItemsUseCase,
     private val deleteItemUseCase: DeleteWeightItemUseCase
 ) : ViewModel() {
@@ -73,104 +70,79 @@ class ShowRecordsViewModel(
      * @param showStamp どのStampをiconとして表示させるかの区分
      * @return first = WeightのEntryList, second = FatのEntryList
      */
-    fun createLineSources(context: Context, showStamp: ShowStamp): Pair<List<Entry>, List<Entry>> {
-        val weights = ArrayList<Entry>()
-        val fats = ArrayList<Entry>()
-        val icon = if (showStamp == ShowStamp.NONE) null else AppCompatResources.getDrawable(
-            context,
-            showStamp.drawableId
-        )
-        val reverseItemList = ArrayList(weightItemList).apply { this.reverse() }
+    fun createLineSources(rowData: List<WeightItemEntity>): List<ChartSource> {
+        val result = mutableListOf<ChartSource>()
+        val reverseItemList = ArrayList(rowData).apply { this.reverse() }
+        val tempItems = mutableListOf<WeightItemEntity>()
 
-        var fatAddedIndex = -1
-        for (i in reverseItemList.indices) {
-            val item = reverseItemList[i]
-            val weightEntry = Entry(
-                item.recTime.timeInMillis.toFloat(),
-                item.weight.toFloat(),
-                if (needShowIcon(item, showStamp)) icon else null
-            )
-            weights.add(weightEntry)
-
-            if (item.fat != 0.0) {
-                if (fatAddedIndex == -1) {
-                    (0..(i - 1)).mapTo(fats) {
-                        Entry(
-                            reverseItemList[it].recTime.timeInMillis.toFloat(),
-                            reverseItemList[i].fat.toFloat()
+        for (item in reverseItemList) {
+            when {
+                item.fat == 0.0 -> {
+                    tempItems.add(item)
+                }
+                tempItems.isEmpty() -> {
+                    result.add(createChartSource(item, item.fat))
+                }
+                result.isEmpty() -> {
+                    tempItems.forEach { tempItem ->
+                        result.add(createChartSource(tempItem, item.fat))
+                    }
+                    result.add(createChartSource(item, item.fat))
+                    tempItems.clear()
+                }
+                else -> {
+                    val startSource = result.last()
+                    val lastSource = createChartSource(item, item.fat)
+                    val slope = calculateFatSlope(startSource, lastSource)
+                    tempItems.forEach { tempItem ->
+                        result.add(
+                            createChartSource(
+                                tempItem,
+                                calculateFat(slope, startSource, tempItem)
+                            )
                         )
                     }
-                } else {
-                    val start = reverseItemList[fatAddedIndex]
-                    val end = reverseItemList[i]
-                    val slope = calculateFatSlope(start, end)
-                    if (fatAddedIndex != i - 1) {
-                        // それまでのものを計算
-                        ((fatAddedIndex + 1)..(i - 1)).mapTo(fats) {
-                            Entry(
-                                reverseItemList[it].recTime.timeInMillis.toFloat(),
-                                calculateFat(slope, start, reverseItemList[it])
-                            )
-                        }
-                    }
+                    result.add(lastSource)
+                    tempItems.clear()
                 }
-                fats.add(Entry(item.recTime.timeInMillis.toFloat(), item.fat.toFloat()))
-                fatAddedIndex = i
             }
         }
 
-        // Fat未計算分を計算する
-        if (fatAddedIndex > -1 && fatAddedIndex != weightItemList.size - 1) {
-            if (fatAddedIndex == 0) {
-                (1..(reverseItemList.size - 1)).mapTo(fats) {
-                    Entry(reverseItemList[it].recTime.timeInMillis.toFloat(), fats[0].y)
-                }
-            } else {
-                val start = fats[fatAddedIndex - 1]
-                val end = fats[fatAddedIndex]
-                val slope = calculateFatSlopeByFatEntry(start, end)
-                ((fatAddedIndex + 1)..(reverseItemList.size - 1)).mapTo(fats) {
-                    Entry(
-                        reverseItemList[it].recTime.timeInMillis.toFloat(),
-                        calculateFat(slope, reverseItemList[fatAddedIndex], reverseItemList[it])
-                    )
-                }
+        // fatなしで未計算リストを処理
+        if (tempItems.isNotEmpty()) {
+            val fat = if (result.isEmpty()) 0.0 else result.last().fat
+            tempItems.forEach { tempItem ->
+                result.add(createChartSource(tempItem, fat))
             }
         }
-        return Pair(weights, fats)
+
+        return result
     }
 
-    /**
-     * Iconを表示するかどうかの判別式
-     * @params item 対象のWeightItemEntity
-     * @params showStampTyp 表示するスタンプの種類
-     * @return true == 表示, false == 非表示
-     */
-    private fun needShowIcon(item: WeightItemEntity, showStampType: ShowStamp): Boolean =
-        when (showStampType) {
-            ShowStamp.NONE -> false
-            ShowStamp.DUMBBELL -> item.showDumbbell
-            ShowStamp.LIQUOR -> item.showLiquor
-            ShowStamp.TOILET -> item.showToilet
-            ShowStamp.MOON -> item.showMoon
-            ShowStamp.STAR -> item.showStar
-        }
+    private fun createChartSource(item: WeightItemEntity, fat: Double) =
+        ChartSource(
+            recTime = item.recTime,
+            weight = item.weight,
+            fat = fat,
+            showIcon = false
+        )
+
 
     private fun calculateFatSlopeByFatEntry(start: Entry, end: Entry): Double =
         ((end.y - start.y) / (end.x - start.x)).toDouble()
 
-    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double =
+    private fun calculateFatSlope(start: ChartSource, end: ChartSource): Double =
         ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
 
     private fun calculateFat(
         slope: Double,
-        start: WeightItemEntity,
-        target: WeightItemEntity
-    ): Float {
+        start: ChartSource,
+        targetWeightItem: WeightItemEntity
+    ): Double {
         var bd =
-            BigDecimal((start.fat + slope * (target.recTime.timeInMillis - start.recTime.timeInMillis)))
+            BigDecimal((start.fat + slope * (targetWeightItem.recTime.timeInMillis - start.recTime.timeInMillis)))
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP)
-        return bd.toFloat()
+        return bd.toDouble()
     }
 
     data class ViewData(
@@ -184,14 +156,12 @@ class ShowRecordsViewModel(
     }
 
     class Factory(
-        private val weightRepository: WeightItemRepository,
         private val getItemsUseCase: GetWeightItemsUseCase,
         private val deleteItemUseCase: DeleteWeightItemUseCase
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ShowRecordsViewModel::class.java)) {
                 return ShowRecordsViewModel(
-                    weightRepository,
                     getItemsUseCase,
                     deleteItemUseCase
                 ) as T

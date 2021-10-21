@@ -2,8 +2,13 @@ package com.starmaine777.recweight.data
 
 import android.text.TextUtils
 import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import com.starmaine777.recweight.data.entity.WeightItemEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -11,22 +16,29 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import timber.log.Timber
-import java.util.Calendar
-import java.util.concurrent.TimeUnit
+import java.util.*
 
 /**
  * WeightItemRepositoryのTest
  * Created by 0025331458 on 2017/10/05.
  */
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 class WeightItemDaoTest {
 
     private lateinit var database: AppDatabase
+    private val testDispatcher = TestCoroutineDispatcher()
+    private val testScope = TestCoroutineScope(testDispatcher)
 
     @Before
     fun initDb() {
-        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(),
-                AppDatabase::class.java).allowMainThreadQueries().build()
+        database = Room.inMemoryDatabaseBuilder(
+            InstrumentationRegistry.getInstrumentation().targetContext,
+            AppDatabase::class.java
+        )
+            .setTransactionExecutor(testDispatcher.asExecutor())
+            .setQueryExecutor(testDispatcher.asExecutor())
+            .allowMainThreadQueries().build()
     }
 
     @After
@@ -36,7 +48,9 @@ class WeightItemDaoTest {
 
     @Test
     fun getAllWeightItemListNoUser() {
-        database.weightItemDao().getAllListDateSorted().test().assertNoValues()
+        testScope.runBlockingTest {
+            Assert.assertTrue(database.weightItemDao().getAllListDateSorted().isEmpty())
+        }
     }
 
     @Test
@@ -46,19 +60,18 @@ class WeightItemDaoTest {
 
     @Test
     fun insertAndGetWeightById() {
-        database.weightItemDao().insertItem(ITEM1)
-        database.weightItemDao().getAllListDateSorted().test()
-                .awaitDone(5, TimeUnit.SECONDS)
-                .assertValue {
-                    it.size == 1
-                            && it[0].id == 1L
-                            && equalItems(it[0], ITEM1)
-                }
-        val item = database.weightItemDao().getWeightItemById(1)
+        testScope.runBlockingTest {
+            database.weightItemDao().insertItem(ITEM1)
+            val items = database.weightItemDao().getAllListDateSorted()
+            Assert.assertEquals(items.size, 1)
+            Assert.assertEquals(items[0].id, 1L)
+            Assert.assertEquals(items[0], ITEM1.copy(id = 1))
+            val item = database.weightItemDao().getWeightItemById(1)
 
-        Assert.assertEquals(item.size, 1)
-        Assert.assertEquals(item[0].id, 1L)
-        Assert.assertTrue(equalItems(item[0], ITEM1))
+            Assert.assertEquals(item.size, 1)
+            Assert.assertEquals(item[0].id, 1L)
+            Assert.assertTrue(equalItems(item[0], ITEM1.copy(id = 1)))
+        }
     }
 
     @Test
@@ -86,30 +99,27 @@ class WeightItemDaoTest {
 
     @Test
     fun getAllListItemByRecTimeSorts() {
-        database.weightItemDao().insertItem(ITEM1)
+        val thirdItem = ITEM1.copy(id = 1)
+        database.weightItemDao().insertItem(thirdItem)
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DAY_OF_MONTH, 1)
-        val item3 = ITEM3.copy(recTime = calendar.clone() as Calendar)
-        database.weightItemDao().insertItem(item3)
+        val secondItem = ITEM3.copy(recTime = calendar.clone() as Calendar, id = 2)
+        database.weightItemDao().insertItem(secondItem)
         calendar.add(Calendar.DAY_OF_MONTH, 5)
-        val item5 = ITEM5.copy(recTime = calendar.clone() as Calendar)
-        database.weightItemDao().insertItem(item5)
+        val firstItem = ITEM5.copy(recTime = calendar.clone() as Calendar, id = 3)
+        database.weightItemDao().insertItem(firstItem)
         calendar.add(Calendar.DAY_OF_MONTH, -10)
-        val item2 = ITEM2.copy(recTime = calendar.clone() as Calendar)
-        database.weightItemDao().insertItem(item2)
+        val fifthItem = ITEM2.copy(recTime = calendar.clone() as Calendar, id = 4)
+        database.weightItemDao().insertItem(fifthItem)
         calendar.add(Calendar.DAY_OF_MONTH, 2)
-        val item4 = ITEM4.copy(recTime = calendar.clone() as Calendar)
-        database.weightItemDao().insertItem(item4)
+        val forthItem = ITEM4.copy(recTime = calendar.clone() as Calendar, id = 5)
+        database.weightItemDao().insertItem(forthItem)
 
-        val sortedExpectedList = listOf(item2, item4, ITEM1, item3, item5)
-        database.weightItemDao().getAllListDateSorted()
-                .test().awaitDone(5, TimeUnit.SECONDS)
-                .assertOf {
-                    Assert.assertEquals(it.values()[0].size, sortedExpectedList.size)
-                    for (i in 0..it.values()[0].size - 1) {
-                        equalItems(it.values()[0][i], sortedExpectedList[i])
-                    }
-                }
+        val sortedExpectedList = listOf(firstItem, secondItem, thirdItem, forthItem, fifthItem)
+        testScope.runBlockingTest {
+            val items = database.weightItemDao().getAllListDateSorted()
+            Assert.assertEquals(sortedExpectedList, items)
+        }
     }
 
     @Test
@@ -206,13 +216,15 @@ class WeightItemDaoTest {
         val item4 = ITEM4.copy(recTime = calendar.clone() as Calendar)
         database.weightItemDao().insertItem(item4)
 
-        val allItemList = database.weightItemDao().getAllListDateSorted().blockingFirst().apply { }
-        database.weightItemDao().deleteItem(allItemList[2])
-        val expectedList = listOf(allItemList[0], allItemList[1], allItemList[3], allItemList[4])
-
-        val deletedAllItem = database.weightItemDao().getAllListDateSorted().blockingFirst().apply { }
-        Timber.d("allItemListSize = ${allItemList.size}, deletedAllItemSize = ${deletedAllItem.size}, expectedListSize = ${expectedList.size}")
-        database.weightItemDao().getAllListDateSorted().test().awaitDone(5, TimeUnit.SECONDS).assertValue(expectedList)
+        testScope.runBlockingTest {
+            val allItemList = database.weightItemDao().getAllListDateSorted()
+            database.weightItemDao().deleteItem(allItemList[2])
+            val expectedList =
+                listOf(allItemList[0], allItemList[1], allItemList[3], allItemList[4])
+            val deletedAllItem = database.weightItemDao().getAllListDateSorted()
+            Timber.d("allItemListSize = ${allItemList.size}, deletedAllItemSize = ${deletedAllItem.size}, expectedListSize = ${expectedList.size}")
+            Assert.assertEquals(expectedList, database.weightItemDao().getAllListDateSorted())
+        }
     }
 
     @Test
@@ -232,10 +244,11 @@ class WeightItemDaoTest {
         val item4 = ITEM4.copy(recTime = calendar.clone() as Calendar)
         database.weightItemDao().insertItem(item4)
 
-        database.weightItemDao().getAllListDateSorted().test().awaitDone(5, TimeUnit.SECONDS).assertValue { it.isNotEmpty() }
-
-        database.weightItemDao().deleteAllItem()
-        database.weightItemDao().getAllListDateSorted().test().assertNoValues()
+        testScope.runBlockingTest {
+            Assert.assertTrue(database.weightItemDao().getAllListDateSorted().isNotEmpty())
+            database.weightItemDao().deleteAllItem()
+            Assert.assertTrue(database.weightItemDao().getAllListDateSorted().isEmpty())
+        }
     }
 
     fun equalItems(item1: WeightItemEntity, item2: WeightItemEntity): Boolean = item1.recTime == item2.recTime

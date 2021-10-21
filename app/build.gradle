@@ -91,10 +91,12 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:0.9.4.7'
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testImplementation "io.mockk:mockk-agent-jvm:$mockkVersion"
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
     testImplementation "androidx.test:core:$androidxTestVersion"
     testImplementation "androidx.test:runner:$androidxTestVersion"
     testImplementation "androidx.test:rules:$androidxTestVersion"
-    testImplementation 'org.mockito:mockito-core:2.15.0'
     implementation 'com.google.android.gms:play-services-auth:19.2.0'
     implementation 'pub.devrel:easypermissions:3.0.0'
     implementation('com.google.api-client:google-api-client-android:1.22.0') {
