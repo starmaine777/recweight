@@ -150,7 +150,7 @@ class RecordListFragment : Fragment() {
     private fun showMenuDialog(item: WeightItemEntity) {
         dialog = MaterialDialog.Builder(requireContext())
             .items(R.array.long_tap_menus)
-            .itemsCallback({ md, _, position, _ ->
+            .itemsCallback { md, _, position, _ ->
                 md.dismiss()
                 when (position) {
                     0 -> {
@@ -162,7 +162,7 @@ class RecordListFragment : Fragment() {
                         showDeleteConfirmDialog(item)
                     }
                 }
-            })
+            }
             .show()
     }
 
