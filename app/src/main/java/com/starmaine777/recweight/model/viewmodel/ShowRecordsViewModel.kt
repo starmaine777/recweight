@@ -1,11 +1,9 @@
 package com.starmaine777.recweight.model.viewmodel
 
 import androidx.lifecycle.*
-import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import com.starmaine777.recweight.model.usecase.GetChartRecordsUseCase
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 
 /**
@@ -22,32 +20,16 @@ class ShowRecordsViewModel(
     val viewData: LiveData<ViewData>
         get() = _viewData
 
-    enum class ShowStamp(val drawableId: Int) {
-        NONE(-1),
-        DUMBBELL(R.drawable.stamp_dumbbell_selected),
-        LIQUOR(R.drawable.stamp_liquor_selected),
-        TOILET(R.drawable.stamp_toilet_selected),
-        MOON(R.drawable.stamp_moon_selected),
-        STAR(R.drawable.stamp_star_selected)
-    }
-
-    // TODO : 消す
-    private var weightItemList: List<WeightItemEntity> = ArrayList()
-
-    private val compositeDisposable = CompositeDisposable()
-
     fun getWeightItemList() {
         viewModelScope.launch {
-            weightItemList = getChartRecordsUseCase.getItems()
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
-                    weightItemList
+                    getChartRecordsUseCase.getItems()
                 )
             )
         }
     }
-
 
     /**
      * 現在表示しているEntityを削除する.
@@ -60,7 +42,6 @@ class ShowRecordsViewModel(
             getWeightItemList()
         }
     }
-
 
     data class ViewData(
         val state: State,

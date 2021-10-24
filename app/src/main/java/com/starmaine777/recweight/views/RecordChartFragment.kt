@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -74,11 +75,6 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
         binding.apply {
             spinnerDuration.onItemSelectedListener = this@RecordChartFragment
-            radioGroupStamps.setOnCheckedChangeListener { _, id ->
-                Timber.d("radioGroup onCheckedChangeListener ")
-                // TODO: スタンプ処理をここで行う
-//                viewModel.updateChartSourceStamp(getShowStamp(id))
-            }
         }
         observeViewData()
     }
@@ -99,6 +95,9 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
                         areaChart.visibility = View.VISIBLE
                         textNoData.visibility = View.GONE
                         showChart(data.records)
+                        radioGroupStamps.setOnCheckedChangeListener { _, _ ->
+                            showChart(data.records)
+                        }
                     }
                 }
             }
@@ -135,26 +134,27 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     private fun showChart(records: List<WeightItemEntity>) {
         val weightEntries = mutableListOf<Entry>()
         val fatEntries = mutableListOf<Entry>()
-        val checkedStamp = getShowStamp(binding.radioGroupStamps.checkedRadioButtonId)
+        val checkedStamp =
+            Stamp.findStampFromMenuId(binding.radioGroupStamps.checkedRadioButtonId)
         val stampDrawer =
-            if (checkedStamp != ShowRecordsViewModel.ShowStamp.NONE) ContextCompat.getDrawable(
+            if (checkedStamp != Stamp.NONE) ContextCompat.getDrawable(
                 requireContext(),
                 checkedStamp.drawableId
             ) else null
 
-        records.forEach { chartSource ->
+        records.forEach { resource ->
             weightEntries.add(
                 Entry().apply {
-                    x = chartSource.recTime.timeInMillis.toFloat()
-                    y = chartSource.weight.toFloat()
-//                    icon = if (chartSource.showIcon) stampDrawer else null
+                    x = resource.recTime.timeInMillis.toFloat()
+                    y = resource.weight.toFloat()
+                    icon = if (checkedStamp.needShowStamp(resource)) stampDrawer else null
                 }
             )
-            if (chartSource.fat > 0) {
+            if (resource.fat > 0) {
                 fatEntries.add(
                     Entry().apply {
-                        x = chartSource.recTime.timeInMillis.toFloat()
-                        y = chartSource.fat.toFloat()
+                        x = resource.recTime.timeInMillis.toFloat()
+                        y = resource.fat.toFloat()
                     }
                 )
             }
@@ -198,16 +198,6 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
             axisDependency = YAxis.AxisDependency.RIGHT
         }
 
-    private fun getShowStamp(@IdRes stampId: Int): ShowRecordsViewModel.ShowStamp =
-        when (stampId) {
-            R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
-            R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
-            R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
-            R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
-            R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
-            else -> ShowRecordsViewModel.ShowStamp.NONE
-        }
-
     private fun updateGranularity(spinnerSelectedItemPosition: Int) {
         binding.viewChart.xAxis.granularity =
             when (spinnerSelectedItemPosition) {
@@ -244,6 +234,9 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     override fun onNothingSelected(p0: AdapterView<*>?) {
     }
 
+    /**
+     * チャートデータタップ時に出てくるレコード詳細表示マーカー
+     */
     @SuppressLint("ViewConstructor")
     class ItemMarkerView(
         context: Context?,
@@ -303,4 +296,30 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         }
     }
 
+    enum class Stamp(@IdRes val menuId: Int, @DrawableRes val drawableId: Int) {
+        NONE(-1, -1),
+        DUMBBELL(R.id.radioDumbbell, R.drawable.stamp_dumbbell_selected) {
+            override fun needShowStamp(record: WeightItemEntity): Boolean = record.showDumbbell
+        },
+        LIQUOR(R.id.radioLiquor, R.drawable.stamp_liquor_selected) {
+            override fun needShowStamp(record: WeightItemEntity): Boolean = record.showLiquor
+        },
+        TOILET(R.id.radioToilet, R.drawable.stamp_toilet_selected) {
+            override fun needShowStamp(record: WeightItemEntity): Boolean = record.showToilet
+        },
+        MOON(R.id.radioMoon, R.drawable.stamp_moon_selected) {
+            override fun needShowStamp(record: WeightItemEntity): Boolean = record.showMoon
+        },
+        STAR(R.id.radioStar, R.drawable.stamp_star_selected) {
+            override fun needShowStamp(record: WeightItemEntity): Boolean = record.showStar
+        };
+
+        open fun needShowStamp(record: WeightItemEntity): Boolean = false
+
+        companion object {
+            fun findStampFromMenuId(@IdRes menuId: Int): Stamp =
+                values().find { it.menuId == menuId } ?: NONE
+        }
+
+    }
 }
