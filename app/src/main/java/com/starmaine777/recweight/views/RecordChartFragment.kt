@@ -10,13 +10,19 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.annotation.IdRes
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.github.mikephil.charting.components.MarkerView
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.entity.ChartSource
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentRecordChartBinding
@@ -69,9 +75,9 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
         binding.apply {
             spinnerDuration.onItemSelectedListener = this@RecordChartFragment
-            radioGroupStamps.setOnCheckedChangeListener { _, _ ->
+            radioGroupStamps.setOnCheckedChangeListener { _, id ->
                 Timber.d("radioGroup onCheckedChangeListener ")
-                showChart(false)
+                viewModel.updateChartSourceStamp(getShowStamp(id))
             }
         }
         observeViewData()
@@ -81,18 +87,18 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
             binding.apply {
                 when {
-                    data.list == null -> {
+                    data.chartSources == null -> {
                         areaChart.visibility = View.GONE
                         textNoData.visibility = View.GONE
                     }
-                    data.list.isEmpty() -> {
+                    data.chartSources.isEmpty() -> {
                         areaChart.visibility = View.GONE
                         textNoData.visibility = View.VISIBLE
                     }
                     else -> {
                         areaChart.visibility = View.VISIBLE
                         textNoData.visibility = View.GONE
-                        showChart(false)
+                        showChart(data.chartSources, data.list)
                     }
                 }
             }
@@ -108,7 +114,10 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
             xAxis.isGranularityEnabled = true
             updateGranularity(binding.spinnerDuration.selectedItemPosition)
             xAxis.setValueFormatter { value, _ ->
-                return@setValueFormatter DateUtils.formatDateTime(context, value.toLong(), DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
+                return@setValueFormatter DateUtils.formatDateTime(
+                    context,
+                    value.toLong(),
+                    DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_NUMERIC_DATE)
                         .or(DateUtils.FORMAT_NO_YEAR)
                 )
             }
@@ -123,75 +132,93 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         }
     }
 
-    private fun showChart(refreshPosition: Boolean) {
-//        val showStamp = getShowStamp()
-//        val lines = viewModel.createLineSources(requireContext(), showStamp)
-//
-//        val lineData: LineData
-//        val weightDataSet = LineDataSet(lines.first, getString(R.string.weight_input_weight_title))
-//        weightDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
-//        weightDataSet.lineWidth = 2.0f
-//        weightDataSet.setDrawCircles(false)
-//        weightDataSet.axisDependency = YAxis.AxisDependency.LEFT
-//        weightDataSet.setDrawIcons(true)
-//        weightDataSet.iconsOffset = MPPointF(0F, -25F)
-//        weightDataSet.setDrawValues(false)
-//
-//        if (!lines.second.isEmpty()) {
-//            val fatDataSet = LineDataSet(lines.second, getString(R.string.weight_input_fat_title))
-//            fatDataSet.color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
-//            fatDataSet.lineWidth = 1.5f
-//            fatDataSet.setDrawCircles(false)
-//            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-//            fatDataSet.setDrawValues(false)
-//
-//            fatDataSet.axisDependency = YAxis.AxisDependency.RIGHT
-//
-//            lineData = LineData(fatDataSet, weightDataSet)
-//        } else {
-//            lineData = LineData(weightDataSet)
-//        }
-//
-//        binding.apply {
-//            viewChart.data = lineData
-//
-//            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
-//            viewChart.setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
-//            viewChart.setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
-//
-//            if (refreshPosition) viewChart.moveViewToX(nowDate)
-//
-//            viewChart.setDrawMarkers(true)
-//            // TODO : listを渡せるようにして修正
-//            viewModel.viewData.value?.list?.let {
-//                viewChart.marker = ItemMarkerView(context, R.layout.marker_chart, it)
-//            }
-//
-//            spinnerDuration.visibility = View.VISIBLE
-//            radioGroupStamps.visibility = View.VISIBLE
-//            viewChart.invalidate()
-//        }
+    private fun showChart(records: List<ChartSource>, weightRecords: List<WeightItemEntity>?) {
+        val weightEntries = mutableListOf<Entry>()
+        val fatEntries = mutableListOf<Entry>()
+        val checkedStamp = getShowStamp(binding.radioGroupStamps.checkedRadioButtonId)
+        val stampDrawer =
+            if (checkedStamp != ShowRecordsViewModel.ShowStamp.NONE) ContextCompat.getDrawable(
+                requireContext(),
+                checkedStamp.drawableId
+            ) else null
+
+        records.forEach { chartSource ->
+            weightEntries.add(
+                Entry().apply {
+                    x = chartSource.recTime.timeInMillis.toFloat()
+                    y = chartSource.weight.toFloat()
+                    icon = if (chartSource.showIcon) stampDrawer else null
+                }
+            )
+            if (chartSource.fat > 0) {
+                fatEntries.add(
+                    Entry().apply {
+                        x = chartSource.recTime.timeInMillis.toFloat()
+                        y = chartSource.fat.toFloat()
+                    }
+                )
+            }
+        }
+
+        binding.viewChart.apply {
+            data = LineData(createFatLine(fatEntries), createWeightLine(weightEntries))
+            val nowDate = Calendar.getInstance().timeInMillis.toFloat()
+            setVisibleXRangeMaximum(nowDate - getStartCalendar().timeInMillis.toFloat())
+            setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
+
+            setDrawMarkers(true)
+            weightRecords?.let {
+                marker = ItemMarkerView(context, R.layout.marker_chart, it)
+            }
+            invalidate()
+        }
+
+        binding.spinnerDuration.visibility = View.VISIBLE
+        binding.radioGroupStamps.visibility = View.VISIBLE
     }
 
-    private fun getShowStamp(): ShowRecordsViewModel.ShowStamp =
-            when (binding.radioGroupStamps.checkedRadioButtonId) {
-                R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
-                R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
-                R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
-                R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
-                R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
-                else -> ShowRecordsViewModel.ShowStamp.NONE
-            }
+    private fun createWeightLine(entries: List<Entry>) =
+        LineDataSet(entries, getString(R.string.weight_input_weight_title)).apply {
+            color = ContextCompat.getColor(requireContext(), R.color.chart_weight)
+            lineWidth = 2.0f
+            setDrawCircles(false)
+            axisDependency = YAxis.AxisDependency.LEFT
+            setDrawIcons(true)
+            iconsOffset = MPPointF(0F, -25F)
+            setDrawValues(false)
+        }
+
+    private fun createFatLine(entries: List<Entry>) =
+        if (entries.isEmpty()) null
+        else LineDataSet(entries, getString(R.string.weight_input_fat_title)).apply {
+            color = ContextCompat.getColor(requireContext(), R.color.chart_fat)
+            lineWidth = 1.5f
+            setDrawCircles(false)
+            axisDependency = YAxis.AxisDependency.RIGHT
+            setDrawValues(false)
+
+            axisDependency = YAxis.AxisDependency.RIGHT
+        }
+
+    private fun getShowStamp(@IdRes stampId: Int): ShowRecordsViewModel.ShowStamp =
+        when (stampId) {
+            R.id.radioDumbbell -> ShowRecordsViewModel.ShowStamp.DUMBBELL
+            R.id.radioLiquor -> ShowRecordsViewModel.ShowStamp.LIQUOR
+            R.id.radioToilet -> ShowRecordsViewModel.ShowStamp.TOILET
+            R.id.radioMoon -> ShowRecordsViewModel.ShowStamp.MOON
+            R.id.radioStar -> ShowRecordsViewModel.ShowStamp.STAR
+            else -> ShowRecordsViewModel.ShowStamp.NONE
+        }
 
     private fun updateGranularity(spinnerSelectedItemPosition: Int) {
         binding.viewChart.xAxis.granularity =
-                when (spinnerSelectedItemPosition) {
-                    0 -> TimeUnit.DAYS.toMillis(1).toFloat()
-                    1 -> TimeUnit.DAYS.toMillis(7).toFloat()
-                    2 -> TimeUnit.DAYS.toMillis(30).toFloat()
-                    3 -> TimeUnit.DAYS.toMillis(60).toFloat()
-                    else -> 1f
-                }
+            when (spinnerSelectedItemPosition) {
+                0 -> TimeUnit.DAYS.toMillis(1).toFloat()
+                1 -> TimeUnit.DAYS.toMillis(7).toFloat()
+                2 -> TimeUnit.DAYS.toMillis(30).toFloat()
+                3 -> TimeUnit.DAYS.toMillis(60).toFloat()
+                else -> 1f
+            }
     }
 
     private fun getStartCalendar(): Calendar {
@@ -207,7 +234,12 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         return result
     }
 
-    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, spinnerSelectedItemPosition: Int, p3: Long) {
+    override fun onItemSelected(
+        p0: AdapterView<*>?,
+        p1: View?,
+        spinnerSelectedItemPosition: Int,
+        p3: Long
+    ) {
         updateGranularity(spinnerSelectedItemPosition)
     }
 
@@ -215,7 +247,11 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     }
 
     @SuppressLint("ViewConstructor")
-    class ItemMarkerView(context: Context?, layoutResource: Int, private var itemList: List<WeightItemEntity>) : MarkerView(context, layoutResource) {
+    class ItemMarkerView(
+        context: Context?,
+        layoutResource: Int,
+        private var weightRecords: List<WeightItemEntity>
+    ) : MarkerView(context, layoutResource) {
         private var mOffset: MPPointF? = null
         private var target: WeightItemEntity? = null
         override fun getOffset(): MPPointF {
@@ -233,22 +269,35 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
                 target = null
             } else {
                 visibility = View.VISIBLE
-                target = itemList.firstOrNull { e.x == it.recTime.timeInMillis.toFloat() }
+                target = weightRecords.firstOrNull { e.x == it.recTime.timeInMillis.toFloat() }
                 if (target == null) {
                     visibility = View.INVISIBLE
                 } else {
-                    findViewById<TextView>(R.id.textWeight).text = context.getString(R.string.list_weight_pattern, target!!.weight.toString())
-                    findViewById<TextView>(R.id.textFat).text = if (target!!.fat == 0.0) "" else context.getString(R.string.list_fat_pattern, target!!.fat.toString())
-                    findViewById<TextView>(R.id.textDate).text = DateUtils.formatDateTime(context, target!!.recTime.timeInMillis,
-                            DateUtils.FORMAT_SHOW_YEAR
-                                    .or(DateUtils.FORMAT_SHOW_DATE)
-                                    .or(DateUtils.FORMAT_NUMERIC_DATE)
-                                    .or(DateUtils.FORMAT_SHOW_TIME)
-                                    .or(DateUtils.FORMAT_ABBREV_ALL))
+                    findViewById<TextView>(R.id.textWeight).text =
+                        context.getString(
+                            R.string.list_weight_pattern,
+                            target!!.weight.toString()
+                        )
+                    findViewById<TextView>(R.id.textFat).text =
+                        if (target!!.fat == 0.0) "" else context.getString(
+                            R.string.list_fat_pattern,
+                            target!!.fat.toString()
+                        )
+                    findViewById<TextView>(R.id.textDate).text = DateUtils.formatDateTime(
+                        context, target!!.recTime.timeInMillis,
+                        DateUtils.FORMAT_SHOW_YEAR
+                            .or(DateUtils.FORMAT_SHOW_DATE)
+                            .or(DateUtils.FORMAT_NUMERIC_DATE)
+                            .or(DateUtils.FORMAT_SHOW_TIME)
+                            .or(DateUtils.FORMAT_ABBREV_ALL)
+                    )
 
-                    findViewById<ImageButton>(R.id.showDumbbell).isSelected = target!!.showDumbbell
-                    findViewById<ImageButton>(R.id.showLiquor).isSelected = target!!.showLiquor
-                    findViewById<ImageButton>(R.id.showToilet).isSelected = target!!.showToilet
+                    findViewById<ImageButton>(R.id.showDumbbell).isSelected =
+                        target!!.showDumbbell
+                    findViewById<ImageButton>(R.id.showLiquor).isSelected =
+                        target!!.showLiquor
+                    findViewById<ImageButton>(R.id.showToilet).isSelected =
+                        target!!.showToilet
                     findViewById<ImageButton>(R.id.showMoon).isSelected = target!!.showMoon
                     findViewById<ImageButton>(R.id.showStar).isSelected = target!!.showStar
                 }

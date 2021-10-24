@@ -45,7 +45,8 @@ class ShowRecordsViewModel(
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
-                    weightItemList
+                    weightItemList,
+                    createLineSources(weightItemList)
                 )
             )
         }
@@ -119,6 +120,10 @@ class ShowRecordsViewModel(
         return result
     }
 
+    fun updateChartSourceStamp(stamp: ShowStamp) {
+        // TODO : 実装
+    }
+
     private fun createChartSource(item: WeightItemEntity, fat: Double) =
         ChartSource(
             recTime = item.recTime,
@@ -147,7 +152,8 @@ class ShowRecordsViewModel(
 
     data class ViewData(
         val state: State,
-        val list: List<WeightItemEntity>? = null
+        val list: List<WeightItemEntity>? = null,
+        val chartSources: List<ChartSource>? = null,
     )
 
     enum class State {
