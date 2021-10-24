@@ -76,18 +76,18 @@ class RecordListFragment : Fragment() {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
             binding.apply {
                 when {
-                    data.list == null -> {
+                    data.records == null -> {
                         recyclerRecords.visibility = View.GONE
                         areaNoData.visibility = View.GONE
                     }
-                    data.list.isEmpty() -> {
+                    data.records.isEmpty() -> {
                         recyclerRecords.visibility = View.GONE
                         areaNoData.visibility = View.VISIBLE
                     }
                     else -> {
                         recyclerRecords.visibility = View.VISIBLE
                         areaNoData.visibility = View.GONE
-                        showListItem(data.list)
+                        showListItem(data.records)
                     }
                 }
             }

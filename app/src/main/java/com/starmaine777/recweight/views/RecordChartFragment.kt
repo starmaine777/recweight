@@ -22,7 +22,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.MPPointF
 import com.starmaine777.recweight.R
-import com.starmaine777.recweight.data.entity.ChartSource
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentRecordChartBinding
@@ -87,18 +86,18 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
             binding.apply {
                 when {
-                    data.chartSources == null -> {
+                    data.records == null -> {
                         areaChart.visibility = View.GONE
                         textNoData.visibility = View.GONE
                     }
-                    data.chartSources.isEmpty() -> {
+                    data.records.isEmpty() -> {
                         areaChart.visibility = View.GONE
                         textNoData.visibility = View.VISIBLE
                     }
                     else -> {
                         areaChart.visibility = View.VISIBLE
                         textNoData.visibility = View.GONE
-                        showChart(data.chartSources, data.list)
+                        showChart(data.records)
                     }
                 }
             }
@@ -132,7 +131,7 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
         }
     }
 
-    private fun showChart(records: List<ChartSource>, weightRecords: List<WeightItemEntity>?) {
+    private fun showChart(records: List<WeightItemEntity>) {
         val weightEntries = mutableListOf<Entry>()
         val fatEntries = mutableListOf<Entry>()
         val checkedStamp = getShowStamp(binding.radioGroupStamps.checkedRadioButtonId)
@@ -147,7 +146,7 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
                 Entry().apply {
                     x = chartSource.recTime.timeInMillis.toFloat()
                     y = chartSource.weight.toFloat()
-                    icon = if (chartSource.showIcon) stampDrawer else null
+//                    icon = if (chartSource.showIcon) stampDrawer else null
                 }
             )
             if (chartSource.fat > 0) {
@@ -167,9 +166,7 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
             setVisibleXRangeMinimum(nowDate - getStartCalendar().timeInMillis.toFloat())
 
             setDrawMarkers(true)
-            weightRecords?.let {
-                marker = ItemMarkerView(context, R.layout.marker_chart, it)
-            }
+            marker = ItemMarkerView(context, R.layout.marker_chart, records)
             invalidate()
         }
 

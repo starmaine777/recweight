@@ -1,6 +1,5 @@
 package com.starmaine777.recweight.viewmodel
 
-import com.starmaine777.recweight.data.entity.ChartSource
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
@@ -43,7 +42,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)), result)
@@ -59,7 +58,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 28.0)), result)
@@ -75,7 +74,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)), result)
@@ -91,7 +90,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = true
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(29.0, 29.0, 29.0, 28.0, 27.0)), result)
@@ -107,7 +106,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = true
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(30.0, 30.0, 30.0, 30.0, 30.0)), result)
@@ -123,7 +122,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = false
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(31.0, 31.0, 31.0, 31.0, 31.0)), result)
@@ -139,7 +138,7 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = true
         )
-        val result = viewModel.createLineSources(rowData)
+        val result = viewModel.calculateChartFat(rowData)
 
         Assert.assertEquals(rowData.size, result.size)
         Assert.assertEquals(createExpectList(rowData, listOf(0.0, 0.0, 0.0, 0.0, 0.0)), result)
@@ -206,35 +205,10 @@ class ShowRecordsViewModelTest {
         )
 
     private fun createExpectList(rowData: List<WeightItemEntity>, fatList: List<Double>) = listOf(
-        ChartSource(
-            recTime = rowData[4].recTime,
-            weight = 58.0,
-            fat = fatList[0],
-            showIcon = false
-        ),
-        ChartSource(
-            recTime = rowData[3].recTime,
-            weight = 57.0,
-            fat = fatList[1],
-            showIcon = false
-        ),
-        ChartSource(
-            recTime = rowData[2].recTime,
-            weight = 56.0,
-            fat = fatList[2],
-            showIcon = false
-        ),
-        ChartSource(
-            recTime = rowData[1].recTime,
-            weight = 55.0,
-            fat = fatList[3],
-            showIcon = false
-        ),
-        ChartSource(
-            recTime = rowData[0].recTime,
-            weight = 54.0,
-            fat = fatList[4],
-            showIcon = false
-        ),
+        rowData[4].copy().apply { chartFat = fatList[0] },
+        rowData[3].copy().apply { chartFat = fatList[1] },
+        rowData[2].copy().apply { chartFat = fatList[2] },
+        rowData[1].copy().apply { chartFat = fatList[3] },
+        rowData[0].copy().apply { chartFat = fatList[4] },
     )
 }
