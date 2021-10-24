@@ -15,6 +15,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.starmaine777.recweight.R
+import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentWeightInputBinding
 import com.starmaine777.recweight.event.InputFragmentStartEvent
@@ -40,12 +41,17 @@ class WeightInputFragment : Fragment() {
     private val weightItemRepository by lazy {
         WeightItemRepository(requireContext())
     }
-    private var dialog: DialogFragment? = null
-    private var progressDialog: ProgressDialog? = null
-    private var alertDialog: AlertDialog? = null
     lateinit var viewModelFactory: WeightInputViewModel.Factory
     private val viewModel: WeightInputViewModel by activityViewModels { viewModelFactory }
     private lateinit var binding: FragmentWeightInputBinding
+
+    private val recordId by lazy {
+        arguments?.getLong(ARGS_ID)
+    }
+
+    private var dialog: DialogFragment? = null
+    private var progressDialog: ProgressDialog? = null
+    private var alertDialog: AlertDialog? = null
 
     companion object {
 
@@ -92,107 +98,111 @@ class WeightInputFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        viewModel.selectedEntityId(requireContext(), arguments?.getLong(ARGS_ID))
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                val weightItem = viewModel.inputEntity
-                binding.apply {
-                    editWeight.setText(weightItem.weightString())
-                    editFat.setText(weightItem.fatString())
-                    toggleDumbbell.isChecked = weightItem.showDumbbell
-                    toggleLiquor.isChecked = weightItem.showLiquor
-                    toggleToilet.isChecked = weightItem.showToilet
-                    toggleMoon.isChecked = weightItem.showMoon
-                    toggleStar.isChecked = weightItem.showStar
-                    editMemo.setText(weightItem.memo)
-
-                    setRecordDate(
-                        viewModel.calendar.get(Calendar.YEAR),
-                        viewModel.calendar.get(Calendar.MONTH),
-                        viewModel.calendar.get(Calendar.DAY_OF_MONTH)
-                    )
-                    editDate.setOnClickListener { _ ->
-                        dialog = DatePickerDialogFragment.newInstance(
-                            viewModel.calendar.get(Calendar.YEAR),
-                            viewModel.calendar.get(Calendar.MONTH),
-                            viewModel.calendar.get(Calendar.DAY_OF_MONTH)
-                        )
-                        dialog?.setTargetFragment(
-                            this@WeightInputFragment,
-                            REQUESTS.INPUT_DATE.ordinal
-                        )
-                        dialog?.show(requireFragmentManager(), TAG_DIALOGS)
-                    }
-
-                    setRecordTime(
-                        viewModel.calendar.get(Calendar.HOUR_OF_DAY),
-                        viewModel.calendar.get(Calendar.MINUTE)
-                    )
-                    editTime.setOnClickListener { _ ->
-                        dialog = TimePickerDialogFragment.newInstance(
-                            viewModel.calendar.get(Calendar.HOUR_OF_DAY),
-                            viewModel.calendar.get(Calendar.MINUTE)
-                        )
-                        dialog?.setTargetFragment(
-                            this@WeightInputFragment,
-                            REQUESTS.INPUT_TIME.ordinal
-                        )
-                        dialog?.show(requireFragmentManager(), TAG_DIALOGS)
-                    }
-
-                    editWeight.setOnFocusChangeListener { _, hasFocus ->
-                        if (!hasFocus && !editWeight.text.isEmpty()) editWeight.setText(
-                            formatInputNumber(
-                                editWeight.text.toString(),
-                                getString(R.string.weight_input_weight_default)
-                            )
-                        )
-                    }
-                    editFat.setOnFocusChangeListener { _, hasFocus ->
-                        if (!hasFocus && !editFat.text.isEmpty()) editFat.setText(
-                            formatInputNumber(
-                                editFat.text.toString(),
-                                getString(R.string.weight_input_fat_default)
-                            )
-                        )
-                    }
-
-                    if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
-                        showViewMode()
-                        fab.setOnClickListener {
-                            RxBus.publish(
-                                InputFragmentStartEvent(
-                                    WEIGHT_INPUT_MODE.INPUT,
-                                    arguments?.getLong(ARGS_ID)
-                                )
-                            )
-                        }
-                    } else {
-                        fab.hide()
-                        editMemo.maxLines = 5
-                    }
-                }
-
-            }, {
-                alertDialog = AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.err_title_db)
-                    .setMessage(R.string.err_title_db)
-                    .setPositiveButton(android.R.string.ok, { _, _ ->
-                        requireFragmentManager().popBackStack()
-                    })
-                    .setOnDismissListener { requireFragmentManager().popBackStack() }
-                    .show()
-            })
         observeViewData()
+        viewModel.selectedEntityId(recordId)
     }
 
     private fun observeViewData() {
         viewModel.viewData.observe(viewLifecycleOwner) { data ->
-            if (data.state == WeightInputViewModel.State.Deleted) {
-                progressDialog?.dismiss()
-                parentFragmentManager.popBackStack()
+            when (data) {
+                is WeightInputViewModel.ViewData -> {
+                    if (data.state == WeightInputViewModel.State.Deleted) {
+                        progressDialog?.dismiss()
+                        parentFragmentManager.popBackStack()
+                    }
+                    data.entity?.let {
+                        initInput(record = it)
+                    }
+                }
+                else -> {
+                    alertDialog = AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.err_title_db)
+                        .setMessage(R.string.err_title_db)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            parentFragmentManager.popBackStack()
+                        }
+                        .setOnDismissListener { parentFragmentManager.popBackStack() }
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun initInput(record: WeightItemEntity) {
+        binding.apply {
+            editWeight.setText(record.weightString())
+            editFat.setText(record.fatString())
+            toggleDumbbell.isChecked = record.showDumbbell
+            toggleLiquor.isChecked = record.showLiquor
+            toggleToilet.isChecked = record.showToilet
+            toggleMoon.isChecked = record.showMoon
+            toggleStar.isChecked = record.showStar
+            editMemo.setText(record.memo)
+
+            setRecordDate(
+                viewModel.calendar.get(Calendar.YEAR),
+                viewModel.calendar.get(Calendar.MONTH),
+                viewModel.calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            editDate.setOnClickListener { _ ->
+                dialog = DatePickerDialogFragment.newInstance(
+                    viewModel.calendar.get(Calendar.YEAR),
+                    viewModel.calendar.get(Calendar.MONTH),
+                    viewModel.calendar.get(Calendar.DAY_OF_MONTH)
+                )
+                dialog?.setTargetFragment(
+                    this@WeightInputFragment,
+                    REQUESTS.INPUT_DATE.ordinal
+                )
+                dialog?.show(requireFragmentManager(), TAG_DIALOGS)
+            }
+
+            setRecordTime(
+                viewModel.calendar.get(Calendar.HOUR_OF_DAY),
+                viewModel.calendar.get(Calendar.MINUTE)
+            )
+            editTime.setOnClickListener { _ ->
+                dialog = TimePickerDialogFragment.newInstance(
+                    viewModel.calendar.get(Calendar.HOUR_OF_DAY),
+                    viewModel.calendar.get(Calendar.MINUTE)
+                )
+                dialog?.setTargetFragment(
+                    this@WeightInputFragment,
+                    REQUESTS.INPUT_TIME.ordinal
+                )
+                dialog?.show(requireFragmentManager(), TAG_DIALOGS)
+            }
+
+            editWeight.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus && !editWeight.text.isEmpty()) editWeight.setText(
+                    formatInputNumber(
+                        editWeight.text.toString(),
+                        getString(R.string.weight_input_weight_default)
+                    )
+                )
+            }
+            editFat.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus && !editFat.text.isEmpty()) editFat.setText(
+                    formatInputNumber(
+                        editFat.text.toString(),
+                        getString(R.string.weight_input_fat_default)
+                    )
+                )
+            }
+
+            if (viewMode == WEIGHT_INPUT_MODE.VIEW) {
+                showViewMode()
+                fab.setOnClickListener {
+                    RxBus.publish(
+                        InputFragmentStartEvent(
+                            WEIGHT_INPUT_MODE.INPUT,
+                            recordId
+                        )
+                    )
+                }
+            } else {
+                fab.hide()
+                editMemo.maxLines = 5
             }
         }
     }

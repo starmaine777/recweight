@@ -21,7 +21,7 @@ class WeightItemRepository(context: Context) {
     fun getWeightItemListOnce(): List<WeightItemEntity> =
         appDataBase.weightItemDao().getAllListDateSortedOnce()
 
-    fun getWeightItemById(id: Long): List<WeightItemEntity> =
+    suspend fun getWeightItemById(id: Long): List<WeightItemEntity> =
         appDataBase.weightItemDao().getWeightItemById(id)
 
     fun getWeightItemJustAfterRecTime(recTime: Calendar): List<WeightItemEntity> =

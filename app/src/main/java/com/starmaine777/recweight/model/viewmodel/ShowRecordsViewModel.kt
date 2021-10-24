@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import com.starmaine777.recweight.model.usecase.GetChartRecordsUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -21,7 +22,7 @@ class ShowRecordsViewModel(
         get() = _viewData
 
     fun getWeightItemList() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
@@ -36,7 +37,7 @@ class ShowRecordsViewModel(
      * @return 削除が完了したCompletableFromAction
      */
     fun deleteItem(weightItemEntity: WeightItemEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             deleteItemUseCase.deleteItem(weightItemEntity)
 
             getWeightItemList()

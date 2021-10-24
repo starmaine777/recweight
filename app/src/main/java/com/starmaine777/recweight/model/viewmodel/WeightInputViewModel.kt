@@ -8,6 +8,7 @@ import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
 import io.reactivex.functions.Action
 import io.reactivex.internal.operators.completable.CompletableFromAction
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
@@ -26,10 +27,17 @@ class WeightInputViewModel(
     val viewData: LiveData<ViewData>
         get() = _viewData
 
-    data class ViewData(val state: State)
+    data class ViewData(
+        val state: State,
+        val entity: WeightItemEntity? = null,
+        val isUpdateMode: Boolean = false
+    )
 
     enum class State {
         NotInitialized,
+        Idle,
+        Saving,
+        Saved,
         Deleted,
     }
 
@@ -43,33 +51,30 @@ class WeightInputViewModel(
      * @param id 対象のid. nullの時はcreate扱い.
      * @return inputEntityを設定後のCompletableFromAction
      */
-    fun selectedEntityId(context: Context, id: Long?): CompletableFromAction =
-            CompletableFromAction(Action {
-                Timber.d("selectedEntityId id = $id")
-                if (id == null) {
-                    inputEntity = WeightItemEntity()
-                    originalEntity = inputEntity
-                    isCreate = true
+    fun selectedEntityId(id: Long?) {
+        Timber.d("selectedEntityId id = $id")
+        if (id == null) {
+            _viewData.postValue(ViewData(State.Idle, WeightItemEntity(), isUpdateMode = false))
+        } else {
+            viewModelScope.launch(Dispatchers.IO) {
+                val idList = weightRepository.getWeightItemById(id)
+                if (idList.isEmpty()) {
+                    _viewData.postValue(
+                        ViewData(
+                            State.Idle,
+                            WeightItemEntity(),
+                            isUpdateMode = false
+                        )
+                    )
                 } else {
-
-                    val idList = weightRepository.getWeightItemById(id)
-                    if (idList.isEmpty()) {
-                        inputEntity = WeightItemEntity()
-                        isCreate = true
-                    } else {
-                        inputEntity = idList[0]
-                        isCreate = false
-                    }
-                    originalEntity = inputEntity.copy()
-                    calendar = inputEntity.recTime.clone() as Calendar
-                    Timber.d("selectedEntity getInputEntities $inputEntity")
+                    _viewData.postValue(ViewData(State.Idle, idList[0], isUpdateMode = true))
                 }
+            }
+        }
 
-            })
+    }
 
-    private var isCreate = true
     var inputEntity: WeightItemEntity = WeightItemEntity()
-    private var originalEntity: WeightItemEntity? = inputEntity
 
     var calendar: Calendar = inputEntity.recTime.clone() as Calendar
 
@@ -112,10 +117,10 @@ class WeightInputViewModel(
         inputEntity.recTime.set(Calendar.MILLISECOND, 0)
 
         return CompletableFromAction(Action {
-            if (isCreate) {
-                weightRepository.insertWeightItem(inputEntity)
-            } else {
+            if (_viewData.value?.isUpdateMode == true) {
                 weightRepository.updateWeightItem(inputEntity)
+            } else {
+                weightRepository.insertWeightItem(inputEntity)
             }
         })
     }

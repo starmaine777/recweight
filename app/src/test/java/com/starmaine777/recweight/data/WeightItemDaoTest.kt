@@ -55,7 +55,9 @@ class WeightItemDaoTest {
 
     @Test
     fun getWeightItemListByIdNoUser() {
-        Assert.assertTrue(database.weightItemDao().getWeightItemById(0).isEmpty())
+        testScope.runBlockingTest {
+            Assert.assertTrue(database.weightItemDao().getWeightItemById(0).isEmpty())
+        }
     }
 
     @Test
