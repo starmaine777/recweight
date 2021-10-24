@@ -4,10 +4,9 @@ import androidx.lifecycle.*
 import com.starmaine777.recweight.R
 import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
-import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
+import com.starmaine777.recweight.model.usecase.GetChartRecordsUseCase
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
 
 /**
  * ShowRecords操作ViewModel
@@ -15,7 +14,7 @@ import java.math.BigDecimal
  */
 
 class ShowRecordsViewModel(
-    private val getItemsUseCase: GetWeightItemsUseCase,
+    private val getChartRecordsUseCase: GetChartRecordsUseCase,
     private val deleteItemUseCase: DeleteWeightItemUseCase
 ) : ViewModel() {
 
@@ -39,11 +38,11 @@ class ShowRecordsViewModel(
 
     fun getWeightItemList() {
         viewModelScope.launch {
-            weightItemList = getItemsUseCase.getItems()
+            weightItemList = getChartRecordsUseCase.getItems()
             _viewData.postValue(
                 ViewData(
                     state = State.Idle,
-                    calculateChartFat(weightItemList)
+                    weightItemList
                 )
             )
         }
@@ -62,75 +61,6 @@ class ShowRecordsViewModel(
         }
     }
 
-    /**
-     * LineChart用のDataを作成する
-     * @param context Context
-     * @param showStamp どのStampをiconとして表示させるかの区分
-     * @return first = WeightのEntryList, second = FatのEntryList
-     */
-    fun calculateChartFat(rowData: List<WeightItemEntity>): List<WeightItemEntity> {
-        val result = mutableListOf<WeightItemEntity>()
-        val reverseItemList = ArrayList(rowData).apply { this.reverse() }
-        val tempItems = mutableListOf<WeightItemEntity>()
-
-        for (item in reverseItemList) {
-            when {
-                item.fat == 0.0 -> {
-                    tempItems.add(item)
-                }
-                tempItems.isEmpty() -> {
-                    result.add(item.apply { chartFat = item.fat })
-                }
-                result.isEmpty() -> {
-                    tempItems.forEach { tempItem ->
-                        result.add(tempItem.apply { chartFat = item.fat })
-                    }
-                    result.add(item.apply { chartFat = item.fat })
-                    tempItems.clear()
-                }
-                else -> {
-                    val startSource = result.last()
-                    val lastSource = item.apply { chartFat = item.fat }
-                    val slope = calculateFatSlope(startSource, lastSource)
-                    tempItems.forEach { tempItem ->
-                        result.add(
-                            tempItem.apply { chartFat = calculateFat(slope, startSource, tempItem) }
-                        )
-                    }
-                    result.add(lastSource)
-                    tempItems.clear()
-                }
-            }
-        }
-
-        // fatなしで未計算リストを処理
-        if (tempItems.isNotEmpty()) {
-            val fat = if (result.isEmpty()) 0.0 else result.last().fat
-            tempItems.forEach { tempItem ->
-                result.add(tempItem.apply { chartFat = fat })
-            }
-        }
-
-        return result
-    }
-
-    fun updateChartSourceStamp(stamp: ShowStamp) {
-        // TODO : 実装
-    }
-
-    private fun calculateFatSlope(start: WeightItemEntity, end: WeightItemEntity): Double =
-        ((end.fat - start.fat) / (end.recTime.timeInMillis - start.recTime.timeInMillis))
-
-    private fun calculateFat(
-        slope: Double,
-        start: WeightItemEntity,
-        targetWeightItem: WeightItemEntity
-    ): Double {
-        var bd =
-            BigDecimal((start.fat + slope * (targetWeightItem.recTime.timeInMillis - start.recTime.timeInMillis)))
-        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP)
-        return bd.toDouble()
-    }
 
     data class ViewData(
         val state: State,
@@ -143,13 +73,13 @@ class ShowRecordsViewModel(
     }
 
     class Factory(
-        private val getItemsUseCase: GetWeightItemsUseCase,
+        private val getChartRecordsUseCase: GetChartRecordsUseCase,
         private val deleteItemUseCase: DeleteWeightItemUseCase
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ShowRecordsViewModel::class.java)) {
                 return ShowRecordsViewModel(
-                    getItemsUseCase,
+                    getChartRecordsUseCase,
                     deleteItemUseCase
                 ) as T
             }

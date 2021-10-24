@@ -26,7 +26,7 @@ import com.starmaine777.recweight.data.entity.WeightItemEntity
 import com.starmaine777.recweight.data.repo.WeightItemRepository
 import com.starmaine777.recweight.databinding.FragmentRecordChartBinding
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
-import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
+import com.starmaine777.recweight.model.usecase.GetChartRecordsUseCase
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.formatInputNumber
 import timber.log.Timber
@@ -54,7 +54,7 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModelFactory = ShowRecordsViewModel.Factory(
-            GetWeightItemsUseCase(weightItemRepository),
+            GetChartRecordsUseCase(weightItemRepository),
             DeleteWeightItemUseCase(weightItemRepository)
         )
     }
@@ -76,7 +76,8 @@ class RecordChartFragment : Fragment(), AdapterView.OnItemSelectedListener {
             spinnerDuration.onItemSelectedListener = this@RecordChartFragment
             radioGroupStamps.setOnCheckedChangeListener { _, id ->
                 Timber.d("radioGroup onCheckedChangeListener ")
-                viewModel.updateChartSourceStamp(getShowStamp(id))
+                // TODO: スタンプ処理をここで行う
+//                viewModel.updateChartSourceStamp(getShowStamp(id))
             }
         }
         observeViewData()

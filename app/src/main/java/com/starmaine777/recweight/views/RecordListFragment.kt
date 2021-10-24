@@ -18,7 +18,7 @@ import com.starmaine777.recweight.event.InputFragmentStartEvent
 import com.starmaine777.recweight.event.RxBus
 import com.starmaine777.recweight.event.WeightItemClickEvent
 import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
-import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
+import com.starmaine777.recweight.model.usecase.GetChartRecordsUseCase
 import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
 import com.starmaine777.recweight.utils.PREFERENCES_NAME
 import com.starmaine777.recweight.utils.PREFERENCE_KEY
@@ -52,7 +52,7 @@ class RecordListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModelFactory = ShowRecordsViewModel.Factory(
-            GetWeightItemsUseCase(weightItemRepository),
+            GetChartRecordsUseCase(weightItemRepository),
             DeleteWeightItemUseCase(weightItemRepository)
         )
     }

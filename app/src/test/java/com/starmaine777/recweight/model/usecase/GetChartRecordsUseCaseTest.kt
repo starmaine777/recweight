@@ -1,36 +1,35 @@
-package com.starmaine777.recweight.viewmodel
+package com.starmaine777.recweight.model.usecase
 
 import com.starmaine777.recweight.data.entity.WeightItemEntity
-import com.starmaine777.recweight.model.usecase.DeleteWeightItemUseCase
-import com.starmaine777.recweight.model.usecase.GetWeightItemsUseCase
-import com.starmaine777.recweight.model.viewmodel.ShowRecordsViewModel
+import com.starmaine777.recweight.data.repo.WeightItemRepository
 import io.mockk.MockKAnnotations
+import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.*
 
-
 /**
- * ShowRecordsViewModelのTest. 主にChartのデータ作成の処理をテストする
- * Created by Asami-san on 2018/01/15.
+ * Created by asami-san on 2021/10/24.
  */
-
-class ShowRecordsViewModelTest {
-
-    @MockK
-    lateinit var getItemsUseCase: GetWeightItemsUseCase
+class GetChartRecordsUseCaseTest {
 
     @MockK
-    lateinit var deleteItemUseCase: DeleteWeightItemUseCase
+    lateinit var weightItemRepository: WeightItemRepository
 
-    lateinit var viewModel: ShowRecordsViewModel
+    lateinit var target: GetChartRecordsUseCase
+
+    private val testDispatcher = TestCoroutineDispatcher()
+    private val testScope = TestCoroutineScope(testDispatcher)
 
     @Before
-    fun setUp() {
+    fun setup() {
         MockKAnnotations.init(this)
-        viewModel = ShowRecordsViewModel(getItemsUseCase, deleteItemUseCase)
+        target = GetChartRecordsUseCase(weightItemRepository)
     }
 
     @Test
@@ -42,10 +41,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)),
+                result
+            )
+        }
     }
 
     // 最後にFatがない==最後から3番目、2番目から計算
@@ -58,10 +63,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 28.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 28.0)),
+                result
+            )
+        }
     }
 
     // 途中にFatがない==その前後から計算
@@ -74,10 +85,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = false
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(31.0, 30.0, 29.0, 28.0, 27.0)),
+                result
+            )
+        }
     }
 
     // 最初にFatがない==最初にFatが出てくるまで一定
@@ -90,10 +107,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = true
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(29.0, 29.0, 29.0, 28.0, 27.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(29.0, 29.0, 29.0, 28.0, 27.0)),
+                result
+            )
+        }
     }
 
     // 途中一か所しかFatがない==ずっと一定
@@ -106,10 +129,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = false,
             fifthFatEmpty = true
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(30.0, 30.0, 30.0, 30.0, 30.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(30.0, 30.0, 30.0, 30.0, 30.0)),
+                result
+            )
+        }
     }
 
     // 先頭だけFatがある==先頭と同じ
@@ -122,10 +151,16 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = false
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(31.0, 31.0, 31.0, 31.0, 31.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(
+                createExpectList(rowData, listOf(31.0, 31.0, 31.0, 31.0, 31.0)),
+                result
+            )
+        }
     }
 
     // 全部Fatなし 0でくる
@@ -138,10 +173,13 @@ class ShowRecordsViewModelTest {
             fourthFatEmpty = true,
             fifthFatEmpty = true
         )
-        val result = viewModel.calculateChartFat(rowData)
+        coEvery { weightItemRepository.getWeightItemList() } returns rowData
+        testScope.runBlockingTest {
+            val result = target.getItems()
 
-        Assert.assertEquals(rowData.size, result.size)
-        Assert.assertEquals(createExpectList(rowData, listOf(0.0, 0.0, 0.0, 0.0, 0.0)), result)
+            Assert.assertEquals(rowData.size, result.size)
+            Assert.assertEquals(createExpectList(rowData, listOf(0.0, 0.0, 0.0, 0.0, 0.0)), result)
+        }
     }
 
     private fun createTestEntities(
