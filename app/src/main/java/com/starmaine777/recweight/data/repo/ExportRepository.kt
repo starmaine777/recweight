@@ -86,7 +86,7 @@ class ExportRepository(val context: Context) {
 
     @Throws(UserRecoverableAuthIOException::class, IOException::class, SpreadSheetsException::class)
     fun writeExportDate(service: Sheets, emitter: Emitter<Int>) {
-        val values = ArrayList<MutableList<Any?>>()
+        val values = ArrayList<MutableList<*>>()
         val row = ArrayList<Any?>()
         SHEETS_COLUMNS.values().mapTo(row) { context.getString(it.nameId) }
         values.add(row)
