@@ -16,6 +16,9 @@
         android:theme="@style/AppTheme"
         >
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/ad_app_id"/>
+        <meta-data
             android:name="io.fabric.ApiKey"
             android:value="4c455012d5b36ed2ea2cb938a30a4ec79fa6a3f4"
             />
