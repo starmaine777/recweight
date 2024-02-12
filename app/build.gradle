@@ -5,12 +5,11 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.ben-manes.versions"
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 31
     defaultConfig {
         applicationId "com.starmaine777.recweight"
         minSdkVersion 25
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 9
         versionName "1.0.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
