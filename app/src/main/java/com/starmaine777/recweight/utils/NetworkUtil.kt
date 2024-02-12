@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Build
 import android.text.TextUtils
 import com.google.android.gms.common.ConnectionResult
@@ -31,7 +32,8 @@ enum class SHEETS_COLUMNS(val nameId: Int, val columnName: String) {
 
 fun isDeviceOnline(context: Context): Boolean {
     val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    return (connMgr.activeNetworkInfo != null && connMgr.activeNetworkInfo.isConnected)
+    val networkInfo: NetworkInfo? = connMgr.activeNetworkInfo
+    return  networkInfo?.isConnected == true
 }
 
 fun isGooglePlayServiceAvailable(context: Context): Boolean {
