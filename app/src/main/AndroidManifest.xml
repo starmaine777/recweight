@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
         android:name=".RecWeightApp"
@@ -16,13 +17,16 @@
         android:theme="@style/AppTheme"
         >
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/ad_app_id"/>
+        <meta-data
             android:name="io.fabric.ApiKey"
             android:value="4c455012d5b36ed2ea2cb938a30a4ec79fa6a3f4"
             />
 
         <activity
             android:name=".views.ShowRecordsActivity"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -32,6 +36,7 @@
         <activity
             android:name=".views.settings.SettingsActivity"
             android:label="@string/activity_settings"
+            android:exported="false"
             >
         </activity>
     </application>
